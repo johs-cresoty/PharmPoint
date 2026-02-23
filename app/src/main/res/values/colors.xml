@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="main01">#245CCA</color>
+    <color name="main02">#279DF8</color>
+    <color name="main03">#63B3F8</color>
+    <color name="main04">#EBF6FF</color>
+    <color name="common01">#717C84</color>
+    <color name="common02">#081740</color>
+    <color name="sub01">#F3F7FA</color>
+    <color name="notice">#E20004</color>
+    <color name="success">#00922E</color>
+
+</resources>

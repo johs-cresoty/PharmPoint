@@ -1,0 +1,65 @@
+package com.cresoty.catpossignpad.view.composable.setting
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import com.cresoty.catpossignpad.model.Penta
+import com.cresoty.catpossignpad.px2dp
+import com.cresoty.catpossignpad.px2sp
+import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
+import com.cresoty.catpossignpad.view.theme.common01
+import com.cresoty.catpossignpad.view.theme.main01
+import com.cresoty.catpossignpad.view.theme.white
+
+@Composable
+fun SettingButtons(
+    modifier: Modifier,
+    isLogin : Boolean,
+    onClickSave : () -> Unit,
+    onClickClose : () -> Unit
+) {
+    val height = 112f.px2dp()
+
+    val width = if(isLogin) 535f.px2dp() else 350f.px2dp()
+
+
+    val list = listOf(
+        Penta("닫기", 160f.px2dp(), onClickClose, common01, white),
+        Penta(if(isLogin) "로그인" else "저장", width, onClickSave, white, main01)
+    )
+
+    val shape = RoundedCornerShape(20f.px2dp())
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(10f.px2dp()),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        list.map {
+            val isBorder = it.first == "닫기"
+            ClickSoundButton(
+                modifier = Modifier.size(width = it.second, height = height),
+                onClick = it.third,
+                border = BorderStroke((if(isBorder) 1f else 0f).px2dp(), it.fourth),
+                backgroundColor =it.fifth,
+                shape = shape
+
+            ) {
+                Text(
+                    text = it.first,
+                    color = it.fourth,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 35f.px2sp()
+                )
+            }
+
+        }
+    }
+}
