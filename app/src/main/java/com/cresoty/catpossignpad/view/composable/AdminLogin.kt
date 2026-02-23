@@ -38,7 +38,7 @@ import com.cresoty.catpossignpad.view.theme.notice
 import com.cresoty.catpossignpad.view.theme.sub01
 import com.cresoty.catpossignpad.view.theme.white
 
-enum class PasswordButtonType(val number : String?, val fontSize : Float) {
+enum class PasswordButtonType(val number: String?, val fontSize: Float) {
     NUMBER1("1", 35f),
     NUMBER2("2", 35f),
     NUMBER3("3", 35f),
@@ -54,18 +54,19 @@ enum class PasswordButtonType(val number : String?, val fontSize : Float) {
 }
 
 @Composable
-fun AdminLogin() {
+fun AdminLogin(
+    input: String = "",
+    isPasswordCorrect: Boolean = true,
+    onDismiss: () -> Unit = {},
+    onClickClose: () -> Unit = {},
+    onClickSave: (String) -> Unit = {},
+    onClickNumber: (String) -> Unit = {},
+    onClickDelete: () -> Unit = {},
+    onClickDeleteAll: () -> Unit = {}
+) {
     val shape = RoundedCornerShape(20f.px2dp())
-    val controller = LocalController.current
-    val setting by controller.settingState.collectAsStateWithLifecycle()
 
-    val isPasswordCorrect = setting.isPasswordCorrect
-
-    val input = setting.password
-
-    DialogGenerator(
-        onDismiss = { }
-    ) {
+    DialogGenerator(onDismiss = onDismiss) {
         Column(
             modifier = Modifier
                 .size(width = 742f.px2dp(), height = 642f.px2dp())
@@ -74,10 +75,7 @@ fun AdminLogin() {
         ) {
             Spacer(modifier = Modifier.size(40f.px2dp()))
 
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
                     text = "관리자 비밀번호",
                     fontSize = 40f.px2sp(),
@@ -96,7 +94,7 @@ fun AdminLogin() {
                     .height(94f.px2dp()),
                 contentAlignment = Alignment.Center
             ) {
-                if(!isPasswordCorrect) {
+                if (!isPasswordCorrect) {
                     Text(
                         text = "입력하신 비밀번호가 일치하지 않습니다.",
                         fontSize = 25f.px2sp(),
@@ -105,101 +103,86 @@ fun AdminLogin() {
                 }
             }
 
-            PasswordButtonField()
+            PasswordButtonField(
+                onClickNumber = onClickNumber,
+                onClickDelete = onClickDelete,
+                onClickDeleteAll = onClickDeleteAll
+            )
 
             SettingButtons(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 isLogin = true,
-                onClickClose = { controller.dispatch(PadAction.CloseDialog) },
-                onClickSave = { controller.dispatch(PadAction.OnClickAdminLogin(input)) }
+                onClickClose = onClickClose,
+                onClickSave = { onClickSave(input) }
             )
-
-
         }
     }
 }
 
+// 실제 사용 시 (Controller 연결)
 @Composable
-fun PasswordButtonField() {
+fun AdminLoginDialog() {
     val controller = LocalController.current
+    val setting by controller.settingState.collectAsStateWithLifecycle()
+
+    AdminLogin(
+        input = setting.password,
+        isPasswordCorrect = setting.isPasswordCorrect,
+        onDismiss = {},
+        onClickClose = { controller.dispatch(PadAction.CloseDialog) },
+        onClickSave = { controller.dispatch(PadAction.OnClickAdminLogin(it)) },
+        onClickNumber = { controller.dispatch(PadAction.OnClickPasswordPad(it)) },
+        onClickDelete = { controller.dispatch(PadAction.OnClickDeleteLastPassword) },
+        onClickDeleteAll = { controller.dispatch(PadAction.OnClickDeleteAllPassword) }
+    )
+}
+
+@Composable
+fun PasswordButtonField(
+    onClickNumber: (String) -> Unit = {},
+    onClickDelete: () -> Unit = {},
+    onClickDeleteAll: () -> Unit = {}
+) {
     val shape = RoundedCornerShape(10f.px2dp())
     val buttons = PasswordButtonType.entries
 
     Column(
         modifier = Modifier
-            .size(width = 705f.px2dp(), height = 135f.px2dp())
-            .padding(vertical = 5f.px2dp(), horizontal = 4f.px2dp())
-            .background(color = sub01, shape = shape),
+            .fillMaxWidth()
+            .padding(horizontal = 4f.px2dp())
+            .background(color = sub01, shape = shape)
+            .padding(vertical = 5f.px2dp(), horizontal = 5f.px2dp()),
         verticalArrangement = Arrangement.spacedBy(5f.px2dp())
     ) {
         buttons.chunked(6).forEach { rows ->
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(1f.px2dp())
-            ){
+            ) {
                 rows.forEach { item ->
-                    PasswordButton(
-                        type = item,
-                        shape = shape,
-                        onClickNumber = { controller.dispatch(PadAction.OnClickNumberPad(it)) },
-                        onClickDelete = { controller.dispatch(PadAction.OnClickDeleteLastPassword) },
-                        onClickDeleteAll = { controller.dispatch(PadAction.OnClickDeleteAllPassword) }
-                    )
+                    Box(modifier = Modifier.weight(1f)) {  // 여기서 weight 적용
+                        PasswordButton(
+                            type = item,
+                            shape = shape,
+                            onClickNumber = onClickNumber,
+                            onClickDelete = onClickDelete,
+                            onClickDeleteAll = onClickDeleteAll
+                        )
+                    }
                 }
             }
         }
-
     }
 }
 
-@Composable
-fun PasswordButton(
-    type : PasswordButtonType,
-    shape: RoundedCornerShape,
-    onClickNumber : (String) -> Unit,
-    onClickDelete : () -> Unit,
-    onClickDeleteAll : () -> Unit
-) {
-    val number = type.number ?: ""
-    val fontSize = type.fontSize
-
-    ClickSoundButton(
-        modifier = Modifier.size(width = 115f.px2dp(), height = 60f.px2dp()),
-        onClick = {
-            when(type) {
-                PasswordButtonType.DELETE -> onClickDelete()
-                PasswordButtonType.DELETE_ALL -> onClickDeleteAll()
-                else -> onClickNumber(number)
-            }
-        },
-        shape = shape,
-        backgroundColor = white
-    ) {
-        when(type) {
-            PasswordButtonType.DELETE -> {
-                Image(
-                    modifier = Modifier.size(width = 38f.px2dp(), height = 26f.px2dp()),
-                    painter = painterResource(R.drawable.icon_delete),
-                    contentDescription = null
-                )
-            }
-            else -> {
-                Text(
-                    text = number,
-                    fontSize = fontSize.px2sp(),
-                    color = common02
-                )
-            }
-        }
-    }
-}
 
 @Composable
-fun PasswordField(input : String) {
+fun PasswordField(input: String) {
     val list = input.map { it.toString() }.toMutableList()
         .apply {
-            if(this.size < 5) {
+            if (this.size < 5) {
                 val addCount = 5 - this.size
                 this.addAll(List(addCount) { "" })
             }
@@ -208,11 +191,9 @@ fun PasswordField(input : String) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
-    ){
-        Row (
-            horizontalArrangement = Arrangement.spacedBy(10f.px2dp()),
-        ) {
-            for(i in 0 until 5) {
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10f.px2dp())) {
+            for (i in 0 until 5) {
                 Box(
                     modifier = Modifier
                         .size(80f.px2dp())
@@ -236,13 +217,60 @@ fun PasswordField(input : String) {
                 }
             }
         }
-
     }
 }
 
+@Composable
+fun PasswordButton(
+    type: PasswordButtonType,
+    shape: RoundedCornerShape,
+    onClickNumber: (String) -> Unit,
+    onClickDelete: () -> Unit,
+    onClickDeleteAll: () -> Unit
+) {
+    val number = type.number ?: ""
+    val fontSize = type.fontSize
 
+    ClickSoundButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60f.px2dp()),
+        onClick = {
+            when (type) {
+                PasswordButtonType.DELETE -> onClickDelete()
+                PasswordButtonType.DELETE_ALL -> onClickDeleteAll()
+                else -> onClickNumber(number)
+            }
+        },
+        shape = shape,
+        backgroundColor = white
+    ) {
+        when (type) {
+            PasswordButtonType.DELETE -> {
+                Image(
+                    modifier = Modifier.size(width = 38f.px2dp(), height = 26f.px2dp()),
+                    painter = painterResource(R.drawable.icon_delete),
+                    contentDescription = null
+                )
+            }
+
+            else -> {
+                Text(
+                    text = number,
+                    fontSize = fontSize.px2sp(),
+                    color = common02
+                )
+            }
+        }
+    }
+}
+
+// Preview
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingPasswordInputPreview() {
-    AdminLogin()
+    AdminLogin(
+        input = "123",
+        isPasswordCorrect = true
+    )
 }
