@@ -12,7 +12,7 @@ import com.cresoty.catpossignpad.view.composable.list.item.SettingItem
 enum class SettingType(val title: String) {
     STORE_INFO("약국정보"),
     ID_VERIFY("본인인증"),
-    POINT_USE("포인트사용"),
+    POINT_USE("포인트설정"),
     SCREEN_TIMEOUT("화면대기"),
     THEME("테마설정")
 }

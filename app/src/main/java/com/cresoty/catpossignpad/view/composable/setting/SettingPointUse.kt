@@ -40,8 +40,8 @@ fun SettingPointUse(
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
 
-    var isPointUse by remember{ mutableStateOf(config.isPointUse) }
-    var minPoint by remember{ mutableStateOf(config.minPoint.toString()) }
+    var isPointUse by remember { mutableStateOf(config.isPointUse) }
+    var minPoint by remember { mutableStateOf(config.minPoint.toString()) }
 
     Column(
         modifier = modifier,
@@ -53,7 +53,7 @@ fun SettingPointUse(
             verticalArrangement = Arrangement.spacedBy(15f.px2dp())
         ) {
             Text(
-                text = "포인트 사용 여부",
+                text = "최소 포인트 사용 여부",
                 fontSize = 20f.px2sp(),
                 fontWeight = FontWeight.Normal,
                 color = common02
@@ -91,30 +91,33 @@ fun SettingPointUse(
 //            )
 //      }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(15f.px2dp())
-        ) {
-            Text(
-                text = "최소 사용 포인트",
-                fontSize = 20f.px2sp(),
-                fontWeight = FontWeight.Normal,
-                color = common02
-            )
+        if (isPointUse) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(15f.px2dp())
+            ) {
+                Text(
+                    text = "최소 사용 포인트",
+                    fontSize = 20f.px2sp(),
+                    fontWeight = FontWeight.Normal,
+                    color = common02
+                )
 
-            FilterTextField(
-                modifier = Modifier.size(width = 275f.px2dp(), height = 55f.px2dp()),
-                textAlign = TextAlign.End,
-                initText = minPoint.toDecimalString(),
-                placeholder = "",
-                keyboardType = KeyboardType.Number,
-                filterType = FilterTextType.FILTER_TYPE_NUMBER,
-                hPadding = 20f.px2dp(),
-                vPadding = 14f.px2dp(),
-                fontColor = common01,
-                onTextChange = { minPoint = it },
-                onClickDone = { minPoint = it }
-            )
+                FilterTextField(
+                    modifier = Modifier.size(width = 275f.px2dp(), height = 55f.px2dp()),
+                    textAlign = TextAlign.End,
+                    initText = minPoint.toDecimalString(),
+                    placeholder = "",
+                    keyboardType = KeyboardType.Number,
+                    filterType = FilterTextType.FILTER_TYPE_NUMBER,
+                    hPadding = 20f.px2dp(),
+                    vPadding = 14f.px2dp(),
+                    fontColor = common01,
+                    onTextChange = { minPoint = it },
+                    onClickDone = { minPoint = it }
+                )
+            }
         }
+
 
         SettingButtons(
             modifier = Modifier.weight(1f),
@@ -135,6 +138,9 @@ fun SettingPointUse(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingPointUsePreview() {
-    SettingPointUse(Modifier.fillMaxSize()
-        .background(color = white))
+    SettingPointUse(
+        Modifier
+            .fillMaxSize()
+            .background(color = white)
+    )
 }
