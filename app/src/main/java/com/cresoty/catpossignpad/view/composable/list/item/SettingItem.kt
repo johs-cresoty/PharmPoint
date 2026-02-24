@@ -67,9 +67,9 @@ fun SettingItem(
 fun SettingDialogPreview() {
     Column {
 
-        SettingItem(
-            SettingType.ID_VERIFY, true
-        ) {}
+//        SettingItem(
+//            SettingType.ID_VERIFY, true
+//        ) {}
 
         SettingItem(
             SettingType.STORE_INFO, false

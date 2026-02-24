@@ -99,7 +99,7 @@ fun SettingPanel(
     val block = remember {
         mapOf<SettingType, @Composable () -> Unit> (
             SettingType.STORE_INFO      to { SettingStoreInfo(modifier) },
-            SettingType.ID_VERIFY       to { SettingIdVerify(modifier) },
+//            SettingType.ID_VERIFY       to { SettingIdVerify(modifier) },
             SettingType.POINT_USE       to { SettingPointUse(modifier) },
             SettingType.SCREEN_TIMEOUT  to { SettingScreenTimeout(modifier) },
             SettingType.THEME           to { SettingTheme(modifier) }

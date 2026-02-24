@@ -86,7 +86,7 @@ fun SettingIdVerify(
             onClickSave = {
                 val map = mutableMapOf<Preferences.Key<*>, Any>()
                 map[ConfigKey.IS_ID_VERIFY] = isIdVerify
-                controller.dispatch(PadAction.OnClickSaveSetting(SettingType.ID_VERIFY, map))
+//                controller.dispatch(PadAction.OnClickSaveSetting(SettingType.ID_VERIFY, map))
             }
         )
 

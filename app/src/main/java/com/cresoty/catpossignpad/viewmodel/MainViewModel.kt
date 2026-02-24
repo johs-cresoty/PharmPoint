@@ -530,11 +530,11 @@ class MainViewModel @Inject constructor(
                     configRepo.putValue(ConfigKey.BIZ_NO, bizNo)
                     configRepo.putValue(ConfigKey.STORE_NAME, storeName)
                 }
-                SettingType.ID_VERIFY -> {
-                    val isIdVerify = data[ConfigKey.IS_ID_VERIFY]  as Boolean
-
-                    configRepo.putValue(ConfigKey.IS_ID_VERIFY, isIdVerify)
-                }
+//                SettingType.ID_VERIFY -> {
+//                    val isIdVerify = data[ConfigKey.IS_ID_VERIFY]  as Boolean
+//
+//                    configRepo.putValue(ConfigKey.IS_ID_VERIFY, isIdVerify)
+//                }
                 SettingType.POINT_USE -> {
                     val isPointUse = data[ConfigKey.IS_USE_POINT] as Boolean
                     val minPoint = data[ConfigKey.MINIMUM_POINT] as Int
