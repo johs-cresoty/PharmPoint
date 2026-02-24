@@ -26,6 +26,7 @@ import com.cresoty.catpossignpad.socket.SocketManager
 import com.cresoty.catpossignpad.splitTelegram
 import com.cresoty.catpossignpad.toIntOrMax
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -248,20 +250,23 @@ class MainViewModel @Inject constructor(
      *
      */
     private fun sendToTerminalUsePoint() {
-        val buff = PharmpayTelegram.makeUsePoint(
-            phone = _phoneNumber.value,
-            balance = _pointBalance.value,
-            delta = _pointDelta.value
-        )
+        viewModelScope.launch(Dispatchers.IO) {
+            val buff = PharmpayTelegram.makeUsePoint(
+                phone = _phoneNumber.value,
+                balance = _pointBalance.value,
+                delta = _pointDelta.value
+            )
 
-        socketManager.send(buff) {
-            val current = _pointBalance.value.toIntOrNull() ?: 0
-            val useAmount = _pointDelta.value.toIntOrNull() ?: 0
-            _pointBalance.update {
-                (current - useAmount).toString()
+            socketManager.send(buff)
+
+            withContext(Dispatchers.Main) {
+                val current = _pointBalance.value.toIntOrNull() ?: 0
+                val useAmount = _pointDelta.value.toIntOrNull() ?: 0
+                _pointBalance.update {
+                    (current - useAmount).toString()
+                }
+                updatePointDeltaStep(PointDeltaProcess.POINT_USE_PROC_DONE)
             }
-
-            updatePointDeltaStep(PointDeltaProcess.POINT_USE_PROC_DONE)
         }
     }
 
