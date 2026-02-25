@@ -4,27 +4,29 @@ import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cresoty.catpossignpad.ConfigKey
-import com.cresoty.catpossignpad.model.interfaces.Dialogs
-import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.model.state.PointState
-import com.cresoty.catpossignpad.model.state.SettingState
-import com.cresoty.catpossignpad.model.state.MainState
-import com.cresoty.catpossignpad.safeSubString
-import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.BuildConfig
+import com.cresoty.catpossignpad.ConfigKey
 import com.cresoty.catpossignpad.ConfigRepository
 import com.cresoty.catpossignpad.PharmpayTelegram
 import com.cresoty.catpossignpad.Val
 import com.cresoty.catpossignpad.byte2String
+import com.cresoty.catpossignpad.dataresource.DataResource
+import com.cresoty.catpossignpad.domain.usecase.IsCustomersUseCase
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.enums.PointQuickInputType
+import com.cresoty.catpossignpad.model.interfaces.Dialogs
+import com.cresoty.catpossignpad.model.interfaces.PadAction
 import com.cresoty.catpossignpad.model.state.CustomerState
+import com.cresoty.catpossignpad.model.state.MainState
+import com.cresoty.catpossignpad.model.state.PointState
 import com.cresoty.catpossignpad.model.state.PreviewState
+import com.cresoty.catpossignpad.model.state.SettingState
 import com.cresoty.catpossignpad.network.NetworkManager
+import com.cresoty.catpossignpad.safeSubString
 import com.cresoty.catpossignpad.socket.SocketManager
 import com.cresoty.catpossignpad.splitTelegram
 import com.cresoty.catpossignpad.toIntOrMax
+import com.cresoty.catpossignpad.view.composable.list.SettingType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,55 +42,58 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val configRepo : ConfigRepository,
+    private val configRepo: ConfigRepository,
     private val networkManager: NetworkManager,
-    private val socketManager: SocketManager
+    private val socketManager: SocketManager,
+    private val isCustomersUseCase: IsCustomersUseCase
 ) : ViewModel() {
 
     // mainState
-    private val _pointDeltaStep : MutableStateFlow<PointDeltaProcess> = MutableStateFlow(PointDeltaProcess.NONE)
-    private val _paymentAmount : MutableStateFlow<String> = MutableStateFlow("")
+    private val _pointDeltaStep: MutableStateFlow<PointDeltaProcess> =
+        MutableStateFlow(PointDeltaProcess.NONE)
+    private val _paymentAmount: MutableStateFlow<String> = MutableStateFlow("")
 
     // pointState
-    private val _pointDelta : MutableStateFlow<String> = MutableStateFlow("")
-    private val _pointBalance : MutableStateFlow<String> = MutableStateFlow("")
-    private val _isPersonalInfoUse : MutableStateFlow<Boolean> = MutableStateFlow(true)
-    private val _isMasking : MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _pointDelta: MutableStateFlow<String> = MutableStateFlow("")
+    private val _pointBalance: MutableStateFlow<String> = MutableStateFlow("")
+    private val _isPersonalInfoUse: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _isMasking: MutableStateFlow<Boolean> = MutableStateFlow(true)
 
     // settingState
-    private val _dialog : MutableStateFlow<Dialogs> = MutableStateFlow(Dialogs.None)
-    private val _selectedMenuIndex : MutableStateFlow<Int> = MutableStateFlow(0)
-    private val _isPasswordCorrect : MutableStateFlow<Boolean> = MutableStateFlow(true)
-    private val _password : MutableStateFlow<String> = MutableStateFlow("")
+    private val _dialog: MutableStateFlow<Dialogs> = MutableStateFlow(Dialogs.None)
+    private val _selectedMenuIndex: MutableStateFlow<Int> = MutableStateFlow(0)
+    private val _isPasswordCorrect: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _password: MutableStateFlow<String> = MutableStateFlow("")
 
     // previewState
-    private val _isHideDialog : MutableStateFlow<Boolean> = MutableStateFlow(false)
-    private val _preSubTitle : MutableStateFlow<String?> = MutableStateFlow(null)
-    private val _preTheme : MutableStateFlow<Int?> = MutableStateFlow(null)
+    private val _isHideDialog: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    private val _preSubTitle: MutableStateFlow<String?> = MutableStateFlow(null)
+    private val _preTheme: MutableStateFlow<Int?> = MutableStateFlow(null)
 
     //customerState
-    private val _isExist : MutableStateFlow<Boolean> = MutableStateFlow(true)
-    private val _verifyResult : MutableStateFlow<Boolean?> = MutableStateFlow(null)
-    private val _verifyNumber : MutableStateFlow<String> = MutableStateFlow("")
-    private val _phoneNumber : MutableStateFlow<String> = MutableStateFlow("")
+    private val _isExist: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _verifyResult: MutableStateFlow<Boolean?> = MutableStateFlow(null)
+    private val _verifyNumber: MutableStateFlow<String> = MutableStateFlow("")
+    private val _phoneNumber: MutableStateFlow<String> = MutableStateFlow("")
 
     //포인트 적립
-    private var approvalNumber : String = ""
-    private var complexTranInfo : Pair<HashMap<String, String>, HashMap<String, String>>? = null
-//    private var transactionAmount : String = ""
-    private var transactionDate : String = ""
-    private var transactionTime : String = ""
-    private var transactionMethod : String = ""
-    private var transactionUniqueNumber : String = ""   //거래고유번호
+    private var approvalNumber: String = ""
+    private var complexTranInfo: Pair<HashMap<String, String>, HashMap<String, String>>? = null
+
+    //    private var transactionAmount : String = ""
+    private var transactionDate: String = ""
+    private var transactionTime: String = ""
+    private var transactionMethod: String = ""
+    private var transactionUniqueNumber: String = ""   //거래고유번호
 
     val configState = configRepo.configState
 
-    val customerState : StateFlow<CustomerState> = combine(
+    val customerState: StateFlow<CustomerState> = combine(
         _isExist,
         _verifyResult,
         _verifyNumber,
         _phoneNumber,
-    ) { isExist, verifyResult, verifyNumber, phoneNumber->
+    ) { isExist, verifyResult, verifyNumber, phoneNumber ->
         CustomerState(
             phoneNumber = phoneNumber,
             isCustomerExist = isExist,
@@ -101,7 +106,7 @@ class MainViewModel @Inject constructor(
         initialValue = CustomerState()
     )
 
-    val previewState : StateFlow<PreviewState> = combine(
+    val previewState: StateFlow<PreviewState> = combine(
         _isHideDialog,
         _preSubTitle,
         _preTheme
@@ -117,7 +122,7 @@ class MainViewModel @Inject constructor(
         initialValue = PreviewState()
     )
 
-    val settingState : StateFlow<SettingState> = combine(
+    val settingState: StateFlow<SettingState> = combine(
         _dialog,
         _selectedMenuIndex,
         _isPasswordCorrect,
@@ -135,7 +140,7 @@ class MainViewModel @Inject constructor(
         initialValue = SettingState()
     )
 
-    val pointState : StateFlow<PointState> = combine(
+    val pointState: StateFlow<PointState> = combine(
         _pointDelta,
         _pointBalance,
         _isPersonalInfoUse,
@@ -153,7 +158,7 @@ class MainViewModel @Inject constructor(
         initialValue = PointState()
     )
 
-    val mainState : StateFlow<MainState> = combine(
+    val mainState: StateFlow<MainState> = combine(
         _pointDeltaStep,
         _paymentAmount, //
     ) { pointDeltaStep, paymentAmount ->
@@ -167,7 +172,7 @@ class MainViewModel @Inject constructor(
         initialValue = MainState()
     )
 
-    private var socketJob : Job? = null
+    private var socketJob: Job? = null
 
 
     init {
@@ -187,8 +192,8 @@ class MainViewModel @Inject constructor(
      *
      * @param action
      */
-    fun dispatch(action : PadAction) {
-        when(action) {
+    fun dispatch(action: PadAction) {
+        when (action) {
             is PadAction.OnClickSettingMenu -> updateMenuIndex(action.index)
             is PadAction.OnClickSaveSetting -> saveSettingOption(action.type, action.data)
             is PadAction.OnClickPasswordPad -> updatePassword(action.number)
@@ -226,19 +231,21 @@ class MainViewModel @Inject constructor(
      * @param data
      */
     private fun processTelegram(
-        cmd : String,
-        data : ByteArray
+        cmd: String,
+        data: ByteArray
     ) {
         val split = data.splitTelegram(Val.COMM_FS)
         val list = split.map { it.byte2String() }
 
-        when(cmd) {
+        when (cmd) {
             Val.TERMINAL_COMMAND_001 -> {
                 checkExpectPointAmount(list)
             }
+
             Val.TERMINAL_COMMAND_002 -> {
                 checkExpectPointAmountComplex(list)
             }
+
             Val.TERMINAL_COMMAND_003 -> {
                 processPointUse(list)
             }
@@ -277,7 +284,7 @@ class MainViewModel @Inject constructor(
      *
      * @param list
      */
-    private fun checkExpectPointAmountComplex(list : List<String>) {
+    private fun checkExpectPointAmountComplex(list: List<String>) {
         val date = list[1].safeSubString(0, 8)
         val time = list[1].safeSubString(8)
         val firstOtc = list[5].toIntOrNull() ?: 0
@@ -285,8 +292,8 @@ class MainViewModel @Inject constructor(
         val secondOtc = list[10].toIntOrNull() ?: 0
         val secondVat = list[11].toIntOrNull() ?: 0
 
-        val firstMethod = if(list[3] == "P" ) "M" else list[3]
-        val secondMethod = if(list[8] == "P" ) "M" else list[3]
+        val firstMethod = if (list[3] == "P") "M" else list[3]
+        val secondMethod = if (list[8] == "P") "M" else list[3]
 
         val first = hashMapOf<String, String>()
         first["APP_NUM"] = list[2]
@@ -302,7 +309,7 @@ class MainViewModel @Inject constructor(
         second["TRN_TIME"] = time
         second["TRN_AMT"] = (secondOtc + secondVat).toString()
 
-        if(!complexPaymentAmountCheck(first to second)) return
+        if (!complexPaymentAmountCheck(first to second)) return
 
         complexTranInfo = Pair(first, second)
         transactionMethod = first["TRN_GUBN"] as String
@@ -316,7 +323,7 @@ class MainViewModel @Inject constructor(
             networkManager.requestExpectSaveAmountCheckComplex(
                 pair = first to second
             ) { code, amount, sle_seq ->
-                if(code == "0000") {
+                if (code == "0000") {
                     _pointDelta.update {
                         amount
                     }
@@ -342,7 +349,7 @@ class MainViewModel @Inject constructor(
      * @param pair
      * @return
      */
-    private fun complexPaymentAmountCheck(pair: Pair<HashMap<String, String>, HashMap<String, String>>) : Boolean{
+    private fun complexPaymentAmountCheck(pair: Pair<HashMap<String, String>, HashMap<String, String>>): Boolean {
         val isFirstCashAccept = (pair.first["TRN_GUBN"] as String) == "M"
         val isSecondCashAccept = (pair.second["TRN_GUBN"] as String) == "M"
         val firstAmount = (pair.first["TRN_AMT"] as String).toIntOrNull() ?: 0
@@ -354,9 +361,11 @@ class MainViewModel @Inject constructor(
             isFirstCashAccept && isSecondCashAccept -> { // 모두 현금수납 : 합산금액이 최저금액보다 높아야
                 firstAmount + secondAmount > min
             }
+
             isFirstCashAccept || isSecondCashAccept -> { // 둘 중 하나만 현금수납 : 각각 최저금액보다 높아야
                 firstAmount > min || secondAmount > min
             }
+
             else -> {                                    // 모두 현금수납X : 합산금액이 최저금액보다 높아야
                 firstAmount + secondAmount > min
             }
@@ -370,25 +379,28 @@ class MainViewModel @Inject constructor(
      *
      * @param list
      */
-    private fun checkExpectPointAmount(list : List<String>) {
+    private fun checkExpectPointAmount(list: List<String>) {
         val date = list[1].safeSubString(0, 8)
         val time = list[1].safeSubString(8)
         val appnum = list[2]
-        val method = if(list[3] == "P" ) "M" else list[3]
+        val method = if (list[3] == "P") "M" else list[3]
 
 //        val etc = list[4].toIntOrNull() ?: 0
         val otc = list[5].toIntOrNull() ?: 0
         val vat = list[6].toIntOrNull() ?: 0
         val isAfterUse = list[7] == "1"
 
-        val total = ( otc + vat )
+        val total = (otc + vat)
         val min = configState.value.minPoint
         val isSave = configState.value.isSave
-        Log.d("SocketDebug", "total=$total, min=${configState.value.minPoint}, isSave=${configState.value.isSave}")
-        if(isAfterUse) return
-        if(!isSave) return
-        if(total <= min) return
-        if(otc == 0) return
+        Log.d(
+            "SocketDebug",
+            "total=$total, min=${configState.value.minPoint}, isSave=${configState.value.isSave}"
+        )
+        if (isAfterUse) return
+        if (!isSave) return
+        if (total <= min) return
+        if (otc == 0) return
 
         approvalNumber = appnum
         transactionMethod = method
@@ -405,7 +417,7 @@ class MainViewModel @Inject constructor(
                 trn_amt = _paymentAmount.value,
                 app_num = approvalNumber,
                 onDataReceived = { code, amount, sle_seq ->
-                    if(code == "0000") {
+                    if (code == "0000") {
                         _pointDelta.update { amount }
                         transactionUniqueNumber = sle_seq
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
@@ -433,10 +445,10 @@ class MainViewModel @Inject constructor(
                     trn_date = transactionDate,
                     trn_time = transactionTime,
                     trn_amt = _paymentAmount.value,
-                    cst_hp =phone,
+                    cst_hp = phone,
                     pair = it
                 ) { code, balance ->
-                    if(code == "0000") {
+                    if (code == "0000") {
                         _pointBalance.update {
                             balance
                         }
@@ -452,7 +464,7 @@ class MainViewModel @Inject constructor(
                     app_num = approvalNumber,
                     trn_gubn = transactionMethod,
                 ) { code, balance ->
-                    if(code == "0000") {
+                    if (code == "0000") {
                         _pointBalance.update {
                             balance
                         }
@@ -474,15 +486,14 @@ class MainViewModel @Inject constructor(
             networkManager.requestPointBalanceCheck(
                 cst_hp = phone
             ) { code, balance ->
-                if(code == "0000") {
+                if (code == "0000") {
                     _pointBalance.update {
                         balance
                     }
 
-                    if((balance.toIntOrNull() ?: 0) < configState.value.minPoint) {
+                    if ((balance.toIntOrNull() ?: 0) < configState.value.minPoint) {
                         updatePointDeltaStep(PointDeltaProcess.POINT_USE_PROC_SHORTAGE_FAIL)
-                    }
-                    else {
+                    } else {
                         val isVerify = configState.value.isIdVerify
                         if (isVerify) updatePointDeltaStep(PointDeltaProcess.POINT_USE_VERIFY_NUM)
                         else updatePointDeltaStep(PointDeltaProcess.POINT_USE_AMOUNT_INPUT)
@@ -495,11 +506,11 @@ class MainViewModel @Inject constructor(
     private fun initRequestPointSettings() {
         viewModelScope.launch {
             networkManager.requestPointSetting { code, save ->
-                if(code == "0000") configRepo.putValue(ConfigKey.IS_SAVE, save)
+                if (code == "0000") configRepo.putValue(ConfigKey.IS_SAVE, save)
             }
 
             networkManager.requestPointAmountSetting { code, min ->
-                if(code == "0000") configRepo.putValue(ConfigKey.MIN_AMOUNT, min)
+                if (code == "0000") configRepo.putValue(ConfigKey.MIN_AMOUNT, min)
 
             }
         }
@@ -510,8 +521,8 @@ class MainViewModel @Inject constructor(
      *
      * @param list[1] : 사업자번호
      */
-    private fun processPointUse(list : List<String>) {
-        if(configState.value.bizNo == list[1]) updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
+    private fun processPointUse(list: List<String>) {
+        if (configState.value.bizNo == list[1]) updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
     }
 
     /**
@@ -520,9 +531,9 @@ class MainViewModel @Inject constructor(
      * @param type : 현재 선택된 다이얼로그
      * @param data : 저장 키 및 저장 값
      */
-    private fun saveSettingOption(type : SettingType, data : Map<Preferences.Key<*>, Any>) {
+    private fun saveSettingOption(type: SettingType, data: Map<Preferences.Key<*>, Any>) {
         viewModelScope.launch {
-            when(type) {
+            when (type) {
                 SettingType.STORE_INFO -> {
                     val bizNo = data[ConfigKey.BIZ_NO] as String
                     val storeName = data[ConfigKey.STORE_NAME] as String
@@ -542,11 +553,13 @@ class MainViewModel @Inject constructor(
                     configRepo.putValue(ConfigKey.IS_USE_POINT, isPointUse)
                     configRepo.putValue(ConfigKey.MINIMUM_POINT, minPoint)
                 }
+
                 SettingType.SCREEN_TIMEOUT -> {
                     val timeout = data[ConfigKey.SCREEN_TIMEOUT] as Int
 
                     configRepo.putValue(ConfigKey.SCREEN_TIMEOUT, timeout)
                 }
+
                 SettingType.THEME -> {
                     val themeIndex = data[ConfigKey.MAIN_THEME] as Int
                     val subTitle = data[ConfigKey.SUB_TITLE] as String
@@ -570,7 +583,8 @@ class MainViewModel @Inject constructor(
         _isMasking.update { true }
         _isPersonalInfoUse.update { true }
         _phoneNumber.update { "" }
-        _paymentAmount.update{ "" }
+        _paymentAmount.update { "" }
+        _isExist.update { true }
 
         approvalNumber = ""
         transactionMethod = ""
@@ -588,9 +602,9 @@ class MainViewModel @Inject constructor(
      *
      * @param step
      */
-    private fun updatePointDeltaStep(step : PointDeltaProcess) {
+    private fun updatePointDeltaStep(step: PointDeltaProcess) {
 
-        if(step == PointDeltaProcess.NONE) {
+        if (step == PointDeltaProcess.NONE) {
             val buff = PharmpayTelegram.makeInit()
 
             socketManager.send(buff)
@@ -628,16 +642,16 @@ class MainViewModel @Inject constructor(
      *
      * @param input : 100 / 1000 / 전액
      */
-    private fun updatePointUseAmountQuick(input : PointQuickInputType) {
+    private fun updatePointUseAmountQuick(input: PointQuickInputType) {
         var current = _pointDelta.value
         val balance = _pointBalance.value
 
-        current = if(input != PointQuickInputType.PLUS_ALL)
-                (current.toIntOrMax() + input.amount.toInt()).toString()
-            else
-                balance
+        current = if (input != PointQuickInputType.PLUS_ALL)
+            (current.toIntOrMax() + input.amount.toInt()).toString()
+        else
+            balance
 
-        if(current > _pointBalance.value) {
+        if (current > _pointBalance.value) {
             current = balance
         }
 
@@ -651,35 +665,66 @@ class MainViewModel @Inject constructor(
      *
      * @param input
      */
-    private fun updateInputNumber(input : String) {
+    private fun updateInputNumber(input: String) {
         val step = _pointDeltaStep.value
-        when(step) {
+        when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                 var current = _phoneNumber.value
-                if(current.length <= 10) current += input
+                if (current.length <= 10) current += input
 
                 _phoneNumber.update { current }
+
+                if (current.length == 11) {
+                    checkCustomerExist(current)
+                }
             }
+
             PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 var current = _verifyNumber.value
-                if(current.length <= 5) current += input
+                if (current.length <= 5) current += input
 
                 _verifyNumber.update { current }
             }
+
             PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 var current = _pointDelta.value
                 val balance = _pointBalance.value
                 current += input
 
-                if((current.toIntOrNull() ?: 0) >= (balance.toIntOrNull() ?: 0)) {
+                if ((current.toIntOrNull() ?: 0) >= (balance.toIntOrNull() ?: 0)) {
                     current = balance
                 }
                 _pointDelta.update {
                     current
                 }
             }
+
             else -> return
+        }
+    }
+
+    private fun checkCustomerExist(phone: String) {
+        viewModelScope.launch {
+            isCustomersUseCase(
+                computerName = "POS",           // 실제 값으로
+                posVersion = BuildConfig.VERSION_NAME,
+                taxNo = configState.value.bizNo,
+                customerHp = phone
+            ).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        _isExist.update { resource.data }
+                    }
+
+                    is DataResource.Error -> {
+                        _isExist.update { false }
+                    }
+
+                    is DataResource.Loading -> { /* 필요시 로딩 처리 */
+                    }
+                }
+            }
         }
     }
 
@@ -689,7 +734,7 @@ class MainViewModel @Inject constructor(
      */
     private fun deleteNumberLast() {
         val step = _pointDeltaStep.value
-        when(step) {
+        when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                 val current = _phoneNumber.value
@@ -697,18 +742,21 @@ class MainViewModel @Inject constructor(
                     current.dropLast(1)
                 }
             }
+
             PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 val current = _verifyNumber.value
                 _verifyNumber.update {
                     current.dropLast(1)
                 }
             }
+
             PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 val current = _pointDelta.value
                 _pointDelta.update {
                     current.dropLast(1)
                 }
             }
+
             else -> return
         }
 
@@ -720,23 +768,26 @@ class MainViewModel @Inject constructor(
      */
     private fun deleteAllPhoneNumber() {
         val step = _pointDeltaStep.value
-        when(step) {
+        when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                 _phoneNumber.update {
                     ""
                 }
             }
+
             PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 _verifyNumber.update {
                     ""
                 }
             }
+
             PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 _pointDelta.update {
                     ""
                 }
             }
+
             else -> return
         }
     }
@@ -750,7 +801,7 @@ class MainViewModel @Inject constructor(
      * @param index
      * @param subTitle
      */
-    private fun showPreview(index : Int, subTitle : String) {
+    private fun showPreview(index: Int, subTitle: String) {
         _dialog.update { Dialogs.None }
 
         _isHideDialog.update { true }
@@ -776,10 +827,10 @@ class MainViewModel @Inject constructor(
      *
      * @param number
      */
-    private fun updatePassword(number : String) {
+    private fun updatePassword(number: String) {
         var current = _password.value
 
-        if(current.length <= 4) current += number
+        if (current.length <= 4) current += number
 
         _password.update {
             current
@@ -812,15 +863,14 @@ class MainViewModel @Inject constructor(
      *
      * @param input : 입력한 비밀번호
      */
-    private fun passwordVerify(input : String) {
+    private fun passwordVerify(input: String) {
         viewModelScope.launch {
             val password = configState.value.bizNo.safeSubString(5)
-            if(password == input) {
+            if (password == input) {
                 updateDialog(Dialogs.Setting)
                 updatePassword("")
                 updatePasswordCorrect(true)
-            }
-            else updatePasswordCorrect(false)
+            } else updatePasswordCorrect(false)
         }
     }
 
@@ -830,7 +880,7 @@ class MainViewModel @Inject constructor(
      *
      * @param result
      */
-    private fun updatePasswordCorrect(result : Boolean) {
+    private fun updatePasswordCorrect(result: Boolean) {
         _isPasswordCorrect.update {
             result
         }
@@ -844,14 +894,13 @@ class MainViewModel @Inject constructor(
      */
     private fun updateDialogSetting() {
         viewModelScope.launch {
-            if(BuildConfig.DEBUG) {
+            if (BuildConfig.DEBUG) {
                 _dialog.update {
                     Dialogs.Setting
                 }
-            }
-            else {
+            } else {
                 val bizNo = configState.value.bizNo.isEmpty()
-                val dialog : Dialogs = if(bizNo) Dialogs.Setting
+                val dialog: Dialogs = if (bizNo) Dialogs.Setting
                 else Dialogs.InputPassword
 
                 _dialog.update {
@@ -869,7 +918,7 @@ class MainViewModel @Inject constructor(
      * @param input
      */
     private fun updateDialog(input: Dialogs) {
-        if(input == Dialogs.None) {
+        if (input == Dialogs.None) {
             deleteAllPassword()
             updateMenuIndex(0)
         }
@@ -884,7 +933,7 @@ class MainViewModel @Inject constructor(
      *
      * @param index
      */
-    private fun updateMenuIndex(index : Int) {
+    private fun updateMenuIndex(index: Int) {
         _selectedMenuIndex.update {
             index
         }

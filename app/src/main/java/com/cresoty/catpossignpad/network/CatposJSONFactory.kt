@@ -170,6 +170,7 @@ object CatposJSONFactory {
         return json.toString()
     }
 
+    // 포인트 적립할때 불러오는 데이터
     fun makeExpectSaveAmountRequest(
         taxno : String,
         cmptr_name : String,

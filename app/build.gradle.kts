@@ -1,16 +1,10 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-//plugins {
-//    alias(libs.plugins.android.application)
-//    alias(libs.plugins.kotlin.android)
-//    alias(libs.plugins.kotlin.compose)
-//}
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
     alias(libs.plugins.kotlin.compose)
 }
-
 
 android {
     namespace = "com.cresoty.catpossignpad"
@@ -23,7 +17,7 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.cresoty.catpossignpad.HiltTestRunner"
     }
 
     buildTypes {
@@ -47,7 +41,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.0"
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
     kotlin {
         jvmToolchain(17)
@@ -55,7 +49,7 @@ android {
 }
 
 dependencies {
-implementation(libs.transport.runtime)
+    implementation(libs.transport.runtime)
     //    implementation(libs.androidx.lifecycle.runtime.compose.android)
     val compose_version = "1.6.0"
     val compose_lifecycle_version = "2.7.0"
@@ -65,7 +59,7 @@ implementation(libs.transport.runtime)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:3.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     implementation(files("libs\\commons-codec-1.4.jar"))
 
@@ -110,27 +104,14 @@ implementation(libs.transport.runtime)
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
-    implementation("com.squareup.okhttp3:logging-interceptor:3.12.5")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.6.1")
     implementation("io.reactivex.rxjava3:rxjava:3.1.9")
     implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
-    implementation("com.google.dagger:hilt-android:2.44.2")
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-compiler:2.48")
 
-
-//    implementation(libs.androidx.core.ktx)
-//    implementation(libs.androidx.lifecycle.runtime.ktx)
-//    implementation(libs.androidx.activity.compose)
-//    implementation(platform(libs.androidx.compose.bom))
-//    implementation(libs.androidx.ui)
-//    implementation(libs.androidx.ui.graphics)
-//    implementation(libs.androidx.ui.tooling.preview)
-//    implementation(libs.androidx.material3)
-//    testImplementation(libs.junit)
-//    androidTestImplementation(libs.androidx.junit)
-//    androidTestImplementation(libs.androidx.espresso.core)
-//    androidTestImplementation(platform(libs.androidx.compose.bom))
-//    androidTestImplementation(libs.androidx.ui.test.junit4)
-//    debugImplementation(libs.androidx.ui.tooling)
-//    debugImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
+    kaptAndroidTest("com.google.dagger:hilt-compiler:2.48")
 }

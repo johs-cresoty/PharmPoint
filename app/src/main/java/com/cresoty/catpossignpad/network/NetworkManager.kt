@@ -10,25 +10,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
+import javax.inject.Inject
 import kotlin.concurrent.Volatile
 
 interface NetworkManagerDelegate {
-    fun onNetworkError(error : Exception)
+    fun onNetworkError(error: Exception)
 }
 
-class NetworkManager(
+class NetworkManager @Inject constructor(
     configState: StateFlow<ConfigState>,
-    appScope : CoroutineScope
+    appScope: CoroutineScope
 ) {
     @Volatile
-    private var latestConfig : ConfigState = configState.value
+    private var latestConfig: ConfigState = configState.value
 
     private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
-    private val POS_VER = Class.forName("com.cresoty.catpossignpad.BuildConfig").getField("VERSION_NAME").get(null) as String
+    private val POS_VER =
+        Class.forName("com.cresoty.catpossignpad.BuildConfig").getField("VERSION_NAME")
+            .get(null) as String
     private val RES_CODE_NULL = "-9999"
 
-    private val catposService = RetrofitFactory.catposRetrofit(BuildConfig.DEBUG, CMPTR_NAME, POS_VER).create(
-        CatposCloudApi::class.java)
+    private val catposService =
+        RetrofitFactory.catposRetrofit(BuildConfig.DEBUG, CMPTR_NAME, POS_VER).create(
+            CatposCloudApi::class.java
+        )
     private var delegate: NetworkManagerDelegate? = null
 
     init {
@@ -49,7 +54,7 @@ class NetworkManager(
      */
     private suspend fun safeNetworkCall(
         functionName: String,
-        isShowAlert : Boolean = true,
+        isShowAlert: Boolean = true,
         block: suspend () -> Unit
     ) {
         try {
@@ -58,7 +63,7 @@ class NetworkManager(
             Log.e("SocketDebug", "네트워크 예외 발생 in $functionName", e)
             Timber.e(e, "NetworkManager Error in $functionName")
 
-            if(isShowAlert) delegate?.onNetworkError(e)
+            if (isShowAlert) delegate?.onNetworkError(e)
         }
     }
 
@@ -96,7 +101,7 @@ class NetworkManager(
 
             val rescode = response.body()?.CODE ?: RES_CODE_NULL
 
-            val list = response.body()?.DATA?.INFO?.map{
+            val list = response.body()?.DATA?.INFO?.map {
                 it.BASE_AMT.toIntOrNull() ?: 0
             } ?: emptyList()
             val min = list.minOrNull() ?: 20000
@@ -141,10 +146,10 @@ class NetworkManager(
      */
     suspend fun requestPointDeltaComplex(
         trn_date: String,
-        trn_time : String,
-        trn_amt : String,
+        trn_time: String,
+        trn_amt: String,
         cst_hp: String,
-        pair : Pair<HashMap<String, String>, HashMap<String, String>>,
+        pair: Pair<HashMap<String, String>, HashMap<String, String>>,
         onDataReceived: (String, String) -> Unit
     ) {
         safeNetworkCall("requestPointDeltaComplex") {
@@ -182,16 +187,16 @@ class NetworkManager(
      * @param onDataReceived
      */
     suspend fun requestPointDelta(
-        sle_seq : String,
-        trn_date : String,
-        cst_hp : String,
+        sle_seq: String,
+        trn_date: String,
+        cst_hp: String,
         trn_amt: String,
         app_num: String,
         trn_gubn: String,
         onDataReceived: (String, String) -> Unit
     ) {
         safeNetworkCall("requestSavePoint") {
-            val request = if(sle_seq.isNotEmpty()) {
+            val request = if (sle_seq.isNotEmpty()) {
                 CatposJSONFactory.makePointDeltaRequest(
                     taxno = latestConfig.bizNo,
                     cmptr_name = CMPTR_NAME,
@@ -200,8 +205,7 @@ class NetworkManager(
                     trn_date = trn_date,
                     cst_hp = cst_hp
                 )
-            }
-            else {
+            } else {
                 CatposJSONFactory.makePointDeltaRequest(
                     taxno = latestConfig.bizNo,
                     cmptr_name = CMPTR_NAME,
@@ -217,7 +221,7 @@ class NetworkManager(
             val response = catposService.requestPointDelta(request)
 
             val rescode = response.body()?.CODE ?: RES_CODE_NULL
-            val balance = response.body()?.DATA?.INFO?.get(0)?.PNT_BLC?: "0"
+            val balance = response.body()?.DATA?.INFO?.get(0)?.PNT_BLC ?: "0"
             onDataReceived(rescode, balance)
         }
 
@@ -230,14 +234,14 @@ class NetworkManager(
      * @param onDataReceived
      */
     suspend fun requestExpectSaveAmountCheckComplex(
-        pair : Pair<HashMap<String, String>, HashMap<String, String>>,
+        pair: Pair<HashMap<String, String>, HashMap<String, String>>,
         onDataReceived: (String, String, String) -> Unit
     ) {
         safeNetworkCall("requestExpectSaveAmountCheckComplex") {
-            retry (
+            retry(
                 maxAttempts = 3,
                 initialDelayMs = 1_000,
-                shouldRetry = { t -> t is RetryableCodeException && t.code == "8888"}
+                shouldRetry = { t -> t is RetryableCodeException && t.code == "8888" }
             ) { remain ->
                 val request = CatposJSONFactory.makeExpectSaveAmountRequestComplex(
                     taxno = latestConfig.bizNo,
@@ -249,7 +253,7 @@ class NetworkManager(
                 val response = catposService.requestExpectSaveAmountComplex(request)
                 val rescode = response.body()?.CODE ?: RES_CODE_NULL
 
-                if(rescode == "8888") throw RetryableCodeException(rescode)
+                if (rescode == "8888") throw RetryableCodeException(rescode)
 
                 val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: "조회실패"
                 val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: "조회실패"
@@ -270,12 +274,12 @@ class NetworkManager(
      * @param onDataReceived
      */
     suspend fun requestExpectSaveAmountCheck(
-        trn_date : String,
-        trn_gubn : String,
-        trn_amt : String,
-        app_num : String,
+        trn_date: String,
+        trn_gubn: String,
+        trn_amt: String,
+        app_num: String,
         onFailed: ((String) -> Unit)? = null,
-        onDataReceived : (String, String, String) -> Unit
+        onDataReceived: (String, String, String) -> Unit
     ) {
         safeNetworkCall("requestSaveAmountCheck") {
             val request = CatposJSONFactory.makeExpectSaveAmountRequest(
@@ -291,18 +295,24 @@ class NetworkManager(
             ////////////////////////////////////////////////////////////////////
             // TODO : 서버에 판매데이터가 늦게 들어가는 문제로 인해 발생하는 응답코드 "8888" / ApprovalNotExistException 승인 정보가 없습니다.
             //  임시대응... 최대 3회까지 초당 1회 재시도
-            retry (
+            // 8888 예기치 않는 오류 발생 시 -> 다음 스텝으로 바로 보내기
+            // 9303 판매 승인 정보 없을 때 -> 재시도 2회 -> 다음 스텝
+            retry(
                 maxAttempts = 3,
                 initialDelayMs = 1_000,
-                shouldRetry = { t -> t is RetryableCodeException && t.code == "8888"}
+                shouldRetry = { t -> t is RetryableCodeException && t.code == "8888" }
             ) { remain ->
                 val response = catposService.requestExpectSaveAmount(request)
                 val rescode = response.body()?.CODE ?: RES_CODE_NULL
 
-                if(rescode == "8888") {
-                    if(remain == 0) onFailed?.invoke(rescode)  // 마지막 시도 실패 시
+                if (rescode == "8888") {
+                    if (remain == 0) onFailed?.invoke(rescode)  // 마지막 시도 실패 시
                     throw RetryableCodeException(rescode)
                 }
+//                if(rescode == "9303"){
+//                    if (remain == 1)
+//                        onDataReceived(rescode, pnt_amt, sle_seq)
+//                }
 
                 val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: "조회실패"
                 val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: "조회실패"

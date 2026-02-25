@@ -23,9 +23,9 @@ class CatposCloudInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        when(originalRequest.method()) {
+        when(originalRequest.method) {
             "GET", "DELETE" -> {
-                val originalUrl = originalRequest.url()
+                val originalUrl = originalRequest.url
                 val newUrlBuilder = originalUrl.newBuilder()
 
 //                val mainAppVersion = Class.forName("com.cresoty.catpossignpad.BuildConfig")
@@ -45,9 +45,9 @@ class CatposCloudInterceptor(
                 val fullUrl = newUrlBuilder.build()
                 val encryptedUrlBuilder = fullUrl.newBuilder()
 
-            Log.d("@#@#", "[${originalRequest.method()}] request plain url: ${fullUrl}")
+            Log.d("@#@#", "[${originalRequest.method}] request plain url: ${fullUrl}")
 
-                fullUrl.queryParameterNames().forEach { name ->
+                fullUrl.queryParameterNames.forEach { name ->
                     val value = fullUrl.queryParameter(name)
                     value?.let {
                         val encryptedValue = EncryptionUtil.encrypt(it)
@@ -60,7 +60,7 @@ class CatposCloudInterceptor(
                     .url(encryptedUrl)
                     .build()
 
-                Log.d("@#@#", "[${originalRequest.method()}] request encrypted url: ${newRequest.url()}")
+                Log.d("@#@#", "[${originalRequest.method}] request encrypted url: ${newRequest.url}")
 
                 val response = chain.proceed(newRequest)
 
@@ -68,10 +68,10 @@ class CatposCloudInterceptor(
             }
             else -> {
 
-                val originalBody = originalRequest.body()
+                val originalBody = originalRequest.body
 
                 val newRequest = originalRequest.newBuilder()
-                    .method(originalRequest.method(), originalBody)
+                    .method(originalRequest.method, originalBody)
                     .header("Content-Type", "application/json")
                     .build()
 
@@ -79,7 +79,7 @@ class CatposCloudInterceptor(
                 originalBody?.writeTo(buffer)
                 val requestBody = buffer.readUtf8()
 
-                Log.d("@#@#", "[${originalRequest.method()}] request url: ${originalRequest.url()}")
+                Log.d("@#@#", "[${originalRequest.method}] request url: ${originalRequest.url}")
 //                Log.d("@#@#", "[${originalRequest.method()}] request encrypted body: $requestBody")
 
                 val response = chain.proceed(newRequest)
@@ -94,7 +94,7 @@ class CatposCloudInterceptor(
 
     private fun handleResponse(response: Response): Response {
         val gson = Gson()
-        val originalBody = response.body() ?: return response
+        val originalBody = response.body ?: return response
         val contentType  = originalBody.contentType()
         val content = originalBody.string()
 
@@ -107,7 +107,7 @@ class CatposCloudInterceptor(
             content
         }
 
-        Log.d("@#@#", "[${response.request().method()}] response decrypted body : $decryptedJson")
+        Log.d("@#@#", "[${response.request.method}] response decrypted body : $decryptedJson")
 
         return response.newBuilder()
             .body(ResponseBody.create(contentType, decryptedJson))

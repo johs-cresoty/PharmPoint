@@ -8,7 +8,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.viewModelScope
 import com.cresoty.catpossignpad.model.state.ConfigState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +17,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 val Context.dataStore by preferencesDataStore(name = "app_config")
 
@@ -36,11 +36,11 @@ object ConfigKey {
     val IS_SAVE = booleanPreferencesKey("is_save")                  // 적립 여부
 }
 
-class ConfigRepository(
-    private val dataStore : DataStore<Preferences>,
-    appScope : CoroutineScope
+class ConfigRepository @Inject constructor(
+    private val dataStore: DataStore<Preferences>,
+    appScope: CoroutineScope
 ) {
-    val configState : StateFlow<ConfigState> = dataStore.data
+    val configState: StateFlow<ConfigState> = dataStore.data
         .catch { emit(androidx.datastore.preferences.core.emptyPreferences()) }
         .map { p ->
             ConfigState(
@@ -63,7 +63,7 @@ class ConfigRepository(
             initialValue = ConfigState()
         )
 
-    suspend fun <T> putValue(key : Preferences.Key<T>, value : T) {
+    suspend fun <T> putValue(key: Preferences.Key<T>, value: T) {
         dataStore.edit { it[key] = value }
     }
 

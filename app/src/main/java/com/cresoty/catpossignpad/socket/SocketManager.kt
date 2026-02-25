@@ -21,10 +21,11 @@ import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
-class SocketManager() : CoroutineScope {
+class SocketManager @Inject constructor() : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
     private var job: Job = Job()
@@ -224,14 +225,8 @@ class SocketManager() : CoroutineScope {
 
                     Log.d("SocketDebug", "findCommand 결과: '$cmd' (data size: ${data.size})")
 
-                    if (cmd.isEmpty()) {
-                        Log.w("SocketDebug", "⚠cmd가 비어있음 - 패킷 파싱 실패")
-                    } else {
-                        Log.d("SocketDebug", "명령 파싱 성공: $cmd")
-                    }
 
                     telegramReceiver(cmd, data)
-                    Log.d("SocketDebug", "telegramReceiver 호출 완료")
 
                     ctx.recvBaos.reset()
                     send(ACK_ARRAY)
@@ -277,12 +272,28 @@ class SocketManager() : CoroutineScope {
     }
 
     fun send(data: ByteArray, onComplete: ((written: Int) -> Unit)? = null) {
-        val key = clientKey ?: return
-        if (!key.isValid) return
-        val ctx = key.attachment() as? ConnCtx ?: return
+        val key = clientKey ?: run {
+            Log.e("@#@#", "clientKey null")
+            return
+        }
+
+        if (!key.isValid) {
+            Log.e("@#@#", "key invalid")
+            return
+        }
+
+        val ctx = key.attachment() as? ConnCtx ?: run {
+            Log.e("@#@#", "ConnCtx null")
+            return
+        }
 
         Log.d("@#@#", "send telegram : ${data.byte2String()}")
+        Log.d("@#@#", "writeQueue size before add: ${ctx.writeQueue.size}")
+
         ctx.writeQueue.add(PendingWrite(ByteBuffer.wrap(data), onComplete))
+
+        Log.d("@#@#", "writeQueue size after add: ${ctx.writeQueue.size}")
+
         key.interestOps(key.interestOps() or SelectionKey.OP_WRITE)
         selector?.wakeup()
     }

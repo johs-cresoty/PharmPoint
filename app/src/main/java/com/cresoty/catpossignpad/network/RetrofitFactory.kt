@@ -1,9 +1,11 @@
 package com.cresoty.catpossignpad.network
 
 import android.util.Log
+import com.cresoty.catpossignpad.BuildConfig
 import com.google.gson.GsonBuilder
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -18,12 +20,22 @@ class RetrofitFactory {
 
     companion object {
         private fun makeClient(interceptor: Interceptor): OkHttpClient {
-            return OkHttpClient.Builder()
+
+            val builder = OkHttpClient.Builder()
                 .addInterceptor(interceptor)
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
-                .build()
+
+            if (BuildConfig.DEBUG) {
+                val logging = HttpLoggingInterceptor { message ->
+                    Log.d("API_LOG", message)
+                }.apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                }
+                builder.addInterceptor(logging)
+            }
+            return builder.build()
         }
 
         private fun makeRetrofit(
@@ -39,7 +51,7 @@ class RetrofitFactory {
                 .build()
         }
 
-        fun catposRetrofit(isDev : Boolean, deviceName : String, mainAppVersion : String) : Retrofit {
+        fun catposRetrofit(isDev: Boolean, deviceName: String, mainAppVersion: String): Retrofit {
             val client = makeClient(CatposCloudInterceptor(deviceName, mainAppVersion))
 
             val gson = GsonBuilder()
@@ -51,11 +63,11 @@ class RetrofitFactory {
             //개발시 개발계 호출
             return makeRetrofit(
                 baseUrl =
-                if(isDev) {
-                    BaseURL.CATPOS_CLOUD_TEST
-                } else {
-                    BaseURL.CATPOS_CLOUD
-                },
+                    if (isDev) {
+                        BaseURL.CATPOS_CLOUD_TEST
+                    } else {
+                        BaseURL.CATPOS_CLOUD
+                    },
                 client = client,
                 factory = GsonConverterFactory.create(gson)
             )

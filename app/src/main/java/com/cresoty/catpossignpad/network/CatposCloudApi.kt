@@ -1,5 +1,6 @@
 package com.cresoty.catpossignpad.network
 
+import com.cresoty.catpossignpad.remote.model.response.CustomerResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -49,4 +50,11 @@ interface CatposCloudApi {
         @Query("TAXNO") taxno: String
     ) : Response<CatposAmountSettingResponse>
 
+    @GET("/api/terminals/customers")
+    suspend fun getCustomer(
+        @Query("CMPTR_NAME") computerName: String,
+        @Query("POS_VER") posVersion: String,
+        @Query("TAXNO") taxNo: String,
+        @Query("CST_HP") customerHp: String
+    ): CustomerResponse
 }
