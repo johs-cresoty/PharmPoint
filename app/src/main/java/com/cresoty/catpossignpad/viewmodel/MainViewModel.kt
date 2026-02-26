@@ -380,7 +380,7 @@ class MainViewModel @Inject constructor(
      * @param list
      */
     private fun checkExpectPointAmount(list: List<String>) {
-        val date = list[1].safeSubString(0, 8)
+        val date = list[1].safeSubString(0, 8) 
         val time = list[1].safeSubString(8)
         val appnum = list[2]
         val method = if (list[3] == "P") "M" else list[3]
@@ -392,14 +392,16 @@ class MainViewModel @Inject constructor(
 
         val total = (otc + vat)
         val min = configState.value.minPoint
+        val minAmount = configState.value.minAmount
         val isSave = configState.value.isSave
         Log.d(
             "SocketDebug",
-            "total=$total, min=${configState.value.minPoint}, isSave=${configState.value.isSave}"
+            "total=$total, min=${configState.value.minPoint}, isSave=${configState.value.isSave}, minAmount =$minAmount"
         )
         if (isAfterUse) return
         if (!isSave) return
         if (total <= min) return
+        if (total <= minAmount) return
         if (otc == 0) return
 
         approvalNumber = appnum
@@ -425,8 +427,7 @@ class MainViewModel @Inject constructor(
                 },
                 onFailed = { code ->
                     // 8888 최종 실패 → 적립 포기하고 초기화 or 에러 안내
-                    Log.e("SocketDebug", "예상적립금 조회 최종 실패: $code")
-                    updatePointDeltaStep(PointDeltaProcess.NONE)
+                    updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                 }
             )
         }
@@ -715,6 +716,9 @@ class MainViewModel @Inject constructor(
 
     private fun checkCustomerExist(phone: String) {
         viewModelScope.launch {
+            // 조회 시작 전에 미리 true로 설정 → 깜빡임 방지
+            _isExist.update { true }
+
             isCustomersUseCase(
                 computerName = "POS",           // 실제 값으로
                 posVersion = BuildConfig.VERSION_NAME,

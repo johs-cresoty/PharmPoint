@@ -213,9 +213,10 @@ class SocketManager @Inject constructor() : CoroutineScope {
                 val bytes = ByteArray(buf.remaining())
                 buf.get(bytes)
 
-                Log.d("SocketDebug", "데이터 수신 (${n}bytes): ${bytes.byte2String()}")
                 // 누적(프레이밍 필요 시 여기서 패킷 단위로 잘라서 처리)
                 ctx.recvBaos.write(bytes)
+
+                Log.d("SocketDebug", "데이터 수신 (${n}bytes): ${bytes.byte2String()}")
 
                 // 지금은 사용자가 하던 방식처럼 "일단 모았다가 처리" 형태로 예시
                 // 다만 이 방식은 패킷 경계가 확실하지 않으면 위험합니다.
@@ -239,7 +240,7 @@ class SocketManager @Inject constructor() : CoroutineScope {
             }
 
             else -> {
-                Log.d("SocketDebug", "클라이언트 연결 종료 (EOF)")
+                Log.d("SocketDebug", "클라이언트 연결 종료")
                 // n == -1 : 상대가 정상 종료(EOF)
                 closeKey(key)
             }

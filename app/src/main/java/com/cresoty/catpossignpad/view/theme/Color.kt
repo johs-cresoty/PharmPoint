@@ -18,5 +18,6 @@ val sub01 = Color(0xFFF3F7FA)
 val sub02 = Color(0xFFA1BCF3)
 
 val notice = Color(0xFFE20004)
+val notice_light = Color(0xFFFFECEC)
 val success = Color(0xFF00922E)
 

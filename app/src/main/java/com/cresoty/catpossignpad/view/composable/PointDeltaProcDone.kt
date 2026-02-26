@@ -1,5 +1,6 @@
 package com.cresoty.catpossignpad.view.composable
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -56,9 +57,10 @@ fun PointDeltaProcDone(
 
     val (image, mainMent, subMent, balanceMent) = when (step) {
         PointDeltaProcess.POINT_SAVE_PROC_DONE -> {
+            Log.d("jhs","pointDelta =>$pointDelta")
             Quatro(
                 R.drawable.icon_point_earn_done,
-                if (pointDelta == "0") "적립완료" else "${pointDelta}P 적립완료",
+                if (pointDelta == "0" || pointDelta.isEmpty()) "적립완료" else "${pointDelta}P 적립완료",
                 "${storeName} \n포인트가 적립되었습니다.",
                 "보유 포인트"
             )

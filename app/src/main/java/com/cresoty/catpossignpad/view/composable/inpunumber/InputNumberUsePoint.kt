@@ -24,20 +24,21 @@ import com.cresoty.catpossignpad.px2dp
 import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.BackStepButton
 import com.cresoty.catpossignpad.view.controller.LocalController
-import com.cresoty.catpossignpad.view.theme.common02
 import com.cresoty.catpossignpad.view.theme.common01
+import com.cresoty.catpossignpad.view.theme.common02
 import com.cresoty.catpossignpad.view.theme.notice
 import com.cresoty.catpossignpad.view.theme.white
 
 @Composable
 fun InputNumberUsePoint(
     modifier: Modifier,
-    storeName : String,
-    paymentAmount : String
+    storeName: String,
+    paymentAmount: String
 ) {
     val controller = LocalController.current
     val customer by controller.customerState.collectAsStateWithLifecycle()
     val isCustomerExist = customer.isCustomerExist
+    val phoneNum = customer.phoneNumber
 
     Column(
         modifier = modifier.background(white),
@@ -74,12 +75,13 @@ fun InputNumberUsePoint(
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .height(90f.px2dp()),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if(!isCustomerExist) {
+            if (!isCustomerExist && phoneNum.length > 10) {
                 Image(
                     modifier = Modifier.size(height = 24f.px2dp(), width = 25f.px2dp()),
                     painter = painterResource(R.drawable.icon_alert),
@@ -101,7 +103,6 @@ fun InputNumberUsePoint(
 //            checkboxColor = checkboxColor
 //        )
     }
-
 
 
 }

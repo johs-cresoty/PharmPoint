@@ -39,12 +39,13 @@ import com.cresoty.catpossignpad.view.theme.common02
 import com.cresoty.catpossignpad.view.theme.main01
 import com.cresoty.catpossignpad.view.theme.main04
 import com.cresoty.catpossignpad.view.theme.notice
+import com.cresoty.catpossignpad.view.theme.notice_light
 import com.cresoty.catpossignpad.view.theme.sub01
 import com.cresoty.catpossignpad.view.theme.sub02
 import com.cresoty.catpossignpad.view.theme.success
 import com.cresoty.catpossignpad.view.theme.transparent
 
-enum class PhoneButtonType(val number : String?, val fontSize : Float) {
+enum class PhoneButtonType(val number: String?, val fontSize: Float) {
     NUMBER_1("1", 50f),
     NUMBER_2("2", 50f),
     NUMBER_3("3", 50f),
@@ -61,32 +62,31 @@ enum class PhoneButtonType(val number : String?, val fontSize : Float) {
 
 @Composable
 fun NumberPad(
-    step : PointDeltaProcess,
-    checkbox : Int,
-    checkboxColor : Color
+    step: PointDeltaProcess,
+    checkbox: Int,
+    checkboxColor: Color
 ) {
     val controller = LocalController.current
     val numbers = PhoneButtonType.entries
 
     val customer by controller.customerState.collectAsStateWithLifecycle()
     val verify = customer.verifyResult?.let {
-        if(it) Triple(R.drawable.icon_confirm, "인증 성공", success)
+        if (it) Triple(R.drawable.icon_confirm, "인증 성공", success)
         else Triple(R.drawable.icon_alert, "인증번호가 일치하지 않습니다.", notice)
     }
 
-    val height = if(step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) 858f.px2dp()
+    val height = if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) 858f.px2dp()
     else 691f.px2dp()
 
     Column(
         modifier = Modifier.size(width = 720f.px2dp(), height = height),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if(step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) {
+        if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) {
             UsePointAmountField()
 
             Spacer(modifier = Modifier.size(14f.px2dp()))
-        }
-        else {
+        } else {
             MaskingNumberField(
                 step = step
             )
@@ -135,10 +135,10 @@ fun UsePointAmountField(
     val pointBalance = point.pointBalance
 
     val buttonList = PointQuickInputType.entries
-    val amount = if(useAmount.isEmpty()) "얼마인가요?" else "$useAmount P"
+    val amount = if (useAmount.isEmpty()) "얼마인가요?" else "$useAmount P"
 //    val fontSize = if(useAmount.isEmpty()) 50f.px2sp() else 68f.px2sp()
-    val fontColor = if(useAmount.isEmpty()) sub02  else main01
-    val fontWeight = if(useAmount.isEmpty()) FontWeight.Normal else FontWeight.Bold
+    val fontColor = if (useAmount.isEmpty()) sub02 else main01
+    val fontWeight = if (useAmount.isEmpty()) FontWeight.Normal else FontWeight.Bold
 //    val spacerHeight = if(useAmount.isEmpty()) else 31f.px2dp()
 
     Column(
@@ -177,11 +177,12 @@ fun UsePointAmountField(
             horizontalArrangement = Arrangement.spacedBy(10f.px2dp())
         ) {
             buttonList.mapIndexed { index, item ->
-                val easyInput = if(index != buttonList.lastIndex) "+ ${item.amount}" else item.amount
+                val easyInput =
+                    if (index != buttonList.lastIndex) "+ ${item.amount}" else item.amount
                 ClickSoundButton(
                     modifier = Modifier.size(width = 150f.px2dp(), height = 60f.px2dp()),
                     backgroundColor = sub01,
-                    onClick = { controller.dispatch(PadAction.OnClickAmountQuickButton(item))},
+                    onClick = { controller.dispatch(PadAction.OnClickAmountQuickButton(item)) },
                     shape = RoundedCornerShape(50f.px2dp())
                 ) {
                     Text(
@@ -198,11 +199,11 @@ fun UsePointAmountField(
 
 @Composable
 fun PersonalInfoUseAgree(
-    step : PointDeltaProcess,
+    step: PointDeltaProcess,
     checkbox: Int,
     checkboxColor: Color,
-    verify : Triple<Int, String, Color>?,
-    onClickPersonalInfoUse : () -> Unit
+    verify: Triple<Int, String, Color>?,
+    onClickPersonalInfoUse: () -> Unit
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -213,7 +214,7 @@ fun PersonalInfoUseAgree(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        when(step) {
+        when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                 ClickSoundButton(
@@ -236,6 +237,7 @@ fun PersonalInfoUseAgree(
                     )
                 }
             }
+
             PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 verify?.let {
                     Image(
@@ -254,6 +256,7 @@ fun PersonalInfoUseAgree(
                     )
                 }
             }
+
             PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -267,6 +270,7 @@ fun PersonalInfoUseAgree(
                     )
                 }
             }
+
             else -> {}
         }
     }
@@ -274,10 +278,10 @@ fun PersonalInfoUseAgree(
 
 @Composable
 fun PhoneNumberButton(
-    item : PhoneButtonType,
-    onClickNumber : (String) -> Unit,
-    onClickDelete : () -> Unit,
-    onClickDeleteAll : () -> Unit
+    item: PhoneButtonType,
+    onClickNumber: (String) -> Unit,
+    onClickDelete: () -> Unit,
+    onClickDeleteAll: () -> Unit
 ) {
     val number = item.number ?: ""
     val fontSize = item.fontSize
@@ -285,7 +289,7 @@ fun PhoneNumberButton(
     ClickSoundButton(
         modifier = Modifier.size(width = 230f.px2dp(), height = 110f.px2dp()),
         onClick = {
-            when(item) {
+            when (item) {
                 PhoneButtonType.DELETE -> onClickDelete()
                 PhoneButtonType.DELETE_ALL -> onClickDeleteAll()
                 else -> onClickNumber(number)
@@ -318,46 +322,46 @@ fun PhoneNumberButton(
 
 @Composable
 fun MaskingNumberField(
-    step : PointDeltaProcess
+    step: PointDeltaProcess
 ) {
     val isPhoneNumberType = step != PointDeltaProcess.POINT_USE_VERIFY_NUM
 
-    val width = if(isPhoneNumberType) 560f.px2dp() else 320f.px2dp()
+    val width = if (isPhoneNumberType) 560f.px2dp() else 320f.px2dp()
     val height = 100f.px2dp()
 
     val controller = LocalController.current
     val point by controller.pointState.collectAsStateWithLifecycle()
     val customer by controller.customerState.collectAsStateWithLifecycle()
-
+    val backgroundColor =
+        if (!customer.isCustomerExist && customer.phoneNumber.length > 10 && step != PointDeltaProcess.POINT_SAVE_PHONE_NUM) notice_light else main04
     val isMasking = point.isMasking
-    val drawable = if(isMasking) R.drawable.icon_mask_activate else R.drawable.icon_mask_deactivate
+    val drawable = if (isMasking) R.drawable.icon_mask_activate else R.drawable.icon_mask_deactivate
 
-    val inputNumber = if(isPhoneNumberType) customer.phoneNumber else customer.verifyNumber
+    val inputNumber = if (isPhoneNumberType) customer.phoneNumber else customer.verifyNumber
     // TODO : *는 폰트에 따라 베이스라인 기준으로 위쪽에 그려지므로, 숫자와 함께 사용하면 하늘에 붕 떠보임.
     //        임의로 •로 변경했으나 필요시 maskingPhoneNumber() 내부 "•"를 "*"로 수정
     val maskedList =
-        if(isPhoneNumberType) {
-            if(isMasking) inputNumber.maskingPhoneNumber()
+        if (isPhoneNumberType) {
+            if (isMasking) inputNumber.maskingPhoneNumber()
             else listOf(
                 inputNumber.safeSubString(0, 3),
                 inputNumber.safeSubString(3, 7),
                 inputNumber.safeSubString(7, 11)
             )
-        }
-        else {
+        } else {
             listOf(inputNumber)
         }
 
     Row(
         modifier = Modifier
             .size(width = width, height = height)
-            .background(color = main04, shape = RoundedCornerShape(10f.px2dp()))
+            .background(color = backgroundColor, shape = RoundedCornerShape(10f.px2dp()))
             .padding(horizontal = 13f.px2dp(), vertical = 20f.px2dp()),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         maskedList.mapIndexed { index, item ->
-            if(isPhoneNumberType) {
+            if (isPhoneNumberType) {
                 Box(
                     modifier = Modifier.size(width = 150f.px2dp(), height = 60f.px2dp()),
                     contentAlignment = Alignment.Center
@@ -369,15 +373,14 @@ fun MaskingNumberField(
                     )
                 }
 
-                if(index != maskedList.lastIndex) {
+                if (index != maskedList.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.width(12f.px2dp()),
                         thickness = 2f.px2dp(),
                         color = common02
                     )
                 }
-            }
-            else {
+            } else {
                 Text(
                     text = item,
                     fontSize = 40f.px2sp(),
@@ -388,7 +391,7 @@ fun MaskingNumberField(
 
         }
 
-        if(isPhoneNumberType) {
+        if (isPhoneNumberType) {
             ClickSoundButton(
                 onClick = {
                     controller.dispatch(PadAction.OnClickMaskingToggle)

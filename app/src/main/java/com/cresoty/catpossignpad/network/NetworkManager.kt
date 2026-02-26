@@ -59,10 +59,12 @@ class NetworkManager @Inject constructor(
     ) {
         try {
             block()
+        } catch (e: RetryableCodeException) {
+            // retry 소진 후 onFailed로 이미 처리됨 - 여기서는 무시
+            Log.d("SocketDebug", "retry 소진 - code=${e.code} in $functionName")
         } catch (e: Exception) {
             Log.e("SocketDebug", "네트워크 예외 발생 in $functionName", e)
             Timber.e(e, "NetworkManager Error in $functionName")
-
             if (isShowAlert) delegate?.onNetworkError(e)
         }
     }
@@ -300,19 +302,18 @@ class NetworkManager @Inject constructor(
             retry(
                 maxAttempts = 3,
                 initialDelayMs = 1_000,
-                shouldRetry = { t -> t is RetryableCodeException && t.code == "8888" }
+                shouldRetry = { t -> t is RetryableCodeException && t.code in listOf("8888", "9303") }
             ) { remain ->
                 val response = catposService.requestExpectSaveAmount(request)
                 val rescode = response.body()?.CODE ?: RES_CODE_NULL
 
-                if (rescode == "8888") {
-                    if (remain == 0) onFailed?.invoke(rescode)  // 마지막 시도 실패 시
+//                // 테스트용 - 8888 강제 주입 (테스트 후 반드시 제거)
+//                val rescode = if (BuildConfig.DEBUG) "8888" else (response.body()?.CODE ?: RES_CODE_NULL)
+
+                if (rescode == "8888" || rescode == "9303") {
+                    if (remain == 0) onFailed?.invoke(rescode)
                     throw RetryableCodeException(rescode)
                 }
-//                if(rescode == "9303"){
-//                    if (remain == 1)
-//                        onDataReceived(rescode, pnt_amt, sle_seq)
-//                }
 
                 val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: "조회실패"
                 val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: "조회실패"
@@ -332,17 +333,17 @@ class NetworkManager @Inject constructor(
         block: suspend (Int) -> T
     ): T {
         var delayMs = initialDelayMs
-        var remain = maxAttempts
-        repeat(maxAttempts - 1) {
+        repeat(maxAttempts) { attempt ->
+            val remain = maxAttempts - attempt - 1  // 2, 1, 0
             try {
-                remain -= 1
                 return block(remain)
             } catch (t: Throwable) {
                 if (!shouldRetry(t)) throw t
+                if (remain == 0) throw t  // 마지막 시도면 그냥 throw (onFailed는 block 안에서 이미 호출됨)
                 delay(delayMs)
                 delayMs = (delayMs * backoffFactor).toLong()
             }
         }
-        return block(remain) // 마지막 1회는 그대로 던지게
+        throw IllegalStateException("retry unreachable")
     }
 }

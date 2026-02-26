@@ -34,28 +34,29 @@ fun ConfirmButtonField() {
 
     val customer by controller.customerState.collectAsStateWithLifecycle()
     val verifyNumber = customer.verifyNumber
+    val isCustomer = customer.isCustomerExist
 
     val main by controller.mainState.collectAsStateWithLifecycle()
     val step = main.pointDeltaStep
 
     val phoneNum = customer.phoneNumber
     val isClickable = when (step) {
-        PointDeltaProcess.POINT_USE_PHONE_NUM,
+        PointDeltaProcess.POINT_USE_PHONE_NUM -> isCustomer && isPersonalInfoUse && phoneNum.length > 10
         PointDeltaProcess.POINT_SAVE_PHONE_NUM -> isPersonalInfoUse && phoneNum.length > 10
         PointDeltaProcess.POINT_USE_VERIFY_NUM -> verifyNumber.length > 5
         PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> (pointDelta.toIntOrNull() ?: 0) >= minimum
         else -> step.isClickable
     }
 
-    val confirmColor = if(isClickable) main01 else common01
+    val confirmColor = if (isClickable) main01 else common01
 
 
 
     ClickSoundButton(
         modifier = Modifier.size(width = 720f.px2dp(), height = 112f.px2dp()),
         onClick = {
-            if(isClickable) {
-                when(step) {
+            if (isClickable) {
+                when (step) {
                     PointDeltaProcess.NONE -> {}
 
                     //////////////////////////////////////////////////
@@ -69,9 +70,11 @@ fun ConfirmButtonField() {
                     PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                         controller.dispatch(PadAction.RequestPointBalanceCheck)
                     }
+
                     PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                         controller.dispatch(PadAction.RequestCustomerVerify)
                     }
+
                     PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                         controller.dispatch(PadAction.SendToTerminalPointUse)
                     }
@@ -98,11 +101,12 @@ fun ConfirmButtonField() {
         )
     }
 
-    when(step) {
+    when (step) {
         PointDeltaProcess.POINT_SAVE_PROC_DONE,
         PointDeltaProcess.POINT_USE_PROC_DONE -> {
             Spacer(modifier = Modifier.size(80f.px2dp()))
         }
+
         else -> {
             Box(
                 modifier = Modifier.size(width = 720f.px2dp(), height = 80f.px2dp()),
