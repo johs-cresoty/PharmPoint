@@ -333,7 +333,7 @@ fun MaskingNumberField(
     val point by controller.pointState.collectAsStateWithLifecycle()
     val customer by controller.customerState.collectAsStateWithLifecycle()
     val backgroundColor =
-        if (!customer.isCustomerExist && customer.phoneNumber.length > 10 && step != PointDeltaProcess.POINT_SAVE_PHONE_NUM) notice_light else main04
+        if (!customer.isCustomerExist && !customer.isExistChecking && customer.phoneNumber.length > 10 && step != PointDeltaProcess.POINT_SAVE_PHONE_NUM) notice_light else main04
     val isMasking = point.isMasking
     val drawable = if (isMasking) R.drawable.icon_mask_activate else R.drawable.icon_mask_deactivate
 

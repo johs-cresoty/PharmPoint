@@ -71,6 +71,7 @@ class MainViewModel @Inject constructor(
     private val _preTheme: MutableStateFlow<Int?> = MutableStateFlow(null)
 
     //customerState
+    private val _isExistChecking: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _isExist: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _verifyResult: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     private val _verifyNumber: MutableStateFlow<String> = MutableStateFlow("")
@@ -90,13 +91,15 @@ class MainViewModel @Inject constructor(
 
     val customerState: StateFlow<CustomerState> = combine(
         _isExist,
+        _isExistChecking,  // 추가
         _verifyResult,
         _verifyNumber,
         _phoneNumber,
-    ) { isExist, verifyResult, verifyNumber, phoneNumber ->
+    ) { isExist, isChecking, verifyResult, verifyNumber, phoneNumber ->
         CustomerState(
             phoneNumber = phoneNumber,
             isCustomerExist = isExist,
+            isExistChecking = isChecking,  // 추가
             verifyResult = verifyResult,
             verifyNumber = verifyNumber
         )
@@ -716,11 +719,10 @@ class MainViewModel @Inject constructor(
 
     private fun checkCustomerExist(phone: String) {
         viewModelScope.launch {
-            // 조회 시작 전에 미리 true로 설정 → 깜빡임 방지
-            _isExist.update { true }
+            _isExistChecking.update { true }
 
             isCustomersUseCase(
-                computerName = "POS",           // 실제 값으로
+                computerName = "POS",
                 posVersion = BuildConfig.VERSION_NAME,
                 taxNo = configState.value.bizNo,
                 customerHp = phone
@@ -728,14 +730,13 @@ class MainViewModel @Inject constructor(
                 when (resource) {
                     is DataResource.Success -> {
                         _isExist.update { resource.data }
+                        _isExistChecking.update { false }
                     }
-
                     is DataResource.Error -> {
                         _isExist.update { false }
+                        _isExistChecking.update { false }
                     }
-
-                    is DataResource.Loading -> { /* 필요시 로딩 처리 */
-                    }
+                    is DataResource.Loading -> {}
                 }
             }
         }

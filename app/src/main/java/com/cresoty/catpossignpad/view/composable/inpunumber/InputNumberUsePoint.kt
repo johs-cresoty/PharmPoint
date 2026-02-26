@@ -81,7 +81,7 @@ fun InputNumberUsePoint(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (!isCustomerExist && phoneNum.length > 10) {
+            if (!isCustomerExist && !customer.isExistChecking && phoneNum.length > 10) {
                 Image(
                     modifier = Modifier.size(height = 24f.px2dp(), width = 25f.px2dp()),
                     painter = painterResource(R.drawable.icon_alert),
