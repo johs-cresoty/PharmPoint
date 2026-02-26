@@ -71,7 +71,7 @@ class MainViewModel @Inject constructor(
     private val _preTheme: MutableStateFlow<Int?> = MutableStateFlow(null)
 
     //customerState
-    private val _isExist: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _isExist: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _verifyResult: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     private val _verifyNumber: MutableStateFlow<String> = MutableStateFlow("")
     private val _phoneNumber: MutableStateFlow<String> = MutableStateFlow("")
@@ -522,7 +522,17 @@ class MainViewModel @Inject constructor(
      * @param list[1] : 사업자번호
      */
     private fun processPointUse(list: List<String>) {
-        if (configState.value.bizNo == list[1]) updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
+        if (configState.value.bizNo == list[1]) {
+            val etc = list[2].toIntOrNull() ?: 0
+            val otc = list[3].toIntOrNull() ?: 0
+            val vat = list[4].toIntOrNull() ?: 0
+
+            _paymentAmount.update {
+                (otc + vat).toString()
+            }
+
+            updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
+        }
     }
 
     /**
@@ -584,7 +594,7 @@ class MainViewModel @Inject constructor(
         _isPersonalInfoUse.update { true }
         _phoneNumber.update { "" }
         _paymentAmount.update { "" }
-        _isExist.update { true }
+        _isExist.update { false }
 
         approvalNumber = ""
         transactionMethod = ""
@@ -643,21 +653,17 @@ class MainViewModel @Inject constructor(
      * @param input : 100 / 1000 / 전액
      */
     private fun updatePointUseAmountQuick(input: PointQuickInputType) {
-        var current = _pointDelta.value
-        val balance = _pointBalance.value
+        val payAmount = _paymentAmount.value.toIntOrMax()
+        val balance = _pointBalance.value.toIntOrMax()
+        val current = _pointDelta.value.toIntOrMax()
+        val max = minOf(payAmount, balance)
 
-        current = if (input != PointQuickInputType.PLUS_ALL)
-            (current.toIntOrMax() + input.amount.toInt()).toString()
-        else
-            balance
+        val result = when (input) {
+            PointQuickInputType.PLUS_ALL -> max
+            else -> (current + input.amount.toInt()).coerceAtMost(max)
+        }.coerceAtMost(max)
 
-        if (current > _pointBalance.value) {
-            current = balance
-        }
-
-        _pointDelta.update {
-            current
-        }
+        _pointDelta.update { result.toString() }
     }
 
     /**
@@ -689,11 +695,14 @@ class MainViewModel @Inject constructor(
 
             PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 var current = _pointDelta.value
-                val balance = _pointBalance.value
+                val payAmount = _paymentAmount.value.toIntOrMax()
+                val balance = _pointBalance.value.toIntOrMax()
+                val max = minOf(payAmount, balance)
+
                 current += input
 
-                if ((current.toIntOrNull() ?: 0) >= (balance.toIntOrNull() ?: 0)) {
-                    current = balance
+                if ((current.toIntOrNull() ?: 0) > max) {
+                    current = max.toString()
                 }
                 _pointDelta.update {
                     current
