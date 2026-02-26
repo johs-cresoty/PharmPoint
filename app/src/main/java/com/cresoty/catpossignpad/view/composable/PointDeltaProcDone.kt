@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.Quatro
@@ -41,7 +42,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun PointDeltaProcDone(
-    step : PointDeltaProcess
+    step: PointDeltaProcess
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -57,11 +58,12 @@ fun PointDeltaProcDone(
         PointDeltaProcess.POINT_SAVE_PROC_DONE -> {
             Quatro(
                 R.drawable.icon_point_earn_done,
-                if(pointDelta == "0") "적립완료" else "${pointDelta}P 적립완료",
+                if (pointDelta == "0") "적립완료" else "${pointDelta}P 적립완료",
                 "${storeName} \n포인트가 적립되었습니다.",
                 "보유 포인트"
             )
         }
+
         PointDeltaProcess.POINT_USE_PROC_DONE -> {
             Quatro(
                 R.drawable.icon_point_use_done,
@@ -70,6 +72,7 @@ fun PointDeltaProcDone(
                 "잔여 포인트"
             )
         }
+
         else -> {
             Quatro(
                 R.drawable.icon_point_use_shortage,
@@ -82,7 +85,7 @@ fun PointDeltaProcDone(
 
     var leftTime by remember { mutableIntStateOf(timeout) }
     LaunchedEffect(Unit) {
-        while(leftTime != 0) {
+        while (leftTime != 0) {
             delay(1000)
 
             leftTime -= 1
@@ -118,7 +121,8 @@ fun PointDeltaProcDone(
             text = subMent,
             fontSize = 30f.px2sp(),
             lineHeight = 30f.px2sp(),
-            color = common01
+            color = common01,
+            textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.size(23f.px2dp()))
@@ -127,8 +131,9 @@ fun PointDeltaProcDone(
             modifier = Modifier
                 .height(110f.px2dp())
                 .background(color = main04, shape = RoundedCornerShape(100f.px2dp()))
-                .padding(horizontal = 44f.px2dp(), vertical = 30f.px2dp()),
-            horizontalArrangement = Arrangement.spacedBy(10f.px2dp())
+                .padding(horizontal = 44f.px2dp()),
+            horizontalArrangement = Arrangement.spacedBy(10f.px2dp()),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = balanceMent,
@@ -136,20 +141,19 @@ fun PointDeltaProcDone(
                 color = main01
             )
 
-            Row {
-                Text(
-                    text = pointBalance.toDecimalString(),
-                    fontSize = 40f.px2sp(),
-                    color = main01,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "P",
-                    fontSize = 35f.px2sp(),
-                    color = main01,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Text(
+                text = pointBalance.toDecimalString(),
+                fontSize = 40f.px2sp(),
+                color = main01,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "P",
+                fontSize = 35f.px2sp(),
+                color = main01,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Spacer(modifier = Modifier.size(104f.px2dp()))
