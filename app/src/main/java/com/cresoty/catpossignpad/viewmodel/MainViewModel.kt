@@ -326,7 +326,7 @@ class MainViewModel @Inject constructor(
             transactionAmount = (secondOtc + secondVat).toString()
         )
 
-        if (!complexPaymentAmountCheck(first to second)) return
+//        if (!complexPaymentAmountCheck(first to second)) return
 
         complexTranInfo = first to second
         transactionMethod = first.transactionGubn
@@ -428,7 +428,7 @@ class MainViewModel @Inject constructor(
         if (isAfterUse) return
         if (!isSave) return
         if (total <= min) return
-        if (total <= minAmount) return
+//        if (total <= minAmount) return
         if (otc == 0) return
 
         approvalNumber = appnum
