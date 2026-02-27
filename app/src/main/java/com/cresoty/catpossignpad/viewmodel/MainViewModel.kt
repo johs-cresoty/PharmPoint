@@ -12,8 +12,10 @@ import com.cresoty.catpossignpad.PharmpayTelegram
 import com.cresoty.catpossignpad.Val
 import com.cresoty.catpossignpad.byte2String
 import com.cresoty.catpossignpad.dataresource.DataResource
+import com.cresoty.catpossignpad.domain.model.command.EstimatePointCommand
 import com.cresoty.catpossignpad.domain.model.command.PaymentDetailCommand
 import com.cresoty.catpossignpad.domain.model.command.UpsertCustomerPointCommand
+import com.cresoty.catpossignpad.domain.usecase.EstimatePointUseCase
 import com.cresoty.catpossignpad.domain.usecase.IsCustomersUseCase
 import com.cresoty.catpossignpad.domain.usecase.UpsertCustomerPointUseCase
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
@@ -50,7 +52,8 @@ class MainViewModel @Inject constructor(
     private val networkManager: NetworkManager,
     private val socketManager: SocketManager,
     private val isCustomersUseCase: IsCustomersUseCase,
-    private val upsertCustomerPointUseCase: UpsertCustomerPointUseCase
+    private val upsertCustomerPointUseCase: UpsertCustomerPointUseCase,
+    private val estimatePointUseCase: EstimatePointUseCase
 ) : ViewModel() {
 
     private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
@@ -336,38 +339,30 @@ class MainViewModel @Inject constructor(
             (firstOtc + firstVat + secondOtc + secondVat).toString()
         }
 
-        // NetworkManager는 아직 HashMap을 받으니까 변환해서 넘김
-        val firstMap = hashMapOf(
-            "APP_NUM" to first.approvalNumber,
-            "TRN_GUBN" to first.transactionGubn,
-            "TRN_DATE" to first.transactionDate,
-            "TRN_TIME" to first.transactionTime,
-            "TRN_AMT" to first.transactionAmount.toString()
-        )
-        val secondMap = hashMapOf(
-            "APP_NUM" to second.approvalNumber,
-            "TRN_GUBN" to second.transactionGubn,
-            "TRN_DATE" to second.transactionDate,
-            "TRN_TIME" to second.transactionTime,
-            "TRN_AMT" to second.transactionAmount.toString()
-        )
-
         viewModelScope.launch {
-            networkManager.requestExpectSaveAmountCheckComplex(
-                pair = firstMap to secondMap,
-                onDataReceived = { code, amount, sle_seq ->
-                    if (code == "0000") {
-                        _pointDelta.update { amount }
-                        transactionUniqueNumber = sle_seq
+            estimatePointUseCase(
+                EstimatePointCommand.Complex(
+                    taxNo        = configState.value.bizNo,
+                    computerName = CMPTR_NAME,
+                    posVersion   = POS_VER,
+                    payments     = first to second
+                )
+            ).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        resource.data?.let {
+                            _pointDelta.update { _ -> it.pointAmount }
+                            transactionUniqueNumber = it.sleSeq
+                        }
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
-                },
-                onFailed = {
-                    // 8888 최종 실패 → 적립 포기하고 초기화 or 에러 안내
-                    Log.d("jhs", "복합 결제 9303이나 8888에러 빠질 때")
-                    updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+                    is DataResource.Error -> {
+                        Log.d("jhs", "복합 estimatePoint error: ${resource.throwable.message}")
+                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+                    }
+                    is DataResource.Loading -> {}
                 }
-            )
+            }
         }
     }
 
@@ -440,24 +435,33 @@ class MainViewModel @Inject constructor(
             total.toString()
         }
         viewModelScope.launch {
-            networkManager.requestExpectSaveAmountCheck(
-                trn_date = transactionDate,
-                trn_gubn = transactionMethod,
-                trn_amt = _paymentAmount.value,
-                app_num = approvalNumber,
-                onDataReceived = { code, amount, sle_seq ->
-                    if (code == "0000") {
-                        _pointDelta.update { amount }
-                        transactionUniqueNumber = sle_seq
+            estimatePointUseCase(
+                EstimatePointCommand.Single(
+                    taxNo        = configState.value.bizNo,
+                    computerName = CMPTR_NAME,
+                    posVersion   = POS_VER,
+                    trnDate      = transactionDate,
+                    trnGubn      = transactionMethod,
+                    trnAmt       = _paymentAmount.value,
+                    appNum       = approvalNumber
+                )
+            ).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        resource.data?.let {
+                            _pointDelta.update { _ -> it.pointAmount }
+                            transactionUniqueNumber = it.sleSeq
+                        }
+                        // null(재시도 소진)이어도 동일하게 다음 단계 진행
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
-                },
-                onFailed = { code ->
-                    // 8888 최종 실패 → 적립 포기하고 초기화 or 에러 안내
-                    Log.d("jhs", "9303이나 8888에러 빠질 때")
-                    updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+                    is DataResource.Error -> {
+                        Log.d("jhs", "estimatePoint error: ${resource.throwable.message}")
+                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+                    }
+                    is DataResource.Loading -> {}
                 }
-            )
+            }
         }
     }
 

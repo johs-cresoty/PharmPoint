@@ -1,7 +1,9 @@
 package com.cresoty.catpossignpad.data.mapper
 
+import com.cresoty.catpossignpad.domain.model.command.EstimatePointCommand
 import com.cresoty.catpossignpad.domain.model.command.PaymentDetailCommand
 import com.cresoty.catpossignpad.domain.model.command.UpsertCustomerPointCommand
+import com.cresoty.catpossignpad.remote.model.request.EstimatePointRequest
 import com.cresoty.catpossignpad.remote.model.request.PaymentDetailRequest
 import com.cresoty.catpossignpad.remote.model.request.UpsertCustomerPointRequest
 
@@ -46,3 +48,21 @@ fun PaymentDetailCommand.toRequest(): PaymentDetailRequest =
         approvalNumber = approvalNumber,
         transactionAmount = transactionAmount
     )
+
+fun EstimatePointCommand.toRequest(): EstimatePointRequest = when (this) {
+    is EstimatePointCommand.Single -> EstimatePointRequest(
+        taxNo = taxNo,
+        computerName = computerName,
+        posVersion = posVersion,
+        trnDate = trnDate,
+        trnGubn = trnGubn,
+        trnAmt = trnAmt,
+        appNum = appNum
+    )
+    is EstimatePointCommand.Complex -> EstimatePointRequest(
+        taxNo = taxNo,
+        computerName = computerName,
+        posVersion = posVersion,
+        payments = listOf(payments.first.toRequest(), payments.second.toRequest())
+    )
+}

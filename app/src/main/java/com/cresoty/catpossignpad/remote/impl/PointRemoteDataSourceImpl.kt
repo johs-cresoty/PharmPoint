@@ -2,8 +2,11 @@ package com.cresoty.catpossignpad.remote.impl
 
 import com.cresoty.catpossignpad.data.model.CustomerPointDeltaResponseEntity
 import com.cresoty.catpossignpad.data.model.CustomersEntity
+import com.cresoty.catpossignpad.data.model.EstimatePointEntity
 import com.cresoty.catpossignpad.data.remote.PointRemoteDataSource
 import com.cresoty.catpossignpad.remote.api.CatposCloudApi
+import com.cresoty.catpossignpad.remote.exception.EstimatePointRetryableException
+import com.cresoty.catpossignpad.remote.model.request.EstimatePointRequest
 import com.cresoty.catpossignpad.remote.model.request.UpsertCustomerPointRequest
 import com.cresoty.catpossignpad.remote.model.response.toData
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +51,16 @@ class PointRemoteDataSourceImpl @Inject constructor(
             emit(response.toData())
         } else {
             throw Exception(response.message ?: "Unknown error")
+        }
+    }
+
+    override fun estimatePoint(request: EstimatePointRequest): Flow<EstimatePointEntity> = flow {
+        val response = apiService.estimatePoint(request)
+        val code = response.code ?: "-9999"
+        when {
+            code == "8888" || code == "9303" -> throw EstimatePointRetryableException(code)
+            code == "0000"                   -> emit(response.toData())
+            else -> throw Exception("estimatePoint failed: code=$code msg=${response.message}")
         }
     }
 }

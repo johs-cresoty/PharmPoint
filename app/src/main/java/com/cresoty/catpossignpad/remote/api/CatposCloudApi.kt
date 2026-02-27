@@ -2,44 +2,25 @@ package com.cresoty.catpossignpad.remote.api
 
 import com.cresoty.catpossignpad.network.CatposAmountSettingResponse
 import com.cresoty.catpossignpad.network.CatposBalanceResponse
-import com.cresoty.catpossignpad.network.CatposPointDeltaResponse
-import com.cresoty.catpossignpad.network.CatposSaveAmountResponse
 import com.cresoty.catpossignpad.network.CatposSaveSettingResponse
+import com.cresoty.catpossignpad.remote.model.request.EstimatePointRequest
 import com.cresoty.catpossignpad.remote.model.request.UpsertCustomerPointRequest
 import com.cresoty.catpossignpad.remote.model.response.CustomerResponse
+import com.cresoty.catpossignpad.remote.model.response.EstimatePointResponse
 import com.cresoty.catpossignpad.remote.model.response.UpsertCustomerPointResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface CatposCloudApi {
 
-    @Headers("Content-Type: application/json")
     @POST("api/point/estimate")
-    suspend fun requestExpectSaveAmountComplex(
-        @Body request: String
-    ): Response<CatposSaveAmountResponse>
+    suspend fun estimatePoint(
+        @Body request: EstimatePointRequest
+    ): EstimatePointResponse
 
-    @Headers("Content-Type: application/json")
-    @POST("api/point/estimate")
-    suspend fun requestExpectSaveAmount(
-        @Body request: String
-    ): Response<CatposSaveAmountResponse>
-
-    @Headers("Content-Type: application/json")
-    @POST("api/terminals/customers/code")
-    suspend fun requestPointDeltaComplex(
-        @Body request: String
-    ): Response<CatposPointDeltaResponse>
-
-    @Headers("Content-Type: application/json")
-    @POST("api/terminals/customers/code")
-    suspend fun requestPointDelta(
-        @Body request: String
-    ): Response<CatposPointDeltaResponse>
 
     @GET("api/terminals/customers/code")
     suspend fun requestCheckPointBalance(
