@@ -265,7 +265,7 @@ class NetworkManager @Inject constructor(
 
                 val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: ""
                 val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: ""
-
+//                val sle_seq = "" // 강제 null 처리 (테스트 후 반드시 제거)
                 onDataReceived(rescode, pnt_amt, sle_seq)
             }
         }
@@ -323,6 +323,7 @@ class NetworkManager @Inject constructor(
 
                 val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: ""
                 val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: ""
+//                val sle_seq = "" // 강제 null 처리 (테스트 후 반드시 제거)
                 onDataReceived(rescode, pnt_amt, sle_seq)
             }
             ////////////////////////////////////////////////////////////////////

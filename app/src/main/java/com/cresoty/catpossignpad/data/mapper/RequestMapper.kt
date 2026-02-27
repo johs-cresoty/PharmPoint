@@ -22,6 +22,7 @@ fun UpsertCustomerPointCommand.toRequest(): UpsertCustomerPointRequest = when (t
         customerPhone = customerPhone,
         transactionDate = transactionDate,
         transactionGubn = transactionGubn,
+        transactionTime = transactionTime,
         transactionAmount = transactionAmount,
         approvalNumber = approvalNumber
     )

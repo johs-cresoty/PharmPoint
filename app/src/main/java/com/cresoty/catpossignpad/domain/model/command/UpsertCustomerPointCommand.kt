@@ -23,6 +23,7 @@ sealed class UpsertCustomerPointCommand {
         override val posVersion: String,
         override val customerPhone: String,
         override val transactionDate: String,
+        val transactionTime: String,
         val transactionGubn: String,
         val transactionAmount: String,
         val approvalNumber: String

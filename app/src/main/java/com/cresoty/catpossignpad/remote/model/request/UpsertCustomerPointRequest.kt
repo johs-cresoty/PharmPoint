@@ -18,6 +18,8 @@ data class UpsertCustomerPointRequest(
     val sleSeq: String? = null,
     @SerializedName("TRN_GUBN")
     val transactionGubn: String? = null,
+    @SerializedName("TRN_TIME")
+    val transactionTime: String? = null,
     @SerializedName("APP_NUM")
     val approvalNumber: String? = null,
     @SerializedName("TRN_AMT")

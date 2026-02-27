@@ -470,6 +470,7 @@ class MainViewModel @Inject constructor(
             val phone = customerState.value.phoneNumber
             val bizNo = configState.value.bizNo
 
+
             val command = complexTranInfo?.let { pair ->
                 if (transactionUniqueNumber.isNotEmpty()) {
                     // 복합결제 sle_seq 있을 때 → BySleSeq
@@ -512,6 +513,7 @@ class MainViewModel @Inject constructor(
                     customerPhone = phone,
                     transactionDate = transactionDate,
                     transactionGubn = transactionMethod,
+                    transactionTime = transactionTime,
                     transactionAmount = _paymentAmount.value,
                     approvalNumber = approvalNumber
                 )
