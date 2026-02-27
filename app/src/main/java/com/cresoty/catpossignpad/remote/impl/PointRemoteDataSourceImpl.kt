@@ -1,8 +1,10 @@
 package com.cresoty.catpossignpad.remote.impl
 
+import com.cresoty.catpossignpad.data.model.CustomerPointDeltaResponseEntity
 import com.cresoty.catpossignpad.data.model.CustomersEntity
 import com.cresoty.catpossignpad.data.remote.PointRemoteDataSource
-import com.cresoty.catpossignpad.network.CatposCloudApi
+import com.cresoty.catpossignpad.remote.api.CatposCloudApi
+import com.cresoty.catpossignpad.remote.model.request.UpsertCustomerPointRequest
 import com.cresoty.catpossignpad.remote.model.response.toData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -33,6 +35,17 @@ class PointRemoteDataSourceImpl @Inject constructor(
                     list = items
                 )
             )
+        } else {
+            throw Exception(response.message ?: "Unknown error")
+        }
+    }
+
+    override fun upsertCustomerPoint(request: UpsertCustomerPointRequest)
+            : Flow<CustomerPointDeltaResponseEntity> = flow {
+        val response = apiService.upsertCustomerPoint(request)
+
+        if (response.code == "0000" && response.data != null) {
+            emit(response.toData())
         } else {
             throw Exception(response.message ?: "Unknown error")
         }

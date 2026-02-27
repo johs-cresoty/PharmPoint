@@ -2,7 +2,7 @@ package com.cresoty.catpossignpad.remote.api
 
 import android.util.Log
 import com.cresoty.catpossignpad.BuildConfig
-import com.cresoty.catpossignpad.network.CatposCloudApi
+import com.cresoty.catpossignpad.remote.api.CatposCloudApi
 import com.cresoty.catpossignpad.remote.api.interceptor.CryptoInterceptor
 import com.cresoty.catpossignpad.remote.constant.ServiceConstant.BASE_URL_DEV
 import com.cresoty.catpossignpad.remote.constant.ServiceConstant.BASE_URL_PROD

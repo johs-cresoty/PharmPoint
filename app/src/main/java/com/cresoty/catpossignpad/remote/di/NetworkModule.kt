@@ -3,7 +3,7 @@ package com.cresoty.catpossignpad.remote.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.cresoty.catpossignpad.ConfigRepository
-import com.cresoty.catpossignpad.network.CatposCloudApi
+import com.cresoty.catpossignpad.remote.api.CatposCloudApi
 import com.cresoty.catpossignpad.network.NetworkManager
 import com.cresoty.catpossignpad.remote.api.createApiService
 import com.cresoty.catpossignpad.socket.SocketManager

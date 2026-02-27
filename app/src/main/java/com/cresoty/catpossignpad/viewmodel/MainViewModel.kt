@@ -1,5 +1,6 @@
 package com.cresoty.catpossignpad.viewmodel
 
+import android.os.Build
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
@@ -11,7 +12,10 @@ import com.cresoty.catpossignpad.PharmpayTelegram
 import com.cresoty.catpossignpad.Val
 import com.cresoty.catpossignpad.byte2String
 import com.cresoty.catpossignpad.dataresource.DataResource
+import com.cresoty.catpossignpad.domain.model.command.PaymentDetailCommand
+import com.cresoty.catpossignpad.domain.model.command.UpsertCustomerPointCommand
 import com.cresoty.catpossignpad.domain.usecase.IsCustomersUseCase
+import com.cresoty.catpossignpad.domain.usecase.UpsertCustomerPointUseCase
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.enums.PointQuickInputType
 import com.cresoty.catpossignpad.model.interfaces.Dialogs
@@ -45,8 +49,14 @@ class MainViewModel @Inject constructor(
     private val configRepo: ConfigRepository,
     private val networkManager: NetworkManager,
     private val socketManager: SocketManager,
-    private val isCustomersUseCase: IsCustomersUseCase
+    private val isCustomersUseCase: IsCustomersUseCase,
+    private val upsertCustomerPointUseCase: UpsertCustomerPointUseCase
 ) : ViewModel() {
+
+    private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
+    private val POS_VER =
+        Class.forName("com.cresoty.catpossignpad.BuildConfig").getField("VERSION_NAME")
+            .get(null) as String
 
     // mainState
     private val _pointDeltaStep: MutableStateFlow<PointDeltaProcess> =
@@ -79,7 +89,9 @@ class MainViewModel @Inject constructor(
 
     //포인트 적립
     private var approvalNumber: String = ""
-    private var complexTranInfo: Pair<HashMap<String, String>, HashMap<String, String>>? = null
+
+    // 타입 변경
+    private var complexTranInfo: Pair<PaymentDetailCommand, PaymentDetailCommand>? = null
 
     //    private var transactionAmount : String = ""
     private var transactionDate: String = ""
@@ -298,44 +310,64 @@ class MainViewModel @Inject constructor(
         val firstMethod = if (list[3] == "P") "M" else list[3]
         val secondMethod = if (list[8] == "P") "M" else list[3]
 
-        val first = hashMapOf<String, String>()
-        first["APP_NUM"] = list[2]
-        first["TRN_GUBN"] = firstMethod
-        first["TRN_DATE"] = date
-        first["TRN_TIME"] = time
-        first["TRN_AMT"] = (firstOtc + firstVat).toString()
+        val first = PaymentDetailCommand(
+            approvalNumber = list[2],
+            transactionGubn = firstMethod,
+            transactionDate = date,
+            transactionTime = time,
+            transactionAmount = (firstOtc + firstVat).toString()
+        )
 
-        val second = hashMapOf<String, String>()
-        second["APP_NUM"] = list[7]
-        second["TRN_GUBN"] = secondMethod
-        second["TRN_DATE"] = date
-        second["TRN_TIME"] = time
-        second["TRN_AMT"] = (secondOtc + secondVat).toString()
+        val second = PaymentDetailCommand(
+            approvalNumber = list[7],
+            transactionGubn = secondMethod,
+            transactionDate = date,
+            transactionTime = time,
+            transactionAmount = (secondOtc + secondVat).toString()
+        )
 
         if (!complexPaymentAmountCheck(first to second)) return
 
-        complexTranInfo = Pair(first, second)
-        transactionMethod = first["TRN_GUBN"] as String
+        complexTranInfo = first to second
+        transactionMethod = first.transactionGubn
         transactionDate = date
 
         _paymentAmount.update {
             (firstOtc + firstVat + secondOtc + secondVat).toString()
         }
 
+        // NetworkManager는 아직 HashMap을 받으니까 변환해서 넘김
+        val firstMap = hashMapOf(
+            "APP_NUM" to first.approvalNumber,
+            "TRN_GUBN" to first.transactionGubn,
+            "TRN_DATE" to first.transactionDate,
+            "TRN_TIME" to first.transactionTime,
+            "TRN_AMT" to first.transactionAmount.toString()
+        )
+        val secondMap = hashMapOf(
+            "APP_NUM" to second.approvalNumber,
+            "TRN_GUBN" to second.transactionGubn,
+            "TRN_DATE" to second.transactionDate,
+            "TRN_TIME" to second.transactionTime,
+            "TRN_AMT" to second.transactionAmount.toString()
+        )
+
         viewModelScope.launch {
             networkManager.requestExpectSaveAmountCheckComplex(
-                pair = first to second
-            ) { code, amount, sle_seq ->
-                if (code == "0000") {
-                    _pointDelta.update {
-                        amount
+                pair = firstMap to secondMap,
+                onDataReceived = { code, amount, sle_seq ->
+                    if (code == "0000") {
+                        _pointDelta.update { amount }
+                        transactionUniqueNumber = sle_seq
+                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
-
-                    transactionUniqueNumber = sle_seq
-
+                },
+                onFailed = {
+                    // 8888 최종 실패 → 적립 포기하고 초기화 or 에러 안내
+                    Log.d("jhs", "복합 결제 9303이나 8888에러 빠질 때")
                     updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                 }
-            }
+            )
         }
     }
 
@@ -352,26 +384,18 @@ class MainViewModel @Inject constructor(
      * @param pair
      * @return
      */
-    private fun complexPaymentAmountCheck(pair: Pair<HashMap<String, String>, HashMap<String, String>>): Boolean {
-        val isFirstCashAccept = (pair.first["TRN_GUBN"] as String) == "M"
-        val isSecondCashAccept = (pair.second["TRN_GUBN"] as String) == "M"
-        val firstAmount = (pair.first["TRN_AMT"] as String).toIntOrNull() ?: 0
-        val secondAmount = (pair.second["TRN_AMT"] as String).toIntOrNull() ?: 0
-
+// complexPaymentAmountCheck도 타입 변경
+    private fun complexPaymentAmountCheck(pair: Pair<PaymentDetailCommand, PaymentDetailCommand>): Boolean {
+        val isFirstCashAccept = pair.first.transactionGubn == "M"
+        val isSecondCashAccept = pair.second.transactionGubn == "M"
+        val firstAmount = pair.first.transactionAmount.toIntOrNull() ?: 0  // toIntOrNull() 추가
+        val secondAmount = pair.second.transactionAmount.toIntOrNull() ?: 0  // toIntOrNull() 추가
         val min = configState.value.minAmount
 
         return when {
-            isFirstCashAccept && isSecondCashAccept -> { // 모두 현금수납 : 합산금액이 최저금액보다 높아야
-                firstAmount + secondAmount > min
-            }
-
-            isFirstCashAccept || isSecondCashAccept -> { // 둘 중 하나만 현금수납 : 각각 최저금액보다 높아야
-                firstAmount > min || secondAmount > min
-            }
-
-            else -> {                                    // 모두 현금수납X : 합산금액이 최저금액보다 높아야
-                firstAmount + secondAmount > min
-            }
+            isFirstCashAccept && isSecondCashAccept -> firstAmount + secondAmount > min //// 모두 현금수납 : 합산금액이 최저금액보다 높아야
+            isFirstCashAccept || isSecondCashAccept -> firstAmount > min || secondAmount > min // 둘 중 하나만 현금수납 : 각각 최저금액보다 높아야
+            else -> firstAmount + secondAmount > min  // 모두 현금수납X : 합산금액이 최저금액보다 높아야
         }
     }
 
@@ -383,7 +407,7 @@ class MainViewModel @Inject constructor(
      * @param list
      */
     private fun checkExpectPointAmount(list: List<String>) {
-        val date = list[1].safeSubString(0, 8) 
+        val date = list[1].safeSubString(0, 8)
         val time = list[1].safeSubString(8)
         val appnum = list[2]
         val method = if (list[3] == "P") "M" else list[3]
@@ -430,6 +454,7 @@ class MainViewModel @Inject constructor(
                 },
                 onFailed = { code ->
                     // 8888 최종 실패 → 적립 포기하고 초기화 or 에러 안내
+                    Log.d("jhs", "9303이나 8888에러 빠질 때")
                     updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                 }
             )
@@ -443,38 +468,69 @@ class MainViewModel @Inject constructor(
     private fun requestSavePoint() {
         viewModelScope.launch {
             val phone = customerState.value.phoneNumber
+            val bizNo = configState.value.bizNo
 
-            complexTranInfo?.let {
-                networkManager.requestPointDeltaComplex(
-                    trn_date = transactionDate,
-                    trn_time = transactionTime,
-                    trn_amt = _paymentAmount.value,
-                    cst_hp = phone,
-                    pair = it
-                ) { code, balance ->
-                    if (code == "0000") {
-                        _pointBalance.update {
-                            balance
-                        }
-                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PROC_DONE)
-                    }
+            val command = complexTranInfo?.let { pair ->
+                if (transactionUniqueNumber.isNotEmpty()) {
+                    // 복합결제 sle_seq 있을 때 → BySleSeq
+                    UpsertCustomerPointCommand.BySleSeq(
+                        taxNo = bizNo,
+                        computerName = CMPTR_NAME,
+                        posVersion = POS_VER,
+                        customerPhone = phone,
+                        transactionDate = transactionDate,
+                        sleSeq = transactionUniqueNumber
+                    )
+                } else {
+                    // 복합결제 sle_seq 없을 때 → ByMultiplePayment
+                    UpsertCustomerPointCommand.ByMultiplePayment(
+                        taxNo = bizNo,
+                        computerName = CMPTR_NAME,
+                        posVersion = POS_VER,
+                        customerPhone = phone,
+                        transactionDate = transactionDate,
+                        transactionAmount = _paymentAmount.value,
+                        payments = listOf(pair.first, pair.second)
+                    )
                 }
-            } ?: run {
-                networkManager.requestPointDelta(
-                    sle_seq = transactionUniqueNumber,
-                    trn_date = transactionDate,
-                    cst_hp = phone,
-                    trn_amt = _paymentAmount.value,
-                    app_num = approvalNumber,
-                    trn_gubn = transactionMethod,
-                ) { code, balance ->
-                    if (code == "0000") {
-                        _pointBalance.update {
-                            balance
-                        }
+            } ?: if (transactionUniqueNumber.isNotEmpty()) {
+                // 단일결제 sle_seq 있을 때 → BySleSeq
+                UpsertCustomerPointCommand.BySleSeq(
+                    taxNo = bizNo,
+                    computerName = CMPTR_NAME,
+                    posVersion = POS_VER,
+                    customerPhone = phone,
+                    transactionDate = transactionDate,
+                    sleSeq = transactionUniqueNumber
+                )
+            } else {
+                // 단일결제 sle_seq 없을 때 → BySinglePayment
+                UpsertCustomerPointCommand.BySinglePayment(
+                    taxNo = bizNo,
+                    computerName = CMPTR_NAME,
+                    posVersion = POS_VER,
+                    customerPhone = phone,
+                    transactionDate = transactionDate,
+                    transactionGubn = transactionMethod,
+                    transactionAmount = _paymentAmount.value,
+                    approvalNumber = approvalNumber
+                )
+            }
 
+            upsertCustomerPointUseCase(command).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        _pointBalance.update { resource.data ?: "0" }
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PROC_DONE)
                     }
+
+                    is DataResource.Error -> {
+                        Log.d("jhs", "에러: ${resource.throwable.message}")
+                        // 기존 NetworkManager의 safeNetworkCall이 delegate?.onNetworkError 호출하던 부분
+                        // 필요하다면 에러 state 추가
+                    }
+
+                    is DataResource.Loading -> {}
                 }
             }
         }
@@ -732,10 +788,12 @@ class MainViewModel @Inject constructor(
                         _isExist.update { resource.data }
                         _isExistChecking.update { false }
                     }
+
                     is DataResource.Error -> {
                         _isExist.update { false }
                         _isExistChecking.update { false }
                     }
+
                     is DataResource.Loading -> {}
                 }
             }

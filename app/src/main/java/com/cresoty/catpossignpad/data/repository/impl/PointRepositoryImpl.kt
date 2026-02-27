@@ -1,8 +1,11 @@
 package com.cresoty.catpossignpad.data.repository.impl
 
+import com.cresoty.catpossignpad.data.mapper.toRequest
 import com.cresoty.catpossignpad.data.remote.PointRemoteDataSource
 import com.cresoty.catpossignpad.dataresource.DataResource
+import com.cresoty.catpossignpad.domain.model.CustomerPointDeltaResult
 import com.cresoty.catpossignpad.domain.model.Customers
+import com.cresoty.catpossignpad.domain.model.command.UpsertCustomerPointCommand
 import com.cresoty.catpossignpad.domain.repository.PointRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -33,5 +36,14 @@ internal class PointRepositoryImpl @Inject constructor(
                 emit(DataResource.Error(e))
             }
 
+    override fun upsertCustomerPoint(
+        command: UpsertCustomerPointCommand
+    ): Flow<DataResource<CustomerPointDeltaResult>> =
+        pointRemoteDataSource.upsertCustomerPoint(command.toRequest())
+            .map { entity ->
+                DataResource.Success(entity.toDomain()) as DataResource<CustomerPointDeltaResult>
+            }
+            .onStart { emit(DataResource.Loading) }
+            .catch { e -> emit(DataResource.Error(e)) }
 
 }

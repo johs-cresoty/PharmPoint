@@ -4,6 +4,7 @@ import android.os.Build
 import android.util.Log
 import com.cresoty.catpossignpad.BuildConfig
 import com.cresoty.catpossignpad.model.state.ConfigState
+import com.cresoty.catpossignpad.remote.api.CatposCloudApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
@@ -237,13 +238,14 @@ class NetworkManager @Inject constructor(
      */
     suspend fun requestExpectSaveAmountCheckComplex(
         pair: Pair<HashMap<String, String>, HashMap<String, String>>,
+        onFailed: ((String) -> Unit)? = null,
         onDataReceived: (String, String, String) -> Unit
     ) {
         safeNetworkCall("requestExpectSaveAmountCheckComplex") {
             retry(
                 maxAttempts = 3,
                 initialDelayMs = 1_000,
-                shouldRetry = { t -> t is RetryableCodeException && t.code == "8888" }
+                shouldRetry = { t -> t is RetryableCodeException && t.code in listOf("8888", "9303") }
             ) { remain ->
                 val request = CatposJSONFactory.makeExpectSaveAmountRequestComplex(
                     taxno = latestConfig.bizNo,
@@ -253,12 +255,16 @@ class NetworkManager @Inject constructor(
                 )
 
                 val response = catposService.requestExpectSaveAmountComplex(request)
+
                 val rescode = response.body()?.CODE ?: RES_CODE_NULL
 
-                if (rescode == "8888") throw RetryableCodeException(rescode)
+                if (rescode == "8888" || rescode == "9303") {
+                    if (remain == 0) onFailed?.invoke(rescode)
+                    throw RetryableCodeException(rescode)
+                }
 
-                val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: "조회실패"
-                val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: "조회실패"
+                val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: ""
+                val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: ""
 
                 onDataReceived(rescode, pnt_amt, sle_seq)
             }
@@ -315,8 +321,8 @@ class NetworkManager @Inject constructor(
                     throw RetryableCodeException(rescode)
                 }
 
-                val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: "조회실패"
-                val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: "조회실패"
+                val pnt_amt = response.body()?.DATA?.INFO?.get(0)?.PNT_AMT ?: ""
+                val sle_seq = response.body()?.DATA?.INFO?.get(0)?.SLE_SEQ ?: ""
                 onDataReceived(rescode, pnt_amt, sle_seq)
             }
             ////////////////////////////////////////////////////////////////////

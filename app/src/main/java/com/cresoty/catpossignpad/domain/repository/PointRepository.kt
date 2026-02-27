@@ -1,7 +1,9 @@
 package com.cresoty.catpossignpad.domain.repository
 
 import com.cresoty.catpossignpad.dataresource.DataResource
+import com.cresoty.catpossignpad.domain.model.CustomerPointDeltaResult
 import com.cresoty.catpossignpad.domain.model.Customers
+import com.cresoty.catpossignpad.domain.model.command.UpsertCustomerPointCommand
 import kotlinx.coroutines.flow.Flow
 
 interface PointRepository {
@@ -11,4 +13,10 @@ interface PointRepository {
         taxNo: String,
         customerHp: String
     ): Flow<DataResource<Customers>>
+
+
+    fun upsertCustomerPoint(
+        command: UpsertCustomerPointCommand
+    ): Flow<DataResource<CustomerPointDeltaResult>>
+
 }
