@@ -97,6 +97,7 @@ fun SettingStoreInfo(
         SettingButtons(
             modifier = Modifier.weight(1f),
             isLogin = false,
+            enabled = bizNo.length == 10 && storeName.isNotEmpty(),
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 if(bizNo.length == 10 && storeName.isNotEmpty()) {

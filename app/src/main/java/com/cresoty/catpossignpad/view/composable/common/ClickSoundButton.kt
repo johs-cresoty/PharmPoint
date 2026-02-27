@@ -29,6 +29,7 @@ fun ClickSoundButton(
     border: BorderStroke? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     elevation: ButtonElevation? = null,
+    enabled: Boolean = true,
     useDebounceTime: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -49,7 +50,7 @@ fun ClickSoundButton(
             view.playSoundEffect(SoundEffectConstants.CLICK)
             onClick()
         },
-        enabled = if (useDebounceTime) isEnabled else true,
+        enabled = if (useDebounceTime) isEnabled else enabled,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(backgroundColor = backgroundColor),
         shape = shape,

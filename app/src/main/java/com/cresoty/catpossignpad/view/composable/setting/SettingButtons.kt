@@ -21,18 +21,19 @@ import com.cresoty.catpossignpad.view.theme.white
 @Composable
 fun SettingButtons(
     modifier: Modifier,
-    isLogin : Boolean,
-    onClickSave : () -> Unit,
-    onClickClose : () -> Unit
+    isLogin: Boolean,
+    enabled: Boolean = true,
+    onClickSave: () -> Unit,
+    onClickClose: () -> Unit
 ) {
     val height = 112f.px2dp()
 
-    val width = if(isLogin) 535f.px2dp() else 350f.px2dp()
+    val width = if (isLogin) 535f.px2dp() else 350f.px2dp()
 
 
     val list = listOf(
         Penta("닫기", 160f.px2dp(), onClickClose, common01, white),
-        Penta(if(isLogin) "로그인" else "저장", width, onClickSave, white, main01)
+        Penta(if (isLogin) "로그인" else "저장", width, onClickSave, white, main01)
     )
 
     val shape = RoundedCornerShape(20f.px2dp())
@@ -46,9 +47,10 @@ fun SettingButtons(
             val isBorder = it.first == "닫기"
             ClickSoundButton(
                 modifier = Modifier.size(width = it.second, height = height),
+                enabled = if (it.first == "닫기") true else enabled,
                 onClick = it.third,
-                border = BorderStroke((if(isBorder) 1f else 0f).px2dp(), it.fourth),
-                backgroundColor =it.fifth,
+                border = BorderStroke((if (isBorder) 1f else 0f).px2dp(), it.fourth),
+                backgroundColor = it.fifth,
                 shape = shape
 
             ) {
