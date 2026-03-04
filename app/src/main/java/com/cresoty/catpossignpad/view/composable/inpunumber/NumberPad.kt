@@ -16,6 +16,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.withStyle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -325,6 +330,20 @@ fun PhoneNumberButton(
     }
 }
 
+/**
+ * '*' 문자는 폰트 baseline 기준으로 위쪽에 그려져 숫자와 함께 표시하면 위로 떠 보임.
+ * '*'에만 음수 BaselineShift를 적용해 숫자와 수직 중앙이 맞도록 보정.
+ */
+private fun String.withAsteriskBaselineShift(): AnnotatedString = buildAnnotatedString {
+    forEach { char ->
+        if (char == '*') {
+            withStyle(SpanStyle(baselineShift = BaselineShift(-0.2f))) { append(char) }
+        } else {
+            append(char)
+        }
+    }
+}
+
 @Composable
 fun MaskingNumberField(
     step: PointDeltaProcess
@@ -343,8 +362,6 @@ fun MaskingNumberField(
     val drawable = if (isMasking) R.drawable.icon_mask_activate else R.drawable.icon_mask_deactivate
 
     val inputNumber = if (isPhoneNumberType) customer.phoneNumber else customer.verifyNumber
-    // TODO : *는 폰트에 따라 베이스라인 기준으로 위쪽에 그려지므로, 숫자와 함께 사용하면 하늘에 붕 떠보임.
-    //        임의로 •로 변경했으나 필요시 maskingPhoneNumber() 내부 "•"를 "*"로 수정
     val maskedList =
         if (isPhoneNumberType) {
             if (isMasking) inputNumber.maskingPhoneNumber()
@@ -372,7 +389,7 @@ fun MaskingNumberField(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = item,
+                        text = item.withAsteriskBaselineShift(),
                         fontSize = 40f.px2sp(),
                         color = common02
                     )

@@ -1,8 +1,6 @@
 package com.cresoty.catpossignpad
 
 import android.app.Activity
-import android.text.TextUtils
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -20,17 +18,17 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.datastore.preferences.core.Preferences
 import com.cresoty.catpossignpad.view.theme.transparent
 import java.io.UnsupportedEncodingException
 import java.text.DecimalFormat
 import kotlin.experimental.or
 import kotlin.experimental.xor
 
-fun String.stringToMutableByte() : MutableList<Byte> = (this as java.lang.String).getBytes(Val.getKorCharset()).toMutableList()
+fun String.stringToMutableByte(): MutableList<Byte> =
+    (this as java.lang.String).getBytes(Val.getKorCharset()).toMutableList()
 
 
-fun String.toIntOrMax() : Int {
+fun String.toIntOrMax(): Int {
     val long = this.toLongOrNull() ?: return 0
 
     return when {
@@ -61,11 +59,9 @@ fun ByteArray.splitTelegram(delimeter: Byte): ArrayList<ByteArray> {
             nStartIdx = i + 1
         }
         if (i == data.lastIndex) {
-            splitData = if(data[i - 1] == Val.COMM_ETX)
-            {
+            splitData = if (data[i - 1] == Val.COMM_ETX) {
                 data.copyOfRange(nStartIdx, nStartIdx + (i - nStartIdx - 1))
-            }
-            else {
+            } else {
                 data.copyOfRange(nStartIdx, nStartIdx + (i - nStartIdx + 1))
             }
             dataList.add(splitData)
@@ -74,7 +70,7 @@ fun ByteArray.splitTelegram(delimeter: Byte): ArrayList<ByteArray> {
     return dataList
 }
 
-fun ByteArray.findAsciiControlChar(find : Byte): Int {
+fun ByteArray.findAsciiControlChar(find: Byte): Int {
     var ret = 0
 
     for (index in this.indices) {
@@ -87,13 +83,13 @@ fun ByteArray.findAsciiControlChar(find : Byte): Int {
 }
 
 @Composable
-fun Float.px2dp() : Dp {
+fun Float.px2dp(): Dp {
     val density = LocalDensity.current
     return with(density) { this@px2dp.toDp() }
 }
 
 @Composable
-fun Float.px2sp() : TextUnit {
+fun Float.px2sp(): TextUnit {
     val density = LocalDensity.current
     val screenDp = LocalConfiguration.current.screenWidthDp
 
@@ -102,9 +98,9 @@ fun Float.px2sp() : TextUnit {
     return with(density) { (this@px2sp * scale).sp }
 }
 
-fun String.toBizNoFormat() : String {
+fun String.toBizNoFormat(): String {
     val digits = this.filter { it.isDigit() }
-    val ret = "${digits.substring(0, 3)}-${digits.substring(3,5)}-${digits.substring(5,10)}"
+    val ret = "${digits.substring(0, 3)}-${digits.substring(3, 5)}-${digits.substring(5, 10)}"
 
     return ret
 }
@@ -114,14 +110,14 @@ fun Int.toDecimalString(): String {
     return decimal.format(this)
 }
 
-fun String.toDecimalString() : String {
+fun String.toDecimalString(): String {
     this.toIntOrNull()?.let {
         return DecimalFormat("#,###").format(it)
     }
     return "0"
 }
 
-fun String.safeSubString(start : Int, endExclusive : Int = this.length) : String {
+fun String.safeSubString(start: Int, endExclusive: Int = this.length): String {
     val s = this
     if (start < 0 || endExclusive < start) return ""
     if (s.length <= start) return ""
@@ -137,11 +133,11 @@ fun String.safeSubString(start: Int): String {
     return s.substring(start, s.length)
 }
 
-fun String.maskingPhoneNumber() : List<String> {
+fun String.maskingPhoneNumber(): List<String> {
     val data = this.filter { it.isDigit() }
 
     val start = data.safeSubString(0, 3)
-    if(data.length <= 3) return listOf(start, "", "")
+    if (data.length <= 3) return listOf(start, "", "")
 
     val rest = data.drop(3)
     val middle = rest.safeSubString(0, 4)
@@ -149,29 +145,18 @@ fun String.maskingPhoneNumber() : List<String> {
 
     val result = mutableListOf<String>(start)
 
-    val maskedMiddle = when {
-        end.isEmpty() -> {
-            if(middle.isEmpty()) ""
-            else "•".repeat(middle.length - 1) + middle.last()
-        }
-        else -> {
-            "•".repeat(middle.length)
-        }
-    }
+    val maskedMiddle = "*".repeat(middle.length)
     result.add(maskedMiddle)
 
-    val maskedEnd = when {
-        end.isEmpty() -> ""
-        end.length == 1 -> end
-        else -> "•".repeat(end.length -1) + end.last()
-    }
-
-    result.add(maskedEnd)
+    //추후에 휴대폰번호 끝 4자리도 마스킹 필요할 경우 사용
+    val maskedEnd = "*".repeat(end.length)
+//    result.add(maskedEnd)
+    result.add(end)
 
     return result
 }
 
-fun Map<String, Any>.safeGetString(key : String) : String {
+fun Map<String, Any>.safeGetString(key: String): String {
     return this[key]?.toString() ?: ""
 }
 
@@ -220,10 +205,10 @@ fun Modifier.insetShadow(
     shape: Shape,
     radius: Dp,
     color: Color = Color.Black.copy(alpha = 0.25f),
-    start : Boolean = true,
-    top : Boolean = true,
-    end : Boolean = true,
-    bottom : Boolean = true,
+    start: Boolean = true,
+    top: Boolean = true,
+    end: Boolean = true,
+    bottom: Boolean = true,
 ): Modifier = this.drawWithCache {
     val outline = shape.createOutline(size, layoutDirection, this)
     val clipPath = Path().apply { addOutline(outline) } // ✅ Outline -> Path
@@ -255,10 +240,10 @@ fun Modifier.insetShadow(
     onDrawWithContent {
         drawContent()
         clipPath(clipPath) {
-            if(top) drawRect(topBrush)
-            if(start) drawRect(startBrush)
-            if(bottom) drawRect(bottomBrush)
-            if(end) drawRect(endBrush)
+            if (top) drawRect(topBrush)
+            if (start) drawRect(startBrush)
+            if (bottom) drawRect(bottomBrush)
+            if (end) drawRect(endBrush)
         }
     }
 }
