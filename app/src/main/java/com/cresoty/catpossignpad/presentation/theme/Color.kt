@@ -1,4 +1,4 @@
-package com.cresoty.catpossignpad.view.theme
+package com.cresoty.catpossignpad.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

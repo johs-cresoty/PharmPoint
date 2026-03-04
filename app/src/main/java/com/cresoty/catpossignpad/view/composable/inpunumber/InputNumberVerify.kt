@@ -15,11 +15,11 @@ import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.interfaces.PadAction
 import com.cresoty.catpossignpad.px2dp
 import com.cresoty.catpossignpad.px2sp
-import com.cresoty.catpossignpad.view.composable.common.BackStepButton
+import com.cresoty.catpossignpad.presentation.component.BackStepButton
 import com.cresoty.catpossignpad.view.controller.LocalController
-import com.cresoty.catpossignpad.view.theme.common01
-import com.cresoty.catpossignpad.view.theme.common02
-import com.cresoty.catpossignpad.view.theme.white
+import com.cresoty.catpossignpad.presentation.theme.common01
+import com.cresoty.catpossignpad.presentation.theme.common02
+import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
 fun InputNumberVerify(

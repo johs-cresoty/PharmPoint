@@ -47,9 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cresoty.catpossignpad.px2dp
 import com.cresoty.catpossignpad.toDecimalString
-import com.cresoty.catpossignpad.view.theme.black
-import com.cresoty.catpossignpad.view.theme.common01
-import com.cresoty.catpossignpad.view.theme.white
+import com.cresoty.catpossignpad.presentation.theme.black
+import com.cresoty.catpossignpad.presentation.theme.common01
+import com.cresoty.catpossignpad.presentation.theme.white
 
 enum class FilterTextType() {
     FILTER_TYPE_IP,

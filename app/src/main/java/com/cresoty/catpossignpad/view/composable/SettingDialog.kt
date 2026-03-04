@@ -25,14 +25,13 @@ import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.DialogGenerator
 import com.cresoty.catpossignpad.view.composable.list.SettingTypeList
 import com.cresoty.catpossignpad.view.composable.list.SettingType
-import com.cresoty.catpossignpad.view.composable.setting.SettingIdVerify
 import com.cresoty.catpossignpad.view.composable.setting.SettingPointUse
 import com.cresoty.catpossignpad.view.composable.setting.SettingScreenTimeout
 import com.cresoty.catpossignpad.view.composable.setting.SettingStoreInfo
 import com.cresoty.catpossignpad.view.composable.setting.SettingTheme
 import com.cresoty.catpossignpad.view.controller.LocalController
-import com.cresoty.catpossignpad.view.theme.sub01
-import com.cresoty.catpossignpad.view.theme.white
+import com.cresoty.catpossignpad.presentation.theme.sub01
+import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
 fun SettingDialog() {

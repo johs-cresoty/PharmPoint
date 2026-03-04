@@ -32,11 +32,11 @@ import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 import com.cresoty.catpossignpad.view.composable.common.DialogGenerator
 import com.cresoty.catpossignpad.view.composable.setting.SettingButtons
 import com.cresoty.catpossignpad.view.controller.LocalController
-import com.cresoty.catpossignpad.view.theme.common02
-import com.cresoty.catpossignpad.view.theme.main01
-import com.cresoty.catpossignpad.view.theme.notice
-import com.cresoty.catpossignpad.view.theme.sub01
-import com.cresoty.catpossignpad.view.theme.white
+import com.cresoty.catpossignpad.presentation.theme.common02
+import com.cresoty.catpossignpad.presentation.theme.main01
+import com.cresoty.catpossignpad.presentation.theme.notice
+import com.cresoty.catpossignpad.presentation.theme.sub01
+import com.cresoty.catpossignpad.presentation.theme.white
 
 enum class PasswordButtonType(val number: String?, val fontSize: Float) {
     NUMBER1("1", 35f),

@@ -9,8 +9,8 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.cresoty.catpossignpad.view.controller.MainController
-import com.cresoty.catpossignpad.view.theme.CatposSignpadTheme
-import com.cresoty.catpossignpad.viewmodel.MainViewModel
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
+import com.cresoty.catpossignpad.presentation.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

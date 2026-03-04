@@ -1,4 +1,4 @@
-package com.cresoty.catpossignpad.view.composable.common
+package com.cresoty.catpossignpad.presentation.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -8,13 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.view.theme.transparent
+import com.cresoty.catpossignpad.presentation.theme.transparent
+import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 
 @Composable
 fun BackStepButton(
-    onClickBackToMain : () -> Unit
+    onClickBackToMain: () -> Unit
 ) {
 
     Box(
@@ -32,4 +34,13 @@ fun BackStepButton(
             )
         }
     }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun BackStepButtonPreview() {
+    BackStepButton(
+        onClickBackToMain = {}
+    )
 }

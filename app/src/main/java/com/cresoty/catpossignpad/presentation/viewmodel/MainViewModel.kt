@@ -1,4 +1,4 @@
-package com.cresoty.catpossignpad.viewmodel
+package com.cresoty.catpossignpad.presentation.viewmodel
 
 import android.os.Build
 import android.util.Log
@@ -124,7 +124,7 @@ class MainViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly,
+        started = SharingStarted.Companion.Eagerly,
         initialValue = CustomerState()
     )
 
@@ -140,7 +140,7 @@ class MainViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.Companion.WhileSubscribed(5_000),
         initialValue = PreviewState()
     )
 
@@ -158,7 +158,7 @@ class MainViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.Companion.WhileSubscribed(5_000),
         initialValue = SettingState()
     )
 
@@ -176,7 +176,7 @@ class MainViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.Companion.WhileSubscribed(5_000),
         initialValue = PointState()
     )
 
@@ -190,7 +190,7 @@ class MainViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.Companion.WhileSubscribed(5_000),
         initialValue = MainState()
     )
 

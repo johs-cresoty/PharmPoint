@@ -16,10 +16,10 @@ import com.cresoty.catpossignpad.model.interfaces.PadAction
 import com.cresoty.catpossignpad.px2dp
 import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.controller.LocalController
-import com.cresoty.catpossignpad.view.theme.common01
-import com.cresoty.catpossignpad.view.theme.main01
-import com.cresoty.catpossignpad.view.theme.transparent
-import com.cresoty.catpossignpad.view.theme.white
+import com.cresoty.catpossignpad.presentation.theme.common01
+import com.cresoty.catpossignpad.presentation.theme.main01
+import com.cresoty.catpossignpad.presentation.theme.transparent
+import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
 fun ConfirmButtonField() {

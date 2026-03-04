@@ -19,7 +19,7 @@ import com.cresoty.catpossignpad.model.state.SettingState
 import com.cresoty.catpossignpad.view.composable.MainIdleScreen
 import com.cresoty.catpossignpad.view.composable.PointDeltaProcDone
 import com.cresoty.catpossignpad.view.composable.RequestPointDelta
-import com.cresoty.catpossignpad.viewmodel.MainViewModel
+import com.cresoty.catpossignpad.presentation.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalController = staticCompositionLocalOf<ViewController> {

@@ -19,9 +19,9 @@ import com.cresoty.catpossignpad.view.composable.inpunumber.InputNumberUsePoint
 import com.cresoty.catpossignpad.view.composable.inpunumber.InputNumberVerify
 import com.cresoty.catpossignpad.view.composable.inpunumber.NumberPad
 import com.cresoty.catpossignpad.view.controller.LocalController
-import com.cresoty.catpossignpad.view.theme.main01
-import com.cresoty.catpossignpad.view.theme.notice
-import com.cresoty.catpossignpad.view.theme.white
+import com.cresoty.catpossignpad.presentation.theme.main01
+import com.cresoty.catpossignpad.presentation.theme.notice
+import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
 fun RequestPointDelta(step : PointDeltaProcess) {

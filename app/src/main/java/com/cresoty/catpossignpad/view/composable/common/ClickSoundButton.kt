@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ButtonElevation
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
@@ -61,4 +63,31 @@ fun ClickSoundButton(
             content()
         }
     )
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun ClickSoundButtonPreview() {
+    ClickSoundButton(
+        onClick = {},
+        backgroundColor = Color.Black
+    ) {
+        Text(
+            text = "Click",
+            color = Color.White
+        )
+    }
+}
+
+@Preview(name = "Disabled", showBackground = true)
+@Composable
+private fun ClickSoundButtonDisabledPreview() {
+    ClickSoundButton(
+        onClick = {},
+        backgroundColor = Color.Gray,
+        enabled = false
+    ) {
+        Text("Disabled")
+    }
 }

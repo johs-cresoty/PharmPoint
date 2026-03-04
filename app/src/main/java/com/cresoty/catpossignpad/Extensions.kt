@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.cresoty.catpossignpad.view.theme.transparent
+import com.cresoty.catpossignpad.presentation.theme.transparent
 import java.io.UnsupportedEncodingException
 import java.text.DecimalFormat
 import kotlin.experimental.or

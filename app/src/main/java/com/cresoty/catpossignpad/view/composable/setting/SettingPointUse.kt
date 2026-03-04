@@ -29,9 +29,9 @@ import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.view.composable.common.ToggleAnimationButton
 import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.view.controller.LocalController
-import com.cresoty.catpossignpad.view.theme.common01
-import com.cresoty.catpossignpad.view.theme.common02
-import com.cresoty.catpossignpad.view.theme.white
+import com.cresoty.catpossignpad.presentation.theme.common01
+import com.cresoty.catpossignpad.presentation.theme.common02
+import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
 fun SettingPointUse(
