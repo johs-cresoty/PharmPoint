@@ -21,8 +21,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.presentation.component.BackStepButton
 import com.cresoty.catpossignpad.view.controller.LocalController
@@ -30,6 +28,8 @@ import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main02
 import com.cresoty.catpossignpad.presentation.theme.main04
 import com.cresoty.catpossignpad.presentation.theme.common01
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
 
@@ -55,35 +55,35 @@ fun InputNumberSavePoint(
 
         Text(
             text = storeName,
-            fontSize = 45f.px2sp(),
-            lineHeight = 45f.px2sp(),
+            fontSize = 45f.spx,
+            lineHeight = 45f.spx,
             color = common01,
             maxLines = 1
         )
 
         Text(
             text = "${paymentAmount}원 결제",
-            fontSize = 53f.px2sp(),
-            lineHeight = 53f.px2sp(),
+            fontSize = 53f.spx,
+            lineHeight = 53f.spx,
             fontWeight = FontWeight.Medium,
             color = common02
         )
 
-        Spacer(modifier = Modifier.size(21f.px2dp()))
+        Spacer(modifier = Modifier.size(21f.dpx))
 
         Row(
             modifier = Modifier.background(
                 color = if(isVisible == 0f) transparent else main04,
-                shape = RoundedCornerShape(100f.px2dp())
+                shape = RoundedCornerShape(100f.dpx)
             )
                 .alpha(isVisible)
                 .padding(
-                    top = 15f.px2dp(),
-                    bottom = 15f.px2dp(),
-                    start = 25f.px2dp(),
-                    end = 15f.px2dp()
+                    top = 15f.dpx,
+                    bottom = 15f.dpx,
+                    start = 25f.dpx,
+                    end = 15f.dpx
                 ),
-            horizontalArrangement = Arrangement.spacedBy(20f.px2dp())
+            horizontalArrangement = Arrangement.spacedBy(20f.dpx)
         ) {
             Image(
                 painter = painterResource(R.drawable.icon_won),
@@ -92,25 +92,25 @@ fun InputNumberSavePoint(
 
             Text(
                 text = "${pointDelta}P 적립예상",
-                fontSize = 30f.px2sp(),
-                lineHeight = 30f.px2sp(),
+                fontSize = 30f.spx,
+                lineHeight = 30f.spx,
                 fontWeight = FontWeight.Medium,
                 color = main02
             )
         }
 
-        Spacer(modifier = Modifier.size(20f.px2dp()))
+        Spacer(modifier = Modifier.size(20f.dpx))
 
         Text(
             text = "휴대폰 번호 입력하고 포인트 받아가세요.",
-            fontSize = 30f.px2sp(),
-            lineHeight = 30f.px2sp(),
+            fontSize = 30f.spx,
+            lineHeight = 30f.spx,
             color = common01
         )
 
-        Spacer(modifier = Modifier.size(34f.px2dp()))
+        Spacer(modifier = Modifier.size(34f.dpx))
 
 
-        Spacer(modifier = Modifier.size(13f.px2dp()))
+        Spacer(modifier = Modifier.size(13f.dpx))
     }
 }

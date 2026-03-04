@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 
 
 @Composable
-fun DialogGenerator(
+fun BaseDialog(
     onCreate: () -> Unit = {},
     onDismiss: () -> Unit,
     content: @Composable () -> Unit

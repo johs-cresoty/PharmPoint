@@ -40,12 +40,13 @@ import com.cresoty.catpossignpad.model.state.MainState
 import com.cresoty.catpossignpad.model.state.PointState
 import com.cresoty.catpossignpad.model.state.PreviewState
 import com.cresoty.catpossignpad.model.state.SettingState
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 import com.cresoty.catpossignpad.view.controller.LocalController
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -103,40 +104,40 @@ private fun ColumnA(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 80f.px2dp(), horizontal = 40.dp),
+            .padding(vertical = 80f.dpx, horizontal = 40.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column {
             Spacer(
-                modifier = Modifier.size(129f.px2dp())
+                modifier = Modifier.size(129f.dpx)
             )
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
-                fontSize = 30f.px2sp(),
+                fontSize = 30f.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02,
                 textAlign = TextAlign.Center
             )
 
             Spacer(
-                modifier = Modifier.size(18f.px2dp())
+                modifier = Modifier.size(18f.dpx)
             )
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = config.storeName,
-                fontSize = 80f.px2sp(),
-                lineHeight = 80f.px2sp(),
+                fontSize = 80f.spx,
+                lineHeight = 80f.spx,
                 fontWeight = FontWeight.Bold,
                 color = common02,
                 textAlign = TextAlign.Center
             )
 
             Spacer(
-                modifier = Modifier.size(70f.px2dp())
+                modifier = Modifier.size(70f.dpx)
             )
 
             SetupButton(
@@ -163,47 +164,47 @@ private fun ColumnB(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 81f.px2dp(), horizontal = 40f.px2dp()),
+            .padding(vertical = 81f.dpx, horizontal = 40f.dpx),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                modifier = Modifier.size(width = 162f.px2dp(), height = 36f.px2dp()),
+                modifier = Modifier.size(width = 162f.dpx, height = 36f.dpx),
                 painter = painterResource(R.drawable.logo_common02),
                 contentDescription = null
             )
 
             Spacer(
-                modifier = Modifier.size(92f.px2dp())
+                modifier = Modifier.size(92f.dpx)
             )
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
-                fontSize = 30f.px2sp(),
+                fontSize = 30f.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02,
                 textAlign = TextAlign.Center
             )
 
             Spacer(
-                modifier = Modifier.size(18f.px2dp())
+                modifier = Modifier.size(18f.dpx)
             )
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = config.storeName,
-                fontSize = 80f.px2sp(),
-                lineHeight = 80f.px2sp(),
+                fontSize = 80f.spx,
+                lineHeight = 80f.spx,
                 fontWeight = FontWeight.Bold,
                 color = common02,
                 textAlign = TextAlign.Center
             )
 
             Spacer(
-                modifier = Modifier.size(70f.px2dp())
+                modifier = Modifier.size(70f.dpx)
             )
 
 
@@ -231,35 +232,35 @@ private fun ColumnC(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 80f.px2dp(), horizontal = 40f.px2dp()),
+            .padding(vertical = 80f.dpx, horizontal = 40f.dpx),
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = config.storeName,
-            fontSize = 80f.px2sp(),
-            lineHeight = 80f.px2sp(),
+            fontSize = 80f.spx,
+            lineHeight = 80f.spx,
             fontWeight = FontWeight.Bold,
             color = common02,
             textAlign = TextAlign.Center
         )
 
         Spacer(
-            modifier = Modifier.size(27f.px2dp())
+            modifier = Modifier.size(27f.dpx)
         )
 
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = preSubTitle ?: config.subTitle,
-            fontSize = 30f.px2sp(),
+            fontSize = 30f.spx,
             fontWeight = FontWeight.Normal,
             color = common02,
             textAlign = TextAlign.Center
         )
 
         Spacer(
-            modifier = Modifier.size(81f.px2dp())
+            modifier = Modifier.size(81f.dpx)
         )
 
         SetupButton(
@@ -269,7 +270,7 @@ private fun ColumnC(
         )
 
         Spacer(
-            modifier = Modifier.size(135f.px2dp())
+            modifier = Modifier.size(135f.dpx)
         )
 
         PreviewCloseButton(
@@ -290,40 +291,40 @@ private fun ColumnD(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 80f.px2dp(), horizontal = 40f.px2dp()),
+            .padding(vertical = 80f.dpx, horizontal = 40f.dpx),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 61f.px2dp())
+            modifier = Modifier.padding(horizontal = 61f.dpx)
         ) {
             Spacer(
-                modifier = Modifier.size(86f.px2dp())
+                modifier = Modifier.size(86f.dpx)
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
-                fontSize = 30f.px2sp(),
+                fontSize = 30f.spx,
                 fontWeight = FontWeight.Normal,
                 color = white,
                 textAlign = TextAlign.Start
             )
 
             Spacer(
-                modifier = Modifier.size(18f.px2dp())
+                modifier = Modifier.size(18f.dpx)
             )
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = config.storeName,
-                fontSize = 80f.px2sp(),
-                lineHeight = 80f.px2sp(),
+                fontSize = 80f.spx,
+                lineHeight = 80f.spx,
                 fontWeight = FontWeight.Bold,
                 color = white,
                 textAlign = TextAlign.Start
             )
 
             Spacer(
-                modifier = Modifier.size(79f.px2dp())
+                modifier = Modifier.size(79f.dpx)
             )
 
             SetupButton(
@@ -346,7 +347,7 @@ private fun SetupButton(
     alignment: Alignment,
     color: Color,
 ) {
-    val shape = RoundedCornerShape(100f.px2dp())
+    val shape = RoundedCornerShape(100f.dpx)
     val controller = LocalController.current
 
     Box(
@@ -354,7 +355,7 @@ private fun SetupButton(
         contentAlignment = alignment
     ) {
         ClickSoundButton(
-            modifier = Modifier.size(width = 200f.px2dp(), height = 70f.px2dp()),
+            modifier = Modifier.size(width = 200f.dpx, height = 70f.dpx),
             backgroundColor = transparent,
             shape = shape,
             border = BorderStroke(1.dp, color),
@@ -363,11 +364,11 @@ private fun SetupButton(
             }
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(17f.px2dp()),
+                horizontalArrangement = Arrangement.spacedBy(17f.dpx),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    modifier = Modifier.size(35f.px2dp()),
+                    modifier = Modifier.size(35f.dpx),
                     painter = painterResource(
                         when(color) {
                             common01 -> R.drawable.icon_setup_common01
@@ -381,7 +382,7 @@ private fun SetupButton(
                 Text(
                     text = "설정",
                     color = color,
-                    fontSize = 30f.px2sp()
+                    fontSize = 30f.spx
                 )
 
             }
@@ -406,7 +407,7 @@ private fun PreviewCloseButton(
     if(isPreview) {
         if(theme != MainThemes.Theme_B) {
             Image(
-                modifier = Modifier.size(width = 162f.px2dp(), height = 36f.px2dp())
+                modifier = Modifier.size(width = 162f.dpx, height = 36f.dpx)
                     .alpha(alpha)
                     .clickable {
                         if(BuildConfig.DEBUG) {
@@ -422,9 +423,9 @@ private fun PreviewCloseButton(
     else {
         ClickSoundButton(
             modifier = Modifier.fillMaxWidth()
-                .height(112f.px2dp()),
+                .height(112f.dpx),
             backgroundColor = white,
-            shape = RoundedCornerShape(20f.px2dp()),
+            shape = RoundedCornerShape(20f.dpx),
             border = BorderStroke(width = 1.dp, color = common01),
             onClick = {
                 controller.dispatch(PadAction.OnClickClosePreview)
@@ -433,7 +434,7 @@ private fun PreviewCloseButton(
             Text(
                 text = "닫기",
                 color = common01,
-                fontSize = 35f.px2sp(),
+                fontSize = 35f.spx,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -460,18 +461,19 @@ private fun previewController() = object : ViewController {
 @Preview(showBackground = true)
 @Composable
 private fun MainIdleScreenPreview_ThemeA() {
-    CompositionLocalProvider(LocalController provides previewController()) {
-        MainIdleScreen()
+    CatposSignpadTheme {
+        CompositionLocalProvider(LocalController provides previewController()) {
+            MainIdleScreen()
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun MainIdleScreenPreview_ThemeB() {
-    val controller = previewController().apply {
-        // Theme_B로 보려면 configState의 themeIndex를 1로
-    }
-    CompositionLocalProvider(LocalController provides previewController()) {
-        MainIdleScreen()
+    CatposSignpadTheme {
+        CompositionLocalProvider(LocalController provides previewController()) {
+            MainIdleScreen()
+        }
     }
 }

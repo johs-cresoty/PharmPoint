@@ -20,9 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
-import com.cresoty.catpossignpad.view.composable.common.DialogGenerator
+import com.cresoty.catpossignpad.view.composable.common.BaseDialog
 import com.cresoty.catpossignpad.view.composable.list.SettingTypeList
 import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.view.composable.setting.SettingPointUse
@@ -30,6 +28,9 @@ import com.cresoty.catpossignpad.view.composable.setting.SettingScreenTimeout
 import com.cresoty.catpossignpad.view.composable.setting.SettingStoreInfo
 import com.cresoty.catpossignpad.view.composable.setting.SettingTheme
 import com.cresoty.catpossignpad.view.controller.LocalController
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.sub01
 import com.cresoty.catpossignpad.presentation.theme.white
 
@@ -40,12 +41,12 @@ fun SettingDialog() {
     val selectedIndex = setting.selectedIndex
     var selectedType = SettingType.entries[selectedIndex]
 
-    DialogGenerator(
+    BaseDialog(
         onCreate = {},
         onDismiss = {}
     ) {
         Row(
-            modifier = Modifier.size(width = 742f.px2dp(), height = 953f.px2dp())
+            modifier = Modifier.size(width = 742f.dpx, height = 953f.dpx)
                 .background(color = sub01, shape = RoundedCornerShape(20f))
         ) {
             Column(
@@ -53,15 +54,15 @@ fun SettingDialog() {
                     .fillMaxHeight()
             ) {
                 Row(
-                    modifier = Modifier.height(90f.px2dp())
+                    modifier = Modifier.height(90f.dpx)
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = "환경설정",
-                        fontSize = 30f.px2sp(),
-                        lineHeight = 30f.px2sp(),
+                        fontSize = 30f.spx,
+                        lineHeight = 30f.spx,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                     )
@@ -80,8 +81,8 @@ fun SettingDialog() {
                 modifier = Modifier
                     .weight(0.75f)
                     .fillMaxHeight()
-                    .background(color = white, shape = RoundedCornerShape(topEnd =20f.px2dp(), bottomEnd = 20f.px2dp()))
-                    .padding(18f.px2dp())
+                    .background(color = white, shape = RoundedCornerShape(topEnd = 20f.dpx, bottomEnd = 20f.dpx))
+                    .padding(18f.dpx)
             ) {
                 SettingPanel(Modifier.weight(1f), selectedType)
             }
@@ -111,5 +112,7 @@ fun SettingPanel(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingDialogPreview() {
-    SettingDialog()
+    CatposSignpadTheme {
+        SettingDialog()
+    }
 }

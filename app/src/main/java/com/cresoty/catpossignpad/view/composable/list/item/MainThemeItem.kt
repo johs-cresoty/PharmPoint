@@ -16,10 +16,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.enums.MainThemes
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 
 @Composable
@@ -29,9 +30,8 @@ fun MainThemeItem(
     isSelected : Boolean,
     onClickItem : (MainThemes) -> Unit
 ) {
-
     val radioIcon = if(isSelected) R.drawable.icon_radiobutton_select else R.drawable.icon_radiobutton_unselect
-    val shape = RoundedCornerShape(10f.px2dp())
+    val shape = RoundedCornerShape(10f.dpx)
 
     ClickSoundButton(
         onClick = {
@@ -40,10 +40,10 @@ fun MainThemeItem(
         backgroundColor = transparent
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(10f.px2dp())
+            verticalArrangement = Arrangement.spacedBy(10f.dpx)
         ) {
             Image(
-                modifier = Modifier.size(158f.px2dp())
+                modifier = Modifier.size(158f.dpx)
                     .clip(shape),
                 painter = painterResource(drawable),
                 contentScale = ContentScale.Crop,
@@ -52,18 +52,18 @@ fun MainThemeItem(
             )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(5f.px2dp()),
+                horizontalArrangement = Arrangement.spacedBy(5f.dpx),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    modifier = Modifier.size(18f.px2dp()),
+                    modifier = Modifier.size(18f.dpx),
                     painter = painterResource(radioIcon),
                     contentDescription = null
                 )
 
                 Text(
                     text = theme.title,
-                    fontSize = 20f.px2sp(),
+                    fontSize = 20f.spx,
                     color = common01
                 )
             }
@@ -76,26 +76,28 @@ fun MainThemeItem(
 @Preview
 @Composable
 fun MainThemeItemPreview() {
-    Column {
-        MainThemeItem(
-            theme = MainThemes.Theme_A,
-            drawable = R.drawable.main_01,
-            isSelected = true
-        ) {}
-        MainThemeItem(
-            theme = MainThemes.Theme_B,
-            drawable = R.drawable.main_02,
-            isSelected = true
-        ) {}
-        MainThemeItem(
-            theme = MainThemes.Theme_C,
-            drawable = R.drawable.main_03,
-            isSelected = true
-        ) {}
-        MainThemeItem(
-            theme = MainThemes.Theme_D,
-            drawable = R.drawable.main_04,
-            isSelected = true
-        ) {}
+    CatposSignpadTheme {
+        Column {
+            MainThemeItem(
+                theme = MainThemes.Theme_A,
+                drawable = R.drawable.main_01,
+                isSelected = true
+            ) {}
+            MainThemeItem(
+                theme = MainThemes.Theme_B,
+                drawable = R.drawable.main_02,
+                isSelected = true
+            ) {}
+            MainThemeItem(
+                theme = MainThemes.Theme_C,
+                drawable = R.drawable.main_03,
+                isSelected = true
+            ) {}
+            MainThemeItem(
+                theme = MainThemes.Theme_D,
+                drawable = R.drawable.main_04,
+                isSelected = true
+            ) {}
+        }
     }
 }

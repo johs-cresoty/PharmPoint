@@ -25,14 +25,15 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.ConfigKey
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.view.controller.LocalController
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main03
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
@@ -47,26 +48,26 @@ fun SettingScreenTimeout(
     val idx = list.indexOf(config.timeout.toString())
     var selectedIndex by remember{ mutableIntStateOf(idx) }
 
-    val shape = RoundedCornerShape(5f.px2dp())
+    val shape = RoundedCornerShape(5f.dpx)
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(40f.px2dp())
+        verticalArrangement = Arrangement.spacedBy(40f.dpx)
     ) {
-        Spacer(modifier = Modifier.size(0f.px2dp()))    //간격 관리용 Spacer
+        Spacer(modifier = Modifier.size(0f.dpx))    //간격 관리용 Spacer
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(15f.px2dp())
+            verticalArrangement = Arrangement.spacedBy(15f.dpx)
         ) {
             Text(
                 text = "화면 대기 시간",
-                fontSize = 20f.px2sp(),
+                fontSize = 20f.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02
             )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(5f.px2dp())
+                horizontalArrangement = Arrangement.spacedBy(5f.dpx)
             ){
                 list.mapIndexed { index, text ->
                     val fontColor = if(index == selectedIndex) white else common01
@@ -75,12 +76,12 @@ fun SettingScreenTimeout(
                     val fontWeight = if(index == selectedIndex) FontWeight.Bold else FontWeight.Normal
 
                     ClickSoundButton(
-                        modifier = Modifier.size(width = 70f.px2dp(), height = 55f.px2dp()),
+                        modifier = Modifier.size(width = 70f.dpx, height = 55f.dpx),
                         onClick = {
                             selectedIndex = index
                         },
                         shape = shape,
-                        border = BorderStroke(width = 1f.px2dp(), color = borderColor),
+                        border = BorderStroke(width = 1f.dpx, color = borderColor),
                         backgroundColor = white
                     ) {
                         Box(
@@ -98,12 +99,12 @@ fun SettingScreenTimeout(
                 }
 
                 Box(
-                    modifier = Modifier.height(55f.px2dp()),
+                    modifier = Modifier.height(55f.dpx),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "초 후",
-                        fontSize = 20f.px2sp(),
+                        fontSize = 20f.spx,
                         fontWeight = FontWeight.Normal,
                         color = common01
                     )
@@ -112,7 +113,7 @@ fun SettingScreenTimeout(
 
             Text(
                 text = "완료 화면 자동 꺼짐",
-                fontSize = 20f.px2sp(),
+                fontSize = 20f.spx,
                 fontWeight = FontWeight.Normal,
                 color = common01
             )
@@ -135,8 +136,10 @@ fun SettingScreenTimeout(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingScreenTimeoutPreview() {
-    SettingScreenTimeout(
-        Modifier.background(color = white)
-        .fillMaxSize()
-    )
+    CatposSignpadTheme {
+        SettingScreenTimeout(
+            Modifier.background(color = white)
+            .fillMaxSize()
+        )
+    }
 }

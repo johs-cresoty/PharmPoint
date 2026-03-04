@@ -20,13 +20,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.presentation.component.BackStepButton
 import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.notice
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
@@ -46,53 +46,53 @@ fun InputNumberUsePoint(
     ) {
         BackStepButton { controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE)) }
 
-//        Spacer(modifier = Modifier.size(27f.px2dp()))
-        Spacer(modifier = Modifier.size(38f.px2dp()))
+//        Spacer(modifier = Modifier.size(27f.dpx))
+        Spacer(modifier = Modifier.size(38f.dpx))
 
         Text(
             text = storeName,
-            fontSize = 45f.px2sp(),
-            lineHeight = 45f.px2sp(),
+            fontSize = 45f.spx,
+            lineHeight = 45f.spx,
             color = common01,
             maxLines = 1
         )
 
         Text(
             text = "${paymentAmount}원 결제",
-            fontSize = 53f.px2sp(),
-            lineHeight = 53f.px2sp(),
+            fontSize = 53f.spx,
+            lineHeight = 53f.spx,
             fontWeight = FontWeight.Medium,
             color = common02
         )
 
-        Spacer(modifier = Modifier.size(24f.px2dp()))
+        Spacer(modifier = Modifier.size(24f.dpx))
 
         Text(
             text = "휴대폰 번호 입력하고 본인 인증을 진행해 주세요.",
-            fontSize = 30f.px2sp(),
-            lineHeight = 30f.px2sp(),
+            fontSize = 30f.spx,
+            lineHeight = 30f.spx,
             color = common01
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(90f.px2dp()),
+                .height(90f.dpx),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!isCustomerExist && !customer.isExistChecking && phoneNum.length > 10) {
                 Image(
-                    modifier = Modifier.size(height = 24f.px2dp(), width = 25f.px2dp()),
+                    modifier = Modifier.size(height = 24f.dpx, width = 25f.dpx),
                     painter = painterResource(R.drawable.icon_alert),
                     contentDescription = null
                 )
 
-                Spacer(modifier = Modifier.size(12f.px2dp()))
+                Spacer(modifier = Modifier.size(12f.dpx))
 
                 Text(
                     text = "등록된 회원이 없습니다.",
-                    fontSize = 25f.px2sp(),
+                    fontSize = 25f.spx,
                     color = notice
                 )
             }

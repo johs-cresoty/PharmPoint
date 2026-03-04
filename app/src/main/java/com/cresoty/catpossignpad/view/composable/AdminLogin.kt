@@ -26,15 +26,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
-import com.cresoty.catpossignpad.view.composable.common.DialogGenerator
+import com.cresoty.catpossignpad.view.composable.common.BaseDialog
 import com.cresoty.catpossignpad.view.composable.setting.SettingButtons
 import com.cresoty.catpossignpad.view.controller.LocalController
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.notice
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.sub01
 import com.cresoty.catpossignpad.presentation.theme.white
 
@@ -64,40 +65,40 @@ fun AdminLogin(
     onClickDelete: () -> Unit = {},
     onClickDeleteAll: () -> Unit = {}
 ) {
-    val shape = RoundedCornerShape(20f.px2dp())
+    val shape = RoundedCornerShape(20f.dpx)
 
-    DialogGenerator(onDismiss = onDismiss) {
+    BaseDialog(onDismiss = onDismiss) {
         Column(
             modifier = Modifier
-                .size(width = 742f.px2dp(), height = 642f.px2dp())
+                .size(width = 742f.dpx, height = 642f.dpx)
                 .background(color = white, shape = shape)
-                .padding(18f.px2dp())
+                .padding(18f.dpx)
         ) {
-            Spacer(modifier = Modifier.size(40f.px2dp()))
+            Spacer(modifier = Modifier.size(40f.dpx))
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
                     text = "관리자 비밀번호",
-                    fontSize = 40f.px2sp(),
+                    fontSize = 40f.spx,
                     fontWeight = FontWeight.Medium,
                     color = common02
                 )
             }
 
-            Spacer(modifier = Modifier.size(25f.px2dp()))
+            Spacer(modifier = Modifier.size(25f.dpx))
 
             PasswordField(input)
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(94f.px2dp()),
+                    .height(94f.dpx),
                 contentAlignment = Alignment.Center
             ) {
                 if (!isPasswordCorrect) {
                     Text(
                         text = "입력하신 비밀번호가 일치하지 않습니다.",
-                        fontSize = 25f.px2sp(),
+                        fontSize = 25f.spx,
                         color = notice
                     )
                 }
@@ -145,21 +146,21 @@ fun PasswordButtonField(
     onClickDelete: () -> Unit = {},
     onClickDeleteAll: () -> Unit = {}
 ) {
-    val shape = RoundedCornerShape(10f.px2dp())
+    val shape = RoundedCornerShape(10f.dpx)
     val buttons = PasswordButtonType.entries
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4f.px2dp())
+            .padding(horizontal = 4f.dpx)
             .background(color = sub01, shape = shape)
-            .padding(vertical = 5f.px2dp(), horizontal = 5f.px2dp()),
-        verticalArrangement = Arrangement.spacedBy(5f.px2dp())
+            .padding(vertical = 5f.dpx, horizontal = 5f.dpx),
+        verticalArrangement = Arrangement.spacedBy(5f.dpx)
     ) {
         buttons.chunked(6).forEach { rows ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(1f.px2dp())
+                horizontalArrangement = Arrangement.spacedBy(1f.dpx)
             ) {
                 rows.forEach { item ->
                     Box(modifier = Modifier.weight(1f)) {  // 여기서 weight 적용
@@ -192,11 +193,11 @@ fun PasswordField(input: String) {
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10f.px2dp())) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10f.dpx)) {
             for (i in 0 until 5) {
                 Box(
                     modifier = Modifier
-                        .size(80f.px2dp())
+                        .size(80f.dpx)
                         .drawBehind {
                             val stroke = 1.dp.toPx()
                             val y = size.height - stroke / 2
@@ -211,7 +212,7 @@ fun PasswordField(input: String) {
                 ) {
                     Text(
                         text = list[i],
-                        fontSize = 40f.px2sp(),
+                        fontSize = 40f.spx,
                         color = common02
                     )
                 }
@@ -234,7 +235,7 @@ fun PasswordButton(
     ClickSoundButton(
         modifier = Modifier
             .fillMaxWidth()
-            .height(60f.px2dp()),
+            .height(60f.dpx),
         onClick = {
             when (type) {
                 PasswordButtonType.DELETE -> onClickDelete()
@@ -248,7 +249,7 @@ fun PasswordButton(
         when (type) {
             PasswordButtonType.DELETE -> {
                 Image(
-                    modifier = Modifier.size(width = 38f.px2dp(), height = 26f.px2dp()),
+                    modifier = Modifier.size(width = 38f.dpx, height = 26f.dpx),
                     painter = painterResource(R.drawable.icon_delete),
                     contentDescription = null
                 )
@@ -257,7 +258,7 @@ fun PasswordButton(
             else -> {
                 Text(
                     text = number,
-                    fontSize = fontSize.px2sp(),
+                    fontSize = fontSize.spx,
                     color = common02
                 )
             }
@@ -269,8 +270,10 @@ fun PasswordButton(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingPasswordInputPreview() {
-    AdminLogin(
-        input = "123",
-        isPasswordCorrect = true
-    )
+    CatposSignpadTheme {
+        AdminLogin(
+            input = "123",
+            isPasswordCorrect = true
+        )
+    }
 }

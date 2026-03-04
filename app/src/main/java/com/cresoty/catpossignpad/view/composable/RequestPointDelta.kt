@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
-import com.cresoty.catpossignpad.px2dp
 import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.view.composable.common.ConfirmButtonField
 import com.cresoty.catpossignpad.view.composable.inpunumber.InputNumberSavePoint
@@ -21,6 +20,7 @@ import com.cresoty.catpossignpad.view.composable.inpunumber.NumberPad
 import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.notice
+import com.cresoty.catpossignpad.presentation.theme.dpx
 import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
@@ -40,7 +40,7 @@ fun RequestPointDelta(step : PointDeltaProcess) {
     Column(
         modifier = Modifier.fillMaxSize()
             .background(white)
-            .padding(top = 45f.px2dp(), start = 40f.px2dp(), end = 40f.px2dp())
+            .padding(top = 45f.dpx, start = 40f.dpx, end = 40f.dpx)
     ) {
         when(step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM -> {
@@ -84,4 +84,3 @@ fun RequestPointDelta(step : PointDeltaProcess) {
     }
 
 }
-

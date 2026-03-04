@@ -29,8 +29,6 @@ import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.Quatro
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.view.composable.common.ConfirmButtonField
 import com.cresoty.catpossignpad.view.controller.LocalController
@@ -38,6 +36,8 @@ import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.main04
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.white
 import kotlinx.coroutines.delay
 
@@ -99,7 +99,7 @@ fun PointDeltaProcDone(
         modifier = Modifier
             .fillMaxSize()
             .background(white)
-            .padding(horizontal = 40f.px2dp()),
+            .padding(horizontal = 40f.dpx),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
@@ -108,65 +108,65 @@ fun PointDeltaProcDone(
             contentDescription = null
         )
 
-        Spacer(modifier = Modifier.size(52f.px2dp()))
+        Spacer(modifier = Modifier.size(52f.dpx))
 
         Text(
             text = mainMent,
-            fontSize = 53f.px2sp(),
+            fontSize = 53f.spx,
             color = common02,
             fontWeight = FontWeight.Medium
         )
 
-        Spacer(modifier = Modifier.size(23f.px2dp()))
+        Spacer(modifier = Modifier.size(23f.dpx))
 
         Text(
             text = subMent,
-            fontSize = 30f.px2sp(),
-            lineHeight = 30f.px2sp(),
+            fontSize = 30f.spx,
+            lineHeight = 30f.spx,
             color = common01,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.size(23f.px2dp()))
+        Spacer(modifier = Modifier.size(23f.dpx))
 
         Row(
             modifier = Modifier
-                .height(110f.px2dp())
-                .background(color = main04, shape = RoundedCornerShape(100f.px2dp()))
-                .padding(horizontal = 44f.px2dp()),
-            horizontalArrangement = Arrangement.spacedBy(10f.px2dp()),
+                .height(110f.dpx)
+                .background(color = main04, shape = RoundedCornerShape(100f.dpx))
+                .padding(horizontal = 44f.dpx),
+            horizontalArrangement = Arrangement.spacedBy(10f.dpx),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = balanceMent,
-                fontSize = 30f.px2sp(),
+                fontSize = 30f.spx,
                 color = main01
             )
 
             Text(
                 text = pointBalance.toDecimalString(),
-                fontSize = 40f.px2sp(),
+                fontSize = 40f.spx,
                 color = main01,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = "P",
-                fontSize = 35f.px2sp(),
+                fontSize = 35f.spx,
                 color = main01,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.size(104f.px2dp()))
+        Spacer(modifier = Modifier.size(104f.dpx))
 
         Text(
             text = "${leftTime}초 후 창 자동 닫힘",
-            fontSize = 30f.px2sp(),
+            fontSize = 30f.spx,
             color = common02
         )
 
-        Spacer(modifier = Modifier.size(104f.px2dp()))
+        Spacer(modifier = Modifier.size(104f.dpx))
 
         ConfirmButtonField()
     }

@@ -23,17 +23,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cresoty.PharmpayPos.view.composable.FilterTextField
+import com.cresoty.catpossignpad.view.composable.common.FilterTextField
 import com.cresoty.catpossignpad.ConfigKey
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 import com.cresoty.catpossignpad.view.composable.list.SettingMainThemeList
 import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.view.controller.LocalController
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main03
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
 
@@ -48,31 +49,29 @@ fun SettingTheme(
 
     var selectedIndex by remember{ mutableStateOf(config.themeIndex) }
 
-    val shape = RoundedCornerShape(100f.px2dp())
+    val shape = RoundedCornerShape(100f.dpx)
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(40f.px2dp())
+        verticalArrangement = Arrangement.spacedBy(40f.dpx)
     ) {
-        Spacer(modifier = Modifier.size(0f.px2dp()))    //간격 관리용 Spacer
+        Spacer(modifier = Modifier.size(0f.dpx))    //간격 관리용 Spacer
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(15f.px2dp())
+            verticalArrangement = Arrangement.spacedBy(15f.dpx)
         ) {
             Text(
                 //20자는 바이트 기준인지 글자수 기준인지?
                 text = "서브 타이틀(최대 20자)",
-                fontSize = 20f.px2sp(),
+                fontSize = 20f.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02
             )
 
             FilterTextField(
-                modifier = Modifier.size(width = 492f.px2dp(), height = 55f.px2dp()),
+                modifier = Modifier.size(width = 492f.dpx, height = 55f.dpx),
                 placeholder = "전문 약사가 정성껏 상담해 드립니다.",
                 initText = subTitle,
-                fontSize = 20f.px2sp(),
-                fontColor = common02,
                 textAlign = TextAlign.Start,
                 onTextChange = { subTitle = it },
                 onClickDone = { subTitle = it }
@@ -80,21 +79,21 @@ fun SettingTheme(
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(15f.px2dp())
+            verticalArrangement = Arrangement.spacedBy(15f.dpx)
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10f.px2dp()),
+                horizontalArrangement = Arrangement.spacedBy(10f.dpx),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "테마 선택",
-                    fontSize = 20f.px2sp(),
+                    fontSize = 20f.spx,
                     fontWeight = FontWeight.Normal,
                     color = common02
                 )
 
                 ClickSoundButton(
-                    modifier = Modifier.size(width = 82f.px2dp(), height = 26f.px2dp()),
+                    modifier = Modifier.size(width = 82f.dpx, height = 26f.dpx),
                     shape = shape,
                     onClick = {
                         controller.dispatch(PadAction.OnClickShowPreview(selectedIndex, subTitle))
@@ -104,14 +103,14 @@ fun SettingTheme(
                     Box(
                         modifier = Modifier.fillMaxSize()
                             .background(color = main03)
-                            .padding(vertical = 3f.px2dp()),
+                            .padding(vertical = 3f.dpx),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "미리보기",
                             color = white,
-                            fontSize = 15f.px2sp(),
-                            lineHeight = 15f.px2sp(),
+                            fontSize = 15f.spx,
+                            lineHeight = 15f.spx,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -142,8 +141,10 @@ fun SettingTheme(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingThemePreview() {
-    SettingTheme(
-        Modifier.fillMaxSize()
-            .background(color = white)
-    )
+    CatposSignpadTheme {
+        SettingTheme(
+            Modifier.fillMaxSize()
+                .background(color = white)
+        )
+    }
 }

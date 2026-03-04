@@ -17,16 +17,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cresoty.PharmpayPos.view.composable.FilterTextField
-import com.cresoty.PharmpayPos.view.composable.FilterTextType
+import com.cresoty.catpossignpad.view.composable.common.FilterTextField
+import com.cresoty.catpossignpad.view.composable.common.FilterTextType
 import com.cresoty.catpossignpad.ConfigKey
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.view.controller.LocalController
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
@@ -46,12 +47,12 @@ fun SettingStoreInfo(
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(40f.px2dp())
+        verticalArrangement = Arrangement.spacedBy(40f.dpx)
     ) {
-        Spacer(modifier = Modifier.size(0f.px2dp()))    //간격 관리용 Spacer
+        Spacer(modifier = Modifier.size(0f.dpx))    //간격 관리용 Spacer
 
         list.mapIndexed { index, item ->
-            val filter = if(item.first == ConfigKey.STORE_NAME) FilterTextType.NOT_FILTER else FilterTextType.FILTER_TYPE_BIZNO
+            val filter = if(item.first == ConfigKey.STORE_NAME) FilterTextType.NONE else FilterTextType.NUMBER
             val placeholder = if(item.first == ConfigKey.STORE_NAME) "약국명을 입력해주세요."
             else "사업자번호 10자리를 입력해주세요."
 
@@ -59,21 +60,16 @@ fun SettingStoreInfo(
                 Text(
                     text = if(index == 0) "약국명" else "사업자번호",
                     color = common02,
-                    fontSize = 20f.px2sp()
+                    fontSize = 20f.spx
                 )
 
-                Spacer(modifier = Modifier.size(15f.px2dp()))
+                Spacer(modifier = Modifier.size(15f.dpx))
 
                 FilterTextField(
-                    modifier = Modifier.size(width = 351f.px2dp(), height = 55f.px2dp()),
-                    hPadding = 20f.px2dp(),
-                    vPadding = 15f.px2dp(),
+                    modifier = Modifier.size(width = 351f.dpx, height = 55f.dpx),
                     placeholder = placeholder,
-                    fontSize = 20f.px2sp(),
-                    border = common01,
                     initText = item.third,
                     filterType = filter,
-                    keyboardType = item.second,
                     onTextChange = {
                         if(item.first == ConfigKey.BIZ_NO) {
                             bizNo = it
@@ -115,8 +111,10 @@ fun SettingStoreInfo(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingStoreInfoPreview() {
-    SettingStoreInfo(
-        Modifier.fillMaxSize()
-        .background(color = white)
-    )
+    CatposSignpadTheme {
+        SettingStoreInfo(
+            Modifier.fillMaxSize()
+            .background(color = white)
+        )
+    }
 }

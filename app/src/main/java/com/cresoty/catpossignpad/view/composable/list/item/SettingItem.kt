@@ -13,12 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 import com.cresoty.catpossignpad.view.composable.list.SettingType
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main03
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
 
@@ -30,7 +31,7 @@ fun SettingItem(
 ) {
     val backgroundColor = if(isSelected) main03 else transparent
     val shape =
-        if(isSelected) RoundedCornerShape(topEnd = 10f.px2dp(), bottomEnd = 10f.px2dp())
+        if(isSelected) RoundedCornerShape(topEnd = 10f.dpx, bottomEnd = 10f.dpx)
         else RoundedCornerShape(0.dp)
     val textColor = if(isSelected) white else common02
 
@@ -44,14 +45,14 @@ fun SettingItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70f.px2dp())
+                .height(70f.dpx)
                 .background(color = backgroundColor, shape = shape)
-                .padding(horizontal = 30f.px2dp(), vertical = 18f.px2dp()),
+                .padding(horizontal = 30f.dpx, vertical = 18f.dpx),
         ) {
             Text(
                 text = item.title,
-                fontSize = 25f.px2sp(),
-                lineHeight = 25f.px2sp(),
+                fontSize = 25f.spx,
+                lineHeight = 25f.spx,
                 fontWeight = FontWeight.Medium,
                 color = textColor
             )
@@ -65,15 +66,16 @@ fun SettingItem(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun SettingDialogPreview() {
-    Column {
+    CatposSignpadTheme {
+        Column {
 
 //        SettingItem(
 //            SettingType.ID_VERIFY, true
 //        ) {}
 
-        SettingItem(
-            SettingType.STORE_INFO, false
-        ) {}
+            SettingItem(
+                SettingType.STORE_INFO, false
+            ) {}
+        }
     }
-
 }

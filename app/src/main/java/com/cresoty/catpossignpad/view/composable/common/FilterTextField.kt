@@ -1,4 +1,4 @@
-package com.cresoty.PharmpayPos.view.composable
+package com.cresoty.catpossignpad.view.composable.common
 
 import android.view.SoundEffectConstants
 import androidx.compose.foundation.background
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -27,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
@@ -41,68 +39,59 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.toDecimalString
-import com.cresoty.catpossignpad.presentation.theme.black
 import com.cresoty.catpossignpad.presentation.theme.common01
+import com.cresoty.catpossignpad.presentation.theme.common02
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.white
+import com.cresoty.catpossignpad.toDecimalString
 
-enum class FilterTextType() {
-    FILTER_TYPE_IP,
-    FILTER_TYPE_NUMBER,
-    FILTER_TYPE_BIZNO,
-    NOT_FILTER
+enum class FilterTextType {
+    IP,
+    PRICE,
+    NUMBER,
+    NONE
 }
 
 @Composable
 fun FilterTextField(
-    modifier : Modifier = Modifier,
+    modifier: Modifier = Modifier,
     initText: String = "",
-    shape : RoundedCornerShape = RoundedCornerShape(6.dp),
     placeholder: String,
-    placeholderColor : Color = common01,
-    placeHolderAlpha : Float = 1f,  // placeholder 투명도 : 0.0f 완전투명 ~ 1f 완전불투명
-    keyboardType: KeyboardType = KeyboardType.Text,
-    imeAction: ImeAction = ImeAction.Done,
-    isSettingField: Boolean = false,
-    enabled: Boolean = true,
-    hPadding: Dp = 8.dp,
-    vPadding: Dp = (5.5).dp,
-    fontSize: TextUnit = 20.sp,
-    fontWeight : FontWeight = FontWeight.Normal,
-    fontColor : Color = black,
     textAlign: TextAlign = TextAlign.Start,
-    filterType: FilterTextType = FilterTextType.NOT_FILTER,
-    backgroundColor : Color = white,
-    border : Color = black,
-    borderWidth : Dp = 1.dp,
-    focusRequester : FocusRequester = remember { FocusRequester() },
+    filterType: FilterTextType = FilterTextType.NONE,
     onTextChange: (String) -> Unit = {},
-    onSearch: (String) -> Unit = {},
-    onClickTextField : () -> Unit = {},
-    onSuccessReturn: (Boolean) -> Unit = {},
-    onFocusChange: (Boolean) -> Unit = {},
-    onClickDone:(String) -> Unit = {}
+    onClickDone: (String) -> Unit = {}
 ) {
+    val keyboardType = when (filterType) {
+        FilterTextType.IP, FilterTextType.PRICE, FilterTextType.NUMBER -> KeyboardType.Number
+        FilterTextType.NONE -> KeyboardType.Text
+    }
+    val focusRequester = remember { FocusRequester() }
+
     var textFieldValue by remember {
-        mutableStateOf(TextFieldValue(text = initText, selection = TextRange(initText.length)))
+        val initialText = when (filterType) {
+            FilterTextType.PRICE -> initText.replace(",", "").toDecimalString()
+            FilterTextType.NUMBER -> initText.filter { it.isDigit() }.take(10)
+            else -> initText
+        }
+        mutableStateOf(
+            TextFieldValue(
+                text = initialText,
+                selection = TextRange(initialText.length)
+            )
+        )
     }
     var isFocused by remember { mutableStateOf(false) }
     var isInitialFocus by remember { mutableStateOf(true) }
 
-    //동작 감지
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val view = LocalView.current
-
-    val shape = remember(isSettingField) { shape }
 
     fun dismissKeyboard() {
         focusManager.clearFocus()
@@ -114,10 +103,9 @@ fun FilterTextField(
     }
 
     LaunchedEffect(isPressed) {
-        if(isPressed) {
+        if (isPressed) {
             playClickSound()
             focusRequester.requestFocus()
-            onClickTextField()
         }
     }
 
@@ -132,36 +120,37 @@ fun FilterTextField(
 
     BasicTextField(
         value = textFieldValue,
-        textStyle = TextStyle(fontSize = fontSize, textAlign = textAlign, fontWeight = fontWeight, color = fontColor),
+        textStyle = TextStyle(
+            fontSize = 20.spx,
+            textAlign = textAlign,
+            fontWeight = FontWeight.Normal,
+            color = common02
+        ),
         onValueChange = { newValue ->
             var inputText = newValue.text
-            playClickSound()    // 현금영수증, 현금ic, 제로페이 승인번호 수정 api
+            playClickSound() // 현금영수증, 현금ic, 제로페이 승인번호 수정 api
 
-            if (filterType != FilterTextType.NOT_FILTER) {
-                when(filterType) {
-                    FilterTextType.FILTER_TYPE_NUMBER,
-                    FilterTextType.FILTER_TYPE_BIZNO -> {
-                        if (inputText.isNotEmpty()) {
-                            inputText = inputText.replace(Regex("[^0-9]"), "")
-                        }
-                        if(filterType == FilterTextType.FILTER_TYPE_BIZNO) {
-                            if(inputText.length > 10) inputText = inputText.dropLast(1)
-                        }
-                        else {
-                            inputText = inputText.toDecimalString()
-                        }
+            when (filterType) {
+                FilterTextType.PRICE,
+                FilterTextType.NUMBER -> {
+                    if (inputText.isNotEmpty()) {
+                        inputText = inputText.replace(Regex("[^0-9]"), "")
                     }
-                    else -> {}
+                    if (filterType == FilterTextType.NUMBER) {
+                        if (inputText.length > 10) inputText = inputText.dropLast(1)
+                    } else {
+                        inputText = inputText.toDecimalString()
+                    }
                 }
+
+                else -> {}
             }
 
             textFieldValue = newValue.copy(text = inputText)
-
             onTextChange(inputText)
-            onSuccessReturn(true)
         },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(
             onDone = {
                 playClickSound()
@@ -171,7 +160,6 @@ fun FilterTextField(
             onSearch = {
                 playClickSound()
                 dismissKeyboard()
-                onSearch(textFieldValue.text)
             }
         ),
         visualTransformation = if (keyboardType == KeyboardType.Password) {
@@ -179,7 +167,7 @@ fun FilterTextField(
         } else {
             VisualTransformation.None
         },
-        enabled = enabled,
+        enabled = true,
         decorationBox = { innerTextField ->
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -192,51 +180,63 @@ fun FilterTextField(
                     if (textFieldValue.text.isEmpty()) {
                         Text(
                             text = placeholder,
-                            fontSize = fontSize,
-                            fontWeight = fontWeight,
-                            color = placeholderColor.copy(alpha = placeHolderAlpha)
+                            fontSize = 20.spx,
+                            fontWeight = FontWeight.Normal,
+                            color = common01
                         )
                     }
-
                     innerTextField()
                 }
             }
         },
         interactionSource = interactionSource,
         modifier = modifier
-            .background(
-                color = backgroundColor,
-                shape = shape
-            )
-            .border(
-                width = if (isSettingField) 0.dp else borderWidth,
-                color = border,
-                shape = shape
-            )
-            .padding(
-                horizontal = hPadding,
-                vertical = vPadding
-            )
+            .background(color = white, shape = RoundedCornerShape(6.dp))
+            .border(width = 1.dp, color = common01, shape = RoundedCornerShape(6.dp))
+            .padding(horizontal = 20.dpx, vertical = 14.dpx)
             .focusRequester(focusRequester)
-            .onFocusChanged {
-                isFocused = it.isFocused
-            }
+            .onFocusChanged { isFocused = it.isFocused }
             .wrapContentSize()
     )
 }
 
-@Preview(device = "spec:width=800px,height=1319px,dpi=213")
+
+@Preview(name = "NONE")
 @Composable
-fun FilterTextFieldPreview() {
+private fun FilterTextFieldNonePreview() {
     FilterTextField(
-        modifier = Modifier.size(width = 275f.px2dp(), height = 55f.px2dp()),
+        placeholder = "약국명을 입력해 주세요.",
+        filterType = FilterTextType.NONE
+    )
+}
+
+@Preview(name = "NUMBER")
+@Composable
+private fun FilterTextFieldBizNoPreview() {
+    FilterTextField(
+        placeholder = "사업자번호 10자리를 입력해 주세요.",
+        filterType = FilterTextType.NUMBER
+    )
+}
+
+@Preview(name = "PRICE")
+@Composable
+private fun FilterTextFieldNumberPreview() {
+    FilterTextField(
+        placeholder = "숫자 입력",
+        initText = "1000",
         textAlign = TextAlign.End,
-        initText = "1,000",
-        placeholder = "",
-        keyboardType = KeyboardType.Number,
-        filterType = FilterTextType.FILTER_TYPE_NUMBER,
-        hPadding = 20f.px2dp(),
-        vPadding = 14f.px2dp(),
-        fontColor = common01
+        filterType = FilterTextType.PRICE,
+    )
+}
+
+
+@Preview(name = "IP")
+@Composable
+private fun FilterTextFieldIpPreview() {
+    FilterTextField(
+        placeholder = "IP 주소",
+        initText = "192.168.0.1",
+        filterType = FilterTextType.IP
     )
 }

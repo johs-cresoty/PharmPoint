@@ -13,11 +13,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.main01
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
 
@@ -59,7 +59,7 @@ fun ConfirmButtonField() {
 
 
     ClickSoundButton(
-        modifier = Modifier.size(width = 720f.px2dp(), height = 112f.px2dp()),
+        modifier = Modifier.size(width = 720f.dpx, height = 112f.dpx),
         onClick = {
             if (isClickable) {
                 when (step) {
@@ -96,12 +96,12 @@ fun ConfirmButtonField() {
             }
 
         },
-        shape = RoundedCornerShape(20f.px2dp()),
+        shape = RoundedCornerShape(20f.dpx),
         backgroundColor = confirmColor
     ) {
         Text(
             text = "확인",
-            fontSize = 35f.px2sp(),
+            fontSize = 35f.spx,
             fontWeight = FontWeight.Medium,
             color = white
         )
@@ -110,12 +110,12 @@ fun ConfirmButtonField() {
     when (step) {
         PointDeltaProcess.POINT_SAVE_PROC_DONE,
         PointDeltaProcess.POINT_USE_PROC_DONE -> {
-            Spacer(modifier = Modifier.size(80f.px2dp()))
+            Spacer(modifier = Modifier.size(80f.dpx))
         }
 
         else -> {
             Box(
-                modifier = Modifier.size(width = 720f.px2dp(), height = 80f.px2dp()),
+                modifier = Modifier.size(width = 720f.dpx, height = 80f.dpx),
                 contentAlignment = Alignment.Center
             ) {
                 ClickSoundButton(
@@ -126,7 +126,7 @@ fun ConfirmButtonField() {
                 ) {
                     Text(
                         text = "다음에 하기",
-                        fontSize = 25f.px2sp(),
+                        fontSize = 25f.spx,
                         color = common01
                     )
                 }

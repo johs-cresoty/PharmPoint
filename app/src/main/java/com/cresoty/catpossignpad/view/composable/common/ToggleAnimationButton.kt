@@ -25,10 +25,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.cresoty.catpossignpad.insetShadow
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main03
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
 
@@ -46,21 +47,21 @@ fun ToggleAnimationButton(
         label = "seg_progress"
     )
 
-    val shape = RoundedCornerShape(5f.px2dp())
-    val shadowShape = RoundedCornerShape(bottomEnd = 5f.px2dp())
+    val shape = RoundedCornerShape(5f.dpx)
+    val shadowShape = RoundedCornerShape(bottomEnd = 5f.dpx)
 
     BoxWithConstraints (
         modifier
-            .height(55f.px2dp())
+            .height(55f.dpx)
             .clip(shape)
             .background(main03)
-            .padding(5f.px2dp())
+            .padding(5f.dpx)
     ) {
         // 선택 배경(thumb)
         Box(
             Modifier
                 .fillMaxSize()
-                .padding(0f.px2dp())
+                .padding(0f.dpx)
         ) {
             Box(
                 Modifier
@@ -75,7 +76,7 @@ fun ToggleAnimationButton(
                     .clip(shape)
                     .insetShadow(
                         shape = shadowShape,
-                        radius = 5f.px2dp(),
+                        radius = 5f.dpx,
                         start = false,
                         top = false,
                         end = true,
@@ -128,7 +129,7 @@ private fun SegmentButton(
                     text = it.first,
                     color = color,
                     fontWeight = weight,
-                    fontSize = 20f.px2sp()
+                    fontSize = 20f.spx
                 )
             }
         }
@@ -139,7 +140,9 @@ private fun SegmentButton(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 fun ToggleAnimationButtonPreview() {
-    ToggleAnimationButton(
-        Modifier, true, onChange = {}
-    )
+    CatposSignpadTheme {
+        ToggleAnimationButton(
+            Modifier, true, onChange = {}
+        )
+    }
 }

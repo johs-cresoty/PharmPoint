@@ -8,15 +8,14 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.enums.MainThemes
-import com.cresoty.catpossignpad.px2dp
 import com.cresoty.catpossignpad.view.composable.list.item.MainThemeItem
+import com.cresoty.catpossignpad.presentation.theme.dpx
 
 @Composable
 fun SettingMainThemeList(
     selectedIndex : Int,
     onClickTheme : (Int) -> Unit
 ) {
-
     val lazyScrollState = rememberLazyListState()
     val list = listOf(
         Pair(MainThemes.Theme_A, R.drawable.main_01),
@@ -27,8 +26,8 @@ fun SettingMainThemeList(
     )
 
     LazyVerticalGrid(
-        horizontalArrangement = Arrangement.spacedBy(9f.px2dp()),
-        verticalArrangement = Arrangement.spacedBy(25f.px2dp()),
+        horizontalArrangement = Arrangement.spacedBy(9f.dpx),
+        verticalArrangement = Arrangement.spacedBy(25f.dpx),
         columns = GridCells.Fixed(3)
     ) {
         itemsIndexed(

@@ -1,7 +1,6 @@
 package com.cresoty.catpossignpad
 
 import android.app.Activity
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
@@ -10,11 +9,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -80,22 +75,6 @@ fun ByteArray.findAsciiControlChar(find: Byte): Int {
         }
     }
     return ret
-}
-
-@Composable
-fun Float.px2dp(): Dp {
-    val density = LocalDensity.current
-    return with(density) { this@px2dp.toDp() }
-}
-
-@Composable
-fun Float.px2sp(): TextUnit {
-    val density = LocalDensity.current
-    val screenDp = LocalConfiguration.current.screenWidthDp
-
-    //실제 장비 가로폭 dp / 피그마 가로폭 800
-    val scale = screenDp / 800f
-    return with(density) { (this@px2sp * scale).sp }
 }
 
 fun String.toBizNoFormat(): String {

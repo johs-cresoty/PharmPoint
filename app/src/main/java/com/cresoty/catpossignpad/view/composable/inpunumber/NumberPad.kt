@@ -33,8 +33,6 @@ import com.cresoty.catpossignpad.maskingPhoneNumber
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.enums.PointQuickInputType
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.px2dp
-import com.cresoty.catpossignpad.px2sp
 import com.cresoty.catpossignpad.safeSubString
 import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
@@ -45,6 +43,8 @@ import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.main04
 import com.cresoty.catpossignpad.presentation.theme.notice
 import com.cresoty.catpossignpad.presentation.theme.notice_light
+import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.sub01
 import com.cresoty.catpossignpad.presentation.theme.sub02
 import com.cresoty.catpossignpad.presentation.theme.success
@@ -80,23 +80,23 @@ fun NumberPad(
         else Triple(R.drawable.icon_alert, "인증번호가 일치하지 않습니다.", notice)
     }
 
-    val height = if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) 858f.px2dp()
-    else 691f.px2dp()
+    val height = if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) 858f.dpx
+    else 691f.dpx
 
     Column(
-        modifier = Modifier.size(width = 720f.px2dp(), height = height),
+        modifier = Modifier.size(width = 720f.dpx, height = height),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) {
             UsePointAmountField()
 
-            Spacer(modifier = Modifier.size(14f.px2dp()))
+            Spacer(modifier = Modifier.size(14f.dpx))
         } else {
             MaskingNumberField(
                 step = step
             )
 
-            Spacer(modifier = Modifier.size(57f.px2dp()))
+            Spacer(modifier = Modifier.size(57f.dpx))
         }
 
         numbers.chunked(3).forEach { rows ->
@@ -114,8 +114,8 @@ fun NumberPad(
             }
         }
 
-//        Spacer(modifier = Modifier.size(24f.px2dp()))
-        Spacer(modifier = Modifier.size(7f.px2dp()))
+//        Spacer(modifier = Modifier.size(24f.dp(dim)))
+        Spacer(modifier = Modifier.size(7f.dpx))
 
         PersonalInfoUseAgree(
             step = step,
@@ -125,7 +125,7 @@ fun NumberPad(
             onClickPersonalInfoUse = { controller.dispatch(PadAction.OnClickPersonalInfoUse) }
         )
 
-        Spacer(modifier = Modifier.size(7f.px2dp()))
+        Spacer(modifier = Modifier.size(7f.dpx))
 
     }
 }
@@ -141,58 +141,58 @@ fun UsePointAmountField(
 
     val buttonList = PointQuickInputType.entries
     val amount = if (useAmount.isEmpty()) "얼마인가요?" else "$useAmount P"
-//    val fontSize = if(useAmount.isEmpty()) 50f.px2sp() else 68f.px2sp()
+//    val fontSize = if(useAmount.isEmpty()) 50f.sp(dim) else 68f.sp(dim)
     val fontColor = if (useAmount.isEmpty()) sub02 else main01
     val fontWeight = if (useAmount.isEmpty()) FontWeight.Normal else FontWeight.Bold
-//    val spacerHeight = if(useAmount.isEmpty()) else 31f.px2dp()
+//    val spacerHeight = if(useAmount.isEmpty()) else 31f.dp(dim)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(310f.px2dp())
-            .padding(horizontal = 13f.px2dp(), vertical = 20f.px2dp()),
+            .height(310f.dpx)
+            .padding(horizontal = 13f.dpx, vertical = 20f.dpx),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "사용하실 포인트는",
-            fontSize = 50f.px2sp(),
-            lineHeight = 50f.px2sp(),
+            fontSize = 50f.spx,
+            lineHeight = 50f.spx,
             color = main01
         )
 
         Text(
             text = amount,
-            fontSize = 50f.px2sp(),
-            lineHeight = 50f.px2sp(),
+            fontSize = 50f.spx,
+            lineHeight = 50f.spx,
             fontWeight = fontWeight,
             color = fontColor
         )
 
-        Spacer(modifier = Modifier.size(20f.px2dp()))
+        Spacer(modifier = Modifier.size(20f.dpx))
 
         Text(
             text = "보유 포인트 ${pointBalance}P",
-            fontSize = 30f.px2sp(),
-            lineHeight = 30f.px2sp(),
+            fontSize = 30f.spx,
+            lineHeight = 30f.spx,
             color = common01
         )
 
-        Spacer(modifier = Modifier.size(11f.px2dp()))
+        Spacer(modifier = Modifier.size(11f.dpx))
         Row(
-            horizontalArrangement = Arrangement.spacedBy(10f.px2dp())
+            horizontalArrangement = Arrangement.spacedBy(10f.dpx)
         ) {
             buttonList.mapIndexed { index, item ->
                 val easyInput =
                     if (index != buttonList.lastIndex) "+ ${item.amount}" else item.amount
                 ClickSoundButton(
-                    modifier = Modifier.size(width = 150f.px2dp(), height = 60f.px2dp()),
+                    modifier = Modifier.size(width = 150f.dpx, height = 60f.dpx),
                     backgroundColor = sub01,
                     onClick = { controller.dispatch(PadAction.OnClickAmountQuickButton(item)) },
-                    shape = RoundedCornerShape(50f.px2dp())
+                    shape = RoundedCornerShape(50f.dpx)
                 ) {
                     Text(
                         text = easyInput,
-                        fontSize = 25f.px2sp(),
+                        fontSize = 25f.spx,
                         color = common01
                     )
                 }
@@ -216,7 +216,7 @@ fun PersonalInfoUseAgree(
     val isMinPointEnabled = config.isMinPointEnabled
 
     Row(
-        modifier = Modifier.size(width = 720f.px2dp(), height = 80f.px2dp()),
+        modifier = Modifier.size(width = 720f.dpx, height = 80f.dpx),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -228,17 +228,17 @@ fun PersonalInfoUseAgree(
                     backgroundColor = transparent
                 ) {
                     Image(
-                        modifier = Modifier.size(35f.px2dp()),
+                        modifier = Modifier.size(35f.dpx),
                         painter = painterResource(checkbox),
                         contentDescription = null
                     )
 
-                    Spacer(modifier = Modifier.size(17f.px2dp()))
+                    Spacer(modifier = Modifier.size(17f.dpx))
 
                     Text(
                         text = "[필수] 개인정보 제공 동의합니다.",
-                        fontSize = 30f.px2sp(),
-                        lineHeight = 30f.px2sp(),
+                        fontSize = 30f.spx,
+                        lineHeight = 30f.spx,
                         color = checkboxColor
                     )
                 }
@@ -247,18 +247,18 @@ fun PersonalInfoUseAgree(
             PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 verify?.let {
                     Image(
-                        modifier = Modifier.size(35f.px2dp()),
+                        modifier = Modifier.size(35f.dpx),
                         painter = painterResource(it.first),
                         contentDescription = null
                     )
 
-                    Spacer(modifier = Modifier.size(17f.px2dp()))
+                    Spacer(modifier = Modifier.size(17f.dpx))
 
                     Text(
                         text = it.second,
                         color = it.third,
-                        fontSize = 30f.px2sp(),
-                        lineHeight = 30f.px2sp()
+                        fontSize = 30f.spx,
+                        lineHeight = 30f.spx
                     )
                 }
             }
@@ -272,8 +272,8 @@ fun PersonalInfoUseAgree(
 
                         Text(
                             text = "포인트는 최소 ${minPoint.toDecimalString()}부터 사용 가능합니다.",
-                            fontSize = 30f.px2sp(),
-                            lineHeight = 30f.px2sp(),
+                            fontSize = 30f.spx,
+                            lineHeight = 30f.spx,
                             color = main01
                         )
 
@@ -297,7 +297,7 @@ fun PhoneNumberButton(
     val fontSize = item.fontSize
 
     ClickSoundButton(
-        modifier = Modifier.size(width = 230f.px2dp(), height = 110f.px2dp()),
+        modifier = Modifier.size(width = 230f.dpx, height = 110f.dpx),
         onClick = {
             when (item) {
                 PhoneButtonType.DELETE -> onClickDelete()
@@ -311,8 +311,8 @@ fun PhoneNumberButton(
             PhoneButtonType.DELETE -> {
                 Image(
                     modifier = Modifier.size(
-                        width = 63f.px2dp(),
-                        height = 43f.px2dp()
+                        width = 63f.dpx,
+                        height = 43f.dpx
                     ),
                     painter = painterResource(R.drawable.icon_delete),
                     contentDescription = null
@@ -322,7 +322,7 @@ fun PhoneNumberButton(
             else -> {
                 Text(
                     text = number,
-                    fontSize = fontSize.px2sp(),
+                    fontSize = fontSize.spx,
                     color = common02
                 )
             }
@@ -350,8 +350,8 @@ fun MaskingNumberField(
 ) {
     val isPhoneNumberType = step != PointDeltaProcess.POINT_USE_VERIFY_NUM
 
-    val width = if (isPhoneNumberType) 560f.px2dp() else 320f.px2dp()
-    val height = 100f.px2dp()
+    val width = if (isPhoneNumberType) 560f.dpx else 320f.dpx
+    val height = 100f.dpx
 
     val controller = LocalController.current
     val point by controller.pointState.collectAsStateWithLifecycle()
@@ -377,35 +377,35 @@ fun MaskingNumberField(
     Row(
         modifier = Modifier
             .size(width = width, height = height)
-            .background(color = backgroundColor, shape = RoundedCornerShape(10f.px2dp()))
-            .padding(horizontal = 13f.px2dp(), vertical = 20f.px2dp()),
+            .background(color = backgroundColor, shape = RoundedCornerShape(10f.dpx))
+            .padding(horizontal = 13f.dpx, vertical = 20f.dpx),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         maskedList.mapIndexed { index, item ->
             if (isPhoneNumberType) {
                 Box(
-                    modifier = Modifier.size(width = 150f.px2dp(), height = 60f.px2dp()),
+                    modifier = Modifier.size(width = 150f.dpx, height = 60f.dpx),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = item.withAsteriskBaselineShift(),
-                        fontSize = 40f.px2sp(),
+                        fontSize = 40f.spx,
                         color = common02
                     )
                 }
 
                 if (index != maskedList.lastIndex) {
                     HorizontalDivider(
-                        modifier = Modifier.width(12f.px2dp()),
-                        thickness = 2f.px2dp(),
+                        modifier = Modifier.width(12f.dpx),
+                        thickness = 2f.dpx,
                         color = common02
                     )
                 }
             } else {
                 Text(
                     text = item,
-                    fontSize = 40f.px2sp(),
+                    fontSize = 40f.spx,
                     color = common02,
                     maxLines = 1
                 )
