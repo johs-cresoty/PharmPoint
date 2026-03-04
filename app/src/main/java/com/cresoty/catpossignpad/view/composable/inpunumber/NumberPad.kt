@@ -207,7 +207,8 @@ fun PersonalInfoUseAgree(
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
-    val min = config.minPoint
+    val minPoint = config.minPoint
+    val isMinPointEnabled = config.isMinPointEnabled
 
     Row(
         modifier = Modifier.size(width = 720f.px2dp(), height = 80f.px2dp()),
@@ -258,16 +259,20 @@ fun PersonalInfoUseAgree(
             }
 
             PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "포인트는 최소 ${min.toDecimalString()}부터 사용 가능합니다.",
-                        fontSize = 30f.px2sp(),
-                        lineHeight = 30f.px2sp(),
-                        color = main01
-                    )
+                if (isMinPointEnabled) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        Text(
+                            text = "포인트는 최소 ${minPoint.toDecimalString()}부터 사용 가능합니다.",
+                            fontSize = 30f.px2sp(),
+                            lineHeight = 30f.px2sp(),
+                            color = main01
+                        )
+
+                    }
                 }
             }
 

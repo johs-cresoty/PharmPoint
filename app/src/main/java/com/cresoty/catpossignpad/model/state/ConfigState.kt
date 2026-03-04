@@ -9,6 +9,6 @@ data class ConfigState (
     var minPoint : Int = 1000,
     var minAmount : Int = 20000,
     var isIdVerify : Boolean = false,
-    var isPointUse : Boolean = true,
+    var isMinPointEnabled : Boolean = true,
     var isSave : Boolean = true
 )

@@ -32,7 +32,7 @@ object ConfigKey {
     val MIN_AMOUNT = intPreferencesKey("min_amount")                // 최소금액
 
     val IS_ID_VERIFY = booleanPreferencesKey("is_identification")  // true : 사용 / false : 미사용
-    val IS_USE_POINT = booleanPreferencesKey("is_use_point")        // 포인트 사용 여부
+    val IS_MIN_POINT_ENABLED = booleanPreferencesKey("is_min_point_enabled")        // 최소 포인트 사용 여부
     val IS_SAVE = booleanPreferencesKey("is_save")                  // 적립 여부
 }
 
@@ -52,7 +52,7 @@ class ConfigRepository @Inject constructor(
                 minPoint = p[ConfigKey.MINIMUM_POINT] ?: 1000,
                 minAmount = p[ConfigKey.MIN_AMOUNT] ?: 20000,
                 isIdVerify = p[ConfigKey.IS_ID_VERIFY] ?: false,
-                isPointUse = p[ConfigKey.IS_USE_POINT] ?: true,
+                isMinPointEnabled = p[ConfigKey.IS_MIN_POINT_ENABLED] ?: true,
                 isSave = p[ConfigKey.IS_SAVE] ?: true
             )
         }

@@ -6,6 +6,9 @@ import com.cresoty.catpossignpad.dataresource.DataResource
 import com.cresoty.catpossignpad.domain.model.CustomerPointDeltaResult
 import com.cresoty.catpossignpad.domain.model.Customers
 import com.cresoty.catpossignpad.domain.model.EstimatePointResult
+import com.cresoty.catpossignpad.domain.model.PointAmountSettingResult
+import com.cresoty.catpossignpad.domain.model.PointBalanceResult
+import com.cresoty.catpossignpad.domain.model.PointSaveSettingResult
 import com.cresoty.catpossignpad.domain.model.command.EstimatePointCommand
 import com.cresoty.catpossignpad.domain.model.command.UpsertCustomerPointCommand
 import com.cresoty.catpossignpad.domain.repository.PointRepository
@@ -73,5 +76,23 @@ internal class PointRepositoryImpl @Inject constructor(
                     else -> emit(DataResource.Error(e))
                 }
             }
+
+    override fun getPointSaveSetting(taxNo: String): Flow<DataResource<PointSaveSettingResult>> =
+        pointRemoteDataSource.getPointSaveSetting(taxNo)
+            .map { DataResource.Success(it.toDomain()) as DataResource<PointSaveSettingResult> }
+            .onStart { emit(DataResource.Loading) }
+            .catch { e -> emit(DataResource.Error(e)) }
+
+    override fun getPointAmountSetting(taxNo: String): Flow<DataResource<PointAmountSettingResult>> =
+        pointRemoteDataSource.getPointAmountSetting(taxNo)
+            .map { DataResource.Success(it.toDomain()) as DataResource<PointAmountSettingResult> }
+            .onStart { emit(DataResource.Loading) }
+            .catch { e -> emit(DataResource.Error(e)) }
+
+    override fun getPointBalance(taxNo: String, customerPhone: String): Flow<DataResource<PointBalanceResult>> =
+        pointRemoteDataSource.getPointBalance(taxNo = taxNo, customerPhone = customerPhone)
+            .map { DataResource.Success(it.toDomain()) as DataResource<PointBalanceResult> }
+            .onStart { emit(DataResource.Loading) }
+            .catch { e -> emit(DataResource.Error(e)) }
 
 }

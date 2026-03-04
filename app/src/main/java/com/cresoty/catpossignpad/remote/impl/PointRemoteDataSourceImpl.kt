@@ -1,8 +1,13 @@
 package com.cresoty.catpossignpad.remote.impl
 
+import android.os.Build
+import com.cresoty.catpossignpad.BuildConfig
 import com.cresoty.catpossignpad.data.model.CustomerPointDeltaResponseEntity
 import com.cresoty.catpossignpad.data.model.CustomersEntity
 import com.cresoty.catpossignpad.data.model.EstimatePointEntity
+import com.cresoty.catpossignpad.data.model.PointAmountSettingEntity
+import com.cresoty.catpossignpad.data.model.PointBalanceEntity
+import com.cresoty.catpossignpad.data.model.PointSaveSettingEntity
 import com.cresoty.catpossignpad.data.remote.PointRemoteDataSource
 import com.cresoty.catpossignpad.remote.api.CatposCloudApi
 import com.cresoty.catpossignpad.remote.exception.EstimatePointRetryableException
@@ -17,6 +22,11 @@ import javax.inject.Inject
 class PointRemoteDataSourceImpl @Inject constructor(
     private val apiService: CatposCloudApi
 ) : PointRemoteDataSource {
+
+    private val computerName = "${Build.BRAND}_${Build.MODEL}"
+    private val posVersion = BuildConfig.VERSION_NAME
+    private val posGubn = "CP"
+
     override fun getCustomer(
         computerName: String,
         posVersion: String,
@@ -61,6 +71,52 @@ class PointRemoteDataSourceImpl @Inject constructor(
             code == "8888" || code == "9303" -> throw EstimatePointRetryableException(code)
             code == "0000"                   -> emit(response.toData())
             else -> throw Exception("estimatePoint failed: code=$code msg=${response.message}")
+        }
+    }
+
+    override fun getPointSaveSetting(taxNo: String): Flow<PointSaveSettingEntity> = flow {
+        val response = apiService.getPointSaveSetting(
+            taxNo        = taxNo,
+            computerName = computerName,
+            posVersion   = posVersion,
+            posGubn      = posGubn
+        )
+        val code = response.code ?: "-9999"
+        if (code == "0000") {
+            emit(response.toData())
+        } else {
+            throw Exception("getPointSaveSetting failed: code=$code msg=${response.message}")
+        }
+    }
+
+    override fun getPointAmountSetting(taxNo: String): Flow<PointAmountSettingEntity> = flow {
+        val response = apiService.getPointAmountSetting(
+            taxNo        = taxNo,
+            computerName = computerName,
+            posVersion   = posVersion,
+            posGubn      = posGubn
+        )
+        val code = response.code ?: "-9999"
+        if (code == "0000") {
+            emit(response.toData())
+        } else {
+            throw Exception("getPointAmountSetting failed: code=$code msg=${response.message}")
+        }
+    }
+
+    override fun getPointBalance(taxNo: String, customerPhone: String): Flow<PointBalanceEntity> = flow {
+        val response = apiService.getPointBalance(
+            taxNo         = taxNo,
+            customerPhone = customerPhone,
+            computerName  = computerName,
+            posVersion    = posVersion,
+            posGubn       = posGubn
+        )
+        val code = response.code ?: "-9999"
+        if (code == "0000") {
+            emit(response.toData())
+        } else {
+            throw Exception("getPointBalance failed: code=$code msg=${response.message}")
         }
     }
 }

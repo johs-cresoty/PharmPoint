@@ -16,6 +16,9 @@ import com.cresoty.catpossignpad.domain.model.command.EstimatePointCommand
 import com.cresoty.catpossignpad.domain.model.command.PaymentDetailCommand
 import com.cresoty.catpossignpad.domain.model.command.UpsertCustomerPointCommand
 import com.cresoty.catpossignpad.domain.usecase.EstimatePointUseCase
+import com.cresoty.catpossignpad.domain.usecase.GetPointAmountSettingUseCase
+import com.cresoty.catpossignpad.domain.usecase.GetPointBalanceUseCase
+import com.cresoty.catpossignpad.domain.usecase.GetPointSaveSettingUseCase
 import com.cresoty.catpossignpad.domain.usecase.IsCustomersUseCase
 import com.cresoty.catpossignpad.domain.usecase.UpsertCustomerPointUseCase
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
@@ -27,7 +30,6 @@ import com.cresoty.catpossignpad.model.state.MainState
 import com.cresoty.catpossignpad.model.state.PointState
 import com.cresoty.catpossignpad.model.state.PreviewState
 import com.cresoty.catpossignpad.model.state.SettingState
-import com.cresoty.catpossignpad.network.NetworkManager
 import com.cresoty.catpossignpad.safeSubString
 import com.cresoty.catpossignpad.socket.SocketManager
 import com.cresoty.catpossignpad.splitTelegram
@@ -49,11 +51,13 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val configRepo: ConfigRepository,
-    private val networkManager: NetworkManager,
     private val socketManager: SocketManager,
     private val isCustomersUseCase: IsCustomersUseCase,
     private val upsertCustomerPointUseCase: UpsertCustomerPointUseCase,
-    private val estimatePointUseCase: EstimatePointUseCase
+    private val estimatePointUseCase: EstimatePointUseCase,
+    private val getPointSaveSettingUseCase: GetPointSaveSettingUseCase,
+    private val getPointAmountSettingUseCase: GetPointAmountSettingUseCase,
+    private val getPointBalanceUseCase: GetPointBalanceUseCase
 ) : ViewModel() {
 
     private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
@@ -342,10 +346,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             estimatePointUseCase(
                 EstimatePointCommand.Complex(
-                    taxNo        = configState.value.bizNo,
+                    taxNo = configState.value.bizNo,
                     computerName = CMPTR_NAME,
-                    posVersion   = POS_VER,
-                    payments     = first to second
+                    posVersion = POS_VER,
+                    payments = first to second
                 )
             ).collect { resource ->
                 when (resource) {
@@ -356,10 +360,12 @@ class MainViewModel @Inject constructor(
                         }
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
+
                     is DataResource.Error -> {
                         Log.d("jhs", "복합 estimatePoint error: ${resource.throwable.message}")
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
+
                     is DataResource.Loading -> {}
                 }
             }
@@ -437,13 +443,13 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             estimatePointUseCase(
                 EstimatePointCommand.Single(
-                    taxNo        = configState.value.bizNo,
+                    taxNo = configState.value.bizNo,
                     computerName = CMPTR_NAME,
-                    posVersion   = POS_VER,
-                    trnDate      = transactionDate,
-                    trnGubn      = transactionMethod,
-                    trnAmt       = _paymentAmount.value,
-                    appNum       = approvalNumber
+                    posVersion = POS_VER,
+                    trnDate = transactionDate,
+                    trnGubn = transactionMethod,
+                    trnAmt = _paymentAmount.value,
+                    appNum = approvalNumber
                 )
             ).collect { resource ->
                 when (resource) {
@@ -455,10 +461,12 @@ class MainViewModel @Inject constructor(
                         // null(재시도 소진)이어도 동일하게 다음 단계 진행
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
+
                     is DataResource.Error -> {
                         Log.d("jhs", "estimatePoint error: ${resource.throwable.message}")
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
+
                     is DataResource.Loading -> {}
                 }
             }
@@ -549,35 +557,50 @@ class MainViewModel @Inject constructor(
     private fun requestPointBalanceCheck() {
         viewModelScope.launch {
             val phone = customerState.value.phoneNumber
-            networkManager.requestPointBalanceCheck(
-                cst_hp = phone
-            ) { code, balance ->
-                if (code == "0000") {
-                    _pointBalance.update {
-                        balance
+            getPointBalanceUseCase(
+                taxNo = configState.value.bizNo,
+                customerPhone = phone
+            ).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        val balance = resource.data.balance
+                        _pointBalance.update { balance }
+                        val balanceAmount = balance.toIntOrNull() ?: 0
+                        val isShortage = balanceAmount == 0 ||
+                                (configState.value.isMinPointEnabled && balanceAmount < configState.value.minPoint)
+                        if (isShortage) {
+                            updatePointDeltaStep(PointDeltaProcess.POINT_USE_PROC_SHORTAGE_FAIL)
+                        } else {
+                            val isVerify = configState.value.isIdVerify
+                            if (isVerify) updatePointDeltaStep(PointDeltaProcess.POINT_USE_VERIFY_NUM)
+                            else updatePointDeltaStep(PointDeltaProcess.POINT_USE_AMOUNT_INPUT)
+                        }
                     }
 
-                    if ((balance.toIntOrNull() ?: 0) < configState.value.minPoint) {
-                        updatePointDeltaStep(PointDeltaProcess.POINT_USE_PROC_SHORTAGE_FAIL)
-                    } else {
-                        val isVerify = configState.value.isIdVerify
-                        if (isVerify) updatePointDeltaStep(PointDeltaProcess.POINT_USE_VERIFY_NUM)
-                        else updatePointDeltaStep(PointDeltaProcess.POINT_USE_AMOUNT_INPUT)
+                    is DataResource.Error -> {
+                        Log.d("jhs", "getPointBalance error: ${resource.throwable.message}")
                     }
+
+                    is DataResource.Loading -> {}
                 }
             }
         }
     }
 
     private fun initRequestPointSettings() {
+        val taxNo = configState.value.bizNo
         viewModelScope.launch {
-            networkManager.requestPointSetting { code, save ->
-                if (code == "0000") configRepo.putValue(ConfigKey.IS_SAVE, save)
+            getPointSaveSettingUseCase(taxNo).collect { resource ->
+                if (resource is DataResource.Success) {
+                    configRepo.putValue(ConfigKey.IS_SAVE, resource.data.isSave)
+                }
             }
-
-            networkManager.requestPointAmountSetting { code, min ->
-                if (code == "0000") configRepo.putValue(ConfigKey.MIN_AMOUNT, min)
-
+        }
+        viewModelScope.launch {
+            getPointAmountSettingUseCase(taxNo).collect { resource ->
+                if (resource is DataResource.Success) {
+                    configRepo.putValue(ConfigKey.MIN_AMOUNT, resource.data.minAmount)
+                }
             }
         }
     }
@@ -623,10 +646,10 @@ class MainViewModel @Inject constructor(
 //                    configRepo.putValue(ConfigKey.IS_ID_VERIFY, isIdVerify)
 //                }
                 SettingType.POINT_USE -> {
-                    val isPointUse = data[ConfigKey.IS_USE_POINT] as Boolean
+                    val isPointUse = data[ConfigKey.IS_MIN_POINT_ENABLED] as Boolean
                     val minPoint = data[ConfigKey.MINIMUM_POINT] as Int
 
-                    configRepo.putValue(ConfigKey.IS_USE_POINT, isPointUse)
+                    configRepo.putValue(ConfigKey.IS_MIN_POINT_ENABLED, isPointUse)
                     configRepo.putValue(ConfigKey.MINIMUM_POINT, minPoint)
                 }
 
@@ -972,11 +995,11 @@ class MainViewModel @Inject constructor(
      */
     private fun updateDialogSetting() {
         viewModelScope.launch {
-            if (BuildConfig.DEBUG) {
-                _dialog.update {
-                    Dialogs.Setting
-                }
-            } else {
+//            if (BuildConfig.DEBUG) {
+//                _dialog.update {
+//                    Dialogs.Setting
+//                }
+//            } else {
                 val bizNo = configState.value.bizNo.isEmpty()
                 val dialog: Dialogs = if (bizNo) Dialogs.Setting
                 else Dialogs.InputPassword
@@ -984,7 +1007,7 @@ class MainViewModel @Inject constructor(
                 _dialog.update {
                     dialog
                 }
-            }
+//            }
         }
     }
 
@@ -999,6 +1022,7 @@ class MainViewModel @Inject constructor(
         if (input == Dialogs.None) {
             deleteAllPassword()
             updateMenuIndex(0)
+            updatePasswordCorrect(true)
         }
 
         _dialog.update {

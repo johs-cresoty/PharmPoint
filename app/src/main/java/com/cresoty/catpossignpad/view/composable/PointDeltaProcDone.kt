@@ -48,7 +48,7 @@ fun PointDeltaProcDone(
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
     val storeName = config.storeName
-    val minAmount = config.minPoint
+    val minPoint = config.minPoint
     val timeout = config.timeout
 
     val point by controller.pointState.collectAsStateWithLifecycle()
@@ -79,7 +79,7 @@ fun PointDeltaProcDone(
             Quatro(
                 R.drawable.icon_point_use_shortage,
                 "포인트 부족",
-                "$storeName \n최소 ${minAmount.toDecimalString()}P부터 사용 가능합니다.",
+                "$storeName \n최소 ${minPoint.toDecimalString()}P부터 사용 가능합니다.",
                 "잔여 포인트"
             )
         }

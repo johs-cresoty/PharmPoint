@@ -26,7 +26,8 @@ fun ConfirmButtonField() {
     val controller = LocalController.current
 
     val config by controller.configState.collectAsStateWithLifecycle()
-    val minimum = config.minPoint
+    val minPoint = config.minPoint
+    val isMinPointEnabled = config.isMinPointEnabled
 
     val point by controller.pointState.collectAsStateWithLifecycle()
     val isPersonalInfoUse = point.isPersonalInfoUse
@@ -46,7 +47,10 @@ fun ConfirmButtonField() {
 
         PointDeltaProcess.POINT_SAVE_PHONE_NUM -> isPersonalInfoUse && phoneNum.length > 10
         PointDeltaProcess.POINT_USE_VERIFY_NUM -> verifyNumber.length > 5
-        PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> (pointDelta.toIntOrNull() ?: 0) >= minimum
+        PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+            val amount = pointDelta.toIntOrNull() ?: 0
+            amount > 0 && if (isMinPointEnabled) amount >= minPoint else true
+        }
         else -> step.isClickable
     }
 

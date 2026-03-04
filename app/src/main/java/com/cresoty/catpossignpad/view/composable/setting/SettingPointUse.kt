@@ -40,7 +40,7 @@ fun SettingPointUse(
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
 
-    var isPointUse by remember { mutableStateOf(config.isPointUse) }
+    var isMinPointEnabled by remember { mutableStateOf(config.isMinPointEnabled) }
     var minPoint by remember { mutableStateOf(config.minPoint.toString()) }
 
     Column(
@@ -61,9 +61,9 @@ fun SettingPointUse(
 
             ToggleAnimationButton(
                 modifier = Modifier.size(width = 275f.px2dp(), height = 55f.px2dp()),
-                isSelected = isPointUse
+                isSelected = isMinPointEnabled
             ) {
-                isPointUse = it
+                isMinPointEnabled = it
             }
         }
 
@@ -91,7 +91,7 @@ fun SettingPointUse(
 //            )
 //      }
 
-        if (isPointUse) {
+        if (isMinPointEnabled) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(15f.px2dp())
             ) {
@@ -125,7 +125,7 @@ fun SettingPointUse(
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 val map = mutableMapOf<Preferences.Key<*>, Any>()
-                map[ConfigKey.IS_USE_POINT] = isPointUse
+                map[ConfigKey.IS_MIN_POINT_ENABLED] = isMinPointEnabled
                 map[ConfigKey.MINIMUM_POINT] = minPoint.replace(",", "").toIntOrNull() ?: 0
                 controller.dispatch(PadAction.OnClickSaveSetting(SettingType.POINT_USE, map))
             }
