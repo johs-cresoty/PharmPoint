@@ -13,13 +13,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.common01
-import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
+import com.cresoty.catpossignpad.view.controller.LocalController
 
 @Composable
 fun ConfirmButtonField() {
@@ -51,6 +51,7 @@ fun ConfirmButtonField() {
             val amount = pointDelta.toIntOrNull() ?: 0
             amount > 0 && if (isMinPointEnabled) amount >= minPoint else true
         }
+
         else -> step.isClickable
     }
 
@@ -59,7 +60,7 @@ fun ConfirmButtonField() {
 
 
     ClickSoundButton(
-        modifier = Modifier.size(width = 720f.dpx, height = 112f.dpx),
+        modifier = Modifier.size(width = 720f.dpx, height = 112.dpx),
         onClick = {
             if (isClickable) {
                 when (step) {
@@ -101,7 +102,7 @@ fun ConfirmButtonField() {
     ) {
         Text(
             text = "확인",
-            fontSize = 35f.spx,
+            fontSize = 35.spx,
             fontWeight = FontWeight.Medium,
             color = white
         )
@@ -119,6 +120,7 @@ fun ConfirmButtonField() {
                 contentAlignment = Alignment.Center
             ) {
                 ClickSoundButton(
+                    showPressOverlay = false,
                     onClick = {
                         controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))
                     },

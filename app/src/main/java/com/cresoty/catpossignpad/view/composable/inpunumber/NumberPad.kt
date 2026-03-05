@@ -92,7 +92,7 @@ fun NumberPad(
     }
 
     val height = if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) 858f.dpx
-    else 691f.dpx
+    else 736f.dpx
 
     Column(
         modifier = Modifier.size(width = 720f.dpx, height = height),
@@ -126,7 +126,7 @@ fun NumberPad(
             }
         }
 
-        Spacer(modifier = Modifier.size(7f.dpx))
+        Spacer(modifier = Modifier.size(34.dpx))
 
         PersonalInfoUseAgree(
             step = step,
@@ -160,8 +160,7 @@ fun UsePointAmountField(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(310f.dpx)
-            .padding(horizontal = 13f.dpx, vertical = 20f.dpx),
+            .height(294f.dpx),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -179,7 +178,7 @@ fun UsePointAmountField(
             color = fontColor
         )
 
-        Spacer(modifier = Modifier.size(20f.dpx))
+        Spacer(modifier = Modifier.size(31.dpx))
 
         Text(
             text = "보유 포인트 ${pointBalance}P",
@@ -188,7 +187,7 @@ fun UsePointAmountField(
             color = common01
         )
 
-        Spacer(modifier = Modifier.size(11f.dpx))
+        Spacer(modifier = Modifier.size(23.dpx))
         Row(
             horizontalArrangement = Arrangement.spacedBy(10f.dpx)
         ) {
@@ -227,7 +226,7 @@ fun PersonalInfoUseAgree(
     val isMinPointEnabled = config.isMinPointEnabled
 
     Row(
-        modifier = Modifier.size(width = 720f.dpx, height = 80f.dpx),
+        modifier = Modifier.size(width = 720f.dpx, height = 80f.dpx).padding(bottom = 25.dpx),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -236,7 +235,8 @@ fun PersonalInfoUseAgree(
             PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                 ClickSoundButton(
                     onClick = onClickPersonalInfoUse,
-                    backgroundColor = transparent
+                    backgroundColor = transparent,
+                    showPressOverlay = false
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically

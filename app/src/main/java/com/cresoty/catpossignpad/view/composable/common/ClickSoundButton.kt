@@ -39,6 +39,7 @@ fun ClickSoundButton(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     enabled: Boolean = true,
     useDebounceTime: Boolean = false,
+    showPressOverlay: Boolean = true,
     content: @Composable () -> Unit
 ) {
     var isEnabled by remember { mutableStateOf(true) }
@@ -75,7 +76,7 @@ fun ClickSoundButton(
         contentAlignment = Alignment.Center
     ) {
         content()
-        if (isPressed && effectiveEnabled) {
+        if (showPressOverlay && isPressed && effectiveEnabled) {
             Box(
                 modifier = Modifier
                     .matchParentSize()

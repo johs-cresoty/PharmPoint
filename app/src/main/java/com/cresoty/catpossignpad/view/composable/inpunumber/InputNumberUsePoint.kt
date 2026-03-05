@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun InputNumberUsePoint(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     storeName: String,
     paymentAmount: String
 ) {
@@ -89,7 +89,7 @@ fun InputNumberUsePoint(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(90f.dpx),
+                .height(80f.dpx),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {

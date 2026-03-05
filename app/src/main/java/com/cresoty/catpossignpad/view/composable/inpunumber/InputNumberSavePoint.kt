@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun InputNumberSavePoint(
-    modifier : Modifier,
+    modifier : Modifier = Modifier,
     storeName : String,
     paymentAmount : String,
 ) {
@@ -81,7 +81,7 @@ fun InputNumberSavePoint(
             color = common02
         )
 
-        Spacer(modifier = Modifier.size(21f.dpx))
+        Spacer(modifier = Modifier.size(6.dpx))
 
         Row(
             modifier = Modifier.background(
@@ -120,10 +120,7 @@ fun InputNumberSavePoint(
             color = common01
         )
 
-        Spacer(modifier = Modifier.size(34f.dpx))
-
-
-        Spacer(modifier = Modifier.size(13f.dpx))
+        Spacer(modifier = Modifier.size(64.dpx))
     }
 }
 

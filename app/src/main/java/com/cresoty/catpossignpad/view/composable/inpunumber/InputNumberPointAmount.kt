@@ -46,7 +46,7 @@ fun InputNumberPointAmount(
     ) {
         BackStepButton { controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE)) }
 
-        Spacer(modifier = Modifier.size(38f.dpx))
+        Spacer(modifier = Modifier.size(27.dpx))
 
         Text(
             text = storeName,
