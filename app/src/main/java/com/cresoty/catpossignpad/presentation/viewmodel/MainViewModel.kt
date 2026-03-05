@@ -770,7 +770,7 @@ class MainViewModel @Inject constructor(
 
                 _phoneNumber.update { current }
 
-                if (current.length == 11) {
+                if (step == PointDeltaProcess.POINT_USE_PHONE_NUM && current.length == 11) {
                     checkCustomerExist(current)
                 }
             }
