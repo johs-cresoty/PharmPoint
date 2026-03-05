@@ -16,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.model.enums.MainThemes
-import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
+import com.cresoty.catpossignpad.presentation.component.ClickSoundButton
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.dpx

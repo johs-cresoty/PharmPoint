@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.interfaces.PadAction
+import com.cresoty.catpossignpad.presentation.component.ClickSoundButton
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.dpx
 import com.cresoty.catpossignpad.presentation.theme.main01

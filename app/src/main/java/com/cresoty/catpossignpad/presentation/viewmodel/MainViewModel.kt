@@ -428,7 +428,7 @@ class MainViewModel @Inject constructor(
         )
         if (isAfterUse) return
         if (!isSave) return
-        if (total <= min) return
+//        if (total <= min) return
 //        if (total <= minAmount) return
         if (otc == 0) return
 

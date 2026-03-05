@@ -40,7 +40,7 @@ import com.cresoty.catpossignpad.model.state.MainState
 import com.cresoty.catpossignpad.model.state.PointState
 import com.cresoty.catpossignpad.model.state.PreviewState
 import com.cresoty.catpossignpad.model.state.SettingState
-import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
+import com.cresoty.catpossignpad.presentation.component.ClickSoundButton
 import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01

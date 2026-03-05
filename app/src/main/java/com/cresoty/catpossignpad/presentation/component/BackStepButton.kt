@@ -13,7 +13,6 @@ import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.dpx
 import com.cresoty.catpossignpad.presentation.theme.transparent
-import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 
 @Composable
 fun BackStepButton(

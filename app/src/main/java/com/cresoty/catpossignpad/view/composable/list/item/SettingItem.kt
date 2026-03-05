@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
+import com.cresoty.catpossignpad.presentation.component.ClickSoundButton
 import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common02

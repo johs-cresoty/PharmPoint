@@ -26,7 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.view.composable.common.FilterTextField
 import com.cresoty.catpossignpad.ConfigKey
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
+import com.cresoty.catpossignpad.presentation.component.ClickSoundButton
 import com.cresoty.catpossignpad.view.composable.list.SettingMainThemeList
 import com.cresoty.catpossignpad.view.composable.list.SettingType
 import com.cresoty.catpossignpad.view.controller.LocalController

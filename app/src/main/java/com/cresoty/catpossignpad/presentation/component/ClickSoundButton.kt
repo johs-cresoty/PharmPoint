@@ -1,4 +1,4 @@
-package com.cresoty.catpossignpad.view.composable.common
+package com.cresoty.catpossignpad.presentation.component
 
 import android.view.SoundEffectConstants
 import androidx.compose.foundation.BorderStroke
