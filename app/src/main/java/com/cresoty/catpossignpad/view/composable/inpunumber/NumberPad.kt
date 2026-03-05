@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -33,10 +35,18 @@ import com.cresoty.catpossignpad.maskingPhoneNumber
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.enums.PointQuickInputType
 import com.cresoty.catpossignpad.model.interfaces.PadAction
+import com.cresoty.catpossignpad.model.interfaces.ViewController
+import com.cresoty.catpossignpad.model.state.ConfigState
+import com.cresoty.catpossignpad.model.state.CustomerState
+import com.cresoty.catpossignpad.model.state.MainState
+import com.cresoty.catpossignpad.model.state.PointState
+import com.cresoty.catpossignpad.model.state.PreviewState
+import com.cresoty.catpossignpad.model.state.SettingState
 import com.cresoty.catpossignpad.safeSubString
 import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.view.composable.common.ClickSoundButton
 import com.cresoty.catpossignpad.view.controller.LocalController
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.main01
@@ -49,6 +59,7 @@ import com.cresoty.catpossignpad.presentation.theme.sub01
 import com.cresoty.catpossignpad.presentation.theme.sub02
 import com.cresoty.catpossignpad.presentation.theme.success
 import com.cresoty.catpossignpad.presentation.theme.transparent
+import kotlinx.coroutines.flow.MutableStateFlow
 
 enum class PhoneButtonType(val number: String?, val fontSize: Float) {
     NUMBER_1("1", 50f),
@@ -96,12 +107,13 @@ fun NumberPad(
                 step = step
             )
 
-            Spacer(modifier = Modifier.size(57f.dpx))
+            Spacer(modifier = Modifier.size(82f.dpx))
         }
 
         numbers.chunked(3).forEach { rows ->
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
                 rows.forEach { item ->
                     PhoneNumberButton(
@@ -430,5 +442,51 @@ fun MaskingNumberField(
             }
         }
 
+    }
+}
+
+@Preview(name = "번호 패드 - 전화번호 입력", device = "spec:width=800px,height=1319px,dpi=213", showBackground = true)
+@Composable
+private fun NumberPadPhoneNumPreview() {
+    val mockController = object : ViewController {
+        override val mainState = MutableStateFlow(MainState())
+        override val configState = MutableStateFlow(ConfigState())
+        override val previewState = MutableStateFlow(PreviewState())
+        override val settingState = MutableStateFlow(SettingState())
+        override val pointState = MutableStateFlow(PointState())
+        override val customerState = MutableStateFlow(CustomerState(phoneNumber = "01012"))
+        override fun dispatch(action: PadAction) {}
+    }
+    CatposSignpadTheme {
+        CompositionLocalProvider(LocalController provides mockController) {
+            NumberPad(
+                step = PointDeltaProcess.POINT_SAVE_PHONE_NUM,
+                checkbox = R.drawable.icon_checkbox_unchecked,
+                checkboxColor = notice
+            )
+        }
+    }
+}
+
+@Preview(name = "번호 패드 - 포인트 금액 입력", device = "spec:width=800px,height=1319px,dpi=213", showBackground = true)
+@Composable
+private fun NumberPadAmountInputPreview() {
+    val mockController = object : ViewController {
+        override val mainState = MutableStateFlow(MainState())
+        override val configState = MutableStateFlow(ConfigState(isMinPointEnabled = true, minPoint = 1000))
+        override val previewState = MutableStateFlow(PreviewState())
+        override val settingState = MutableStateFlow(SettingState())
+        override val pointState = MutableStateFlow(PointState(pointBalance = "5,000"))
+        override val customerState = MutableStateFlow(CustomerState())
+        override fun dispatch(action: PadAction) {}
+    }
+    CatposSignpadTheme {
+        CompositionLocalProvider(LocalController provides mockController) {
+            NumberPad(
+                step = PointDeltaProcess.POINT_USE_AMOUNT_INPUT,
+                checkbox = R.drawable.icon_checkbox_unchecked,
+                checkboxColor = notice
+            )
+        }
     }
 }

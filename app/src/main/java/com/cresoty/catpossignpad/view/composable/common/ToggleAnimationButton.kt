@@ -27,17 +27,17 @@ import androidx.compose.ui.unit.dp
 import com.cresoty.catpossignpad.insetShadow
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common02
-import com.cresoty.catpossignpad.presentation.theme.main03
 import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.main03
 import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.transparent
 import com.cresoty.catpossignpad.presentation.theme.white
 
 @Composable
 fun ToggleAnimationButton(
-    modifier : Modifier,
-    isSelected : Boolean,     // true : 사용 / false : 미사용
-    onChange : (Boolean) -> Unit
+    modifier: Modifier,
+    isSelected: Boolean,     // true : 사용 / false : 미사용
+    onChange: (Boolean) -> Unit
 ) {
     // 0f(왼쪽) ~ 1f(오른쪽)
     val target = if (isSelected) 1f else 0f
@@ -50,7 +50,7 @@ fun ToggleAnimationButton(
     val shape = RoundedCornerShape(5f.dpx)
     val shadowShape = RoundedCornerShape(bottomEnd = 5f.dpx)
 
-    BoxWithConstraints (
+    BoxWithConstraints(
         modifier
             .height(55f.dpx)
             .clip(shape)
@@ -114,23 +114,27 @@ private fun SegmentButton(
         onClick = { onClick(!selected) },
         backgroundColor = transparent
     ) {
-        list.map {
-            Box(
-                modifier
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(12.dp))
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                val color = if(selected == it.second) common02 else white
-                val weight = if(selected == it.second) FontWeight.Bold else FontWeight.Normal
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            list.map {
+                Box(
+                    modifier
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val color = if (selected == it.second) common02 else white
+                    val weight = if (selected == it.second) FontWeight.Bold else FontWeight.Normal
 
-                Text(
-                    text = it.first,
-                    color = color,
-                    fontWeight = weight,
-                    fontSize = 20f.spx
-                )
+                    Text(
+                        text = it.first,
+                        color = color,
+                        fontWeight = weight,
+                        fontSize = 20f.spx
+                    )
+                }
             }
         }
     }
