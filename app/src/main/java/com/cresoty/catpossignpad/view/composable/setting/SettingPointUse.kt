@@ -18,19 +18,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cresoty.catpossignpad.view.composable.common.FilterTextField
-import com.cresoty.catpossignpad.view.composable.common.FilterTextType
 import com.cresoty.catpossignpad.ConfigKey
 import com.cresoty.catpossignpad.model.interfaces.PadAction
-import com.cresoty.catpossignpad.view.composable.common.ToggleAnimationButton
-import com.cresoty.catpossignpad.view.composable.list.SettingType
-import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
-import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.dpx
 import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.white
+import com.cresoty.catpossignpad.view.composable.common.FilterTextField
+import com.cresoty.catpossignpad.view.composable.common.FilterTextType
+import com.cresoty.catpossignpad.view.composable.common.ToggleAnimationButton
+import com.cresoty.catpossignpad.view.composable.list.SettingType
+import com.cresoty.catpossignpad.view.controller.LocalController
 
 @Composable
 fun SettingPointUse(
@@ -105,7 +104,7 @@ fun SettingPointUse(
                     modifier = Modifier.size(width = 275f.dpx, height = 55f.dpx),
                     textAlign = TextAlign.End,
                     initText = minPoint,
-                    placeholder = "",
+                    placeholder = "0",
                     filterType = FilterTextType.PRICE,
                     onTextChange = { minPoint = it },
                     onClickDone = { minPoint = it }
@@ -117,6 +116,8 @@ fun SettingPointUse(
         SettingButtons(
             modifier = Modifier.weight(1f),
             isLogin = false,
+            enabled = !isMinPointEnabled || (minPoint.isNotEmpty() && (minPoint.replace(",", "")
+                .toIntOrNull() ?: -1) > 0),
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 val map = mutableMapOf<Preferences.Key<*>, Any>()

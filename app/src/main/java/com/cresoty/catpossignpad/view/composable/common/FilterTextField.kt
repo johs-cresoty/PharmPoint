@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,6 +68,7 @@ fun FilterTextField(
         FilterTextType.IP, FilterTextType.PRICE, FilterTextType.NUMBER -> KeyboardType.Number
         FilterTextType.NONE -> KeyboardType.Text
     }
+
     val focusRequester = remember { FocusRequester() }
 
     var textFieldValue by remember {
@@ -76,6 +77,7 @@ fun FilterTextField(
             FilterTextType.NUMBER -> initText.filter { it.isDigit() }.take(10)
             else -> initText
         }
+
         mutableStateOf(
             TextFieldValue(
                 text = initialText,
@@ -83,6 +85,7 @@ fun FilterTextField(
             )
         )
     }
+    val boarderColor = if (textFieldValue.text.isEmpty()) common01 else common02
     var isFocused by remember { mutableStateOf(false) }
     var isInitialFocus by remember { mutableStateOf(true) }
 
@@ -139,7 +142,7 @@ fun FilterTextField(
                     if (filterType == FilterTextType.NUMBER) {
                         if (inputText.length > 10) inputText = inputText.dropLast(1)
                     } else {
-                        inputText = inputText.toDecimalString()
+                        if (inputText.isNotEmpty()) inputText = inputText.toDecimalString()
                     }
                 }
 
@@ -178,11 +181,14 @@ fun FilterTextField(
                     propagateMinConstraints = true
                 ) {
                     if (textFieldValue.text.isEmpty()) {
-                        Text(
+                        BasicText(
                             text = placeholder,
-                            fontSize = 20.spx,
-                            fontWeight = FontWeight.Normal,
-                            color = common01
+                            style = TextStyle(
+                                fontSize = 20.spx,
+                                fontWeight = FontWeight.Normal,
+                                color = common01,
+                                textAlign = textAlign
+                            )
                         )
                     }
                     innerTextField()
@@ -192,7 +198,7 @@ fun FilterTextField(
         interactionSource = interactionSource,
         modifier = modifier
             .background(color = white, shape = RoundedCornerShape(6.dp))
-            .border(width = 1.dp, color = common01, shape = RoundedCornerShape(6.dp))
+            .border(width = 1.dp, color = boarderColor, shape = RoundedCornerShape(6.dp))
             .padding(horizontal = 20.dpx, vertical = 14.dpx)
             .focusRequester(focusRequester)
             .onFocusChanged { isFocused = it.isFocused }
