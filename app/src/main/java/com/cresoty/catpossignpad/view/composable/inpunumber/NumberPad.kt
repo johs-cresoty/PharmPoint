@@ -114,7 +114,6 @@ fun NumberPad(
             }
         }
 
-//        Spacer(modifier = Modifier.size(24f.dp(dim)))
         Spacer(modifier = Modifier.size(7f.dpx))
 
         PersonalInfoUseAgree(
@@ -227,20 +226,24 @@ fun PersonalInfoUseAgree(
                     onClick = onClickPersonalInfoUse,
                     backgroundColor = transparent
                 ) {
-                    Image(
-                        modifier = Modifier.size(35f.dpx),
-                        painter = painterResource(checkbox),
-                        contentDescription = null
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            modifier = Modifier.size(35f.dpx),
+                            painter = painterResource(checkbox),
+                            contentDescription = null
+                        )
 
-                    Spacer(modifier = Modifier.size(17f.dpx))
+                        Spacer(modifier = Modifier.size(17f.dpx))
 
-                    Text(
-                        text = "[필수] 개인정보 제공 동의합니다.",
-                        fontSize = 30f.spx,
-                        lineHeight = 30f.spx,
-                        color = checkboxColor
-                    )
+                        Text(
+                            text = "[필수] 개인정보 제공 동의합니다.",
+                            fontSize = 30f.spx,
+                            lineHeight = 30f.spx,
+                            color = checkboxColor
+                        )
+                    }
                 }
             }
 
