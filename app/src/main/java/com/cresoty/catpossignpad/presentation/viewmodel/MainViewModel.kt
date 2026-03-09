@@ -57,7 +57,7 @@ class MainViewModel @Inject constructor(
     private val estimatePointUseCase: EstimatePointUseCase,
     private val getPointSaveSettingUseCase: GetPointSaveSettingUseCase,
     private val getPointAmountSettingUseCase: GetPointAmountSettingUseCase,
-    private val getPointBalanceUseCase: GetPointBalanceUseCase
+    private val getPointBalanceUseCase: GetPointBalanceUseCase,
 ) : ViewModel() {
 
     private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
@@ -110,7 +110,7 @@ class MainViewModel @Inject constructor(
 
     val customerState: StateFlow<CustomerState> = combine(
         _isExist,
-        _isExistChecking,  // 추가
+        _isExistChecking,
         _verifyResult,
         _verifyNumber,
         _phoneNumber,
@@ -118,7 +118,7 @@ class MainViewModel @Inject constructor(
         CustomerState(
             phoneNumber = phoneNumber,
             isCustomerExist = isExist,
-            isExistChecking = isChecking,  // 추가
+            isExistChecking = isChecking,
             verifyResult = verifyResult,
             verifyNumber = verifyNumber
         )
@@ -240,6 +240,8 @@ class MainViewModel @Inject constructor(
             PadAction.RequestCustomerVerify -> {}
             PadAction.SendToTerminalPointUse -> sendToTerminalUsePoint()
             PadAction.RequestExpectSaveAmount -> checkExpectPointAmount(emptyList())
+            PadAction.SendToCATCustomerInfo -> sendToCATCustomerInfo()
+            PadAction.SendCATFail -> sendCATFail()
         }
     }
 
@@ -248,6 +250,7 @@ class MainViewModel @Inject constructor(
      * 001 : 적립요청
      * 002 : 적립요청(복합결제)
      * 003 : 사용요청
+     * CAT : 고객 조회(없을 경우 신규 가입)
      *
      * @param cmd
      * @param data
@@ -271,7 +274,51 @@ class MainViewModel @Inject constructor(
             Val.TERMINAL_COMMAND_003 -> {
                 processPointUse(list)
             }
+
+            Val.CATPOS -> {
+                updatePointDeltaStep(PointDeltaProcess.CUSTOMER_PHONE_LOOKUP)
+            }
         }
+    }
+
+
+    private fun sendToCATCustomerInfo() {
+        viewModelScope.launch {
+            val phone = customerState.value.phoneNumber
+            getPointBalanceUseCase(
+                taxNo = configState.value.bizNo,
+                customerPhone = phone
+            ).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        Log.d("SocketDebug", "sendToCATCustomerInfo 응답:${resource.data}")
+                        val responseBytes =
+                            ("OK|${resource.data.customerPhone}|${resource.data.customerCode}\r\n")
+                                .toByteArray(Charsets.UTF_8)
+                        socketManager.send(responseBytes) { written ->
+                            Log.d(
+                                "SocketDebug",
+                                "PC로 텍스트 전송 완료: $written bytes, 내용: 'OK|${resource.data.customerPhone}|${resource.data.customerCode}'"
+                            )
+                        }
+
+                        updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
+                    }
+
+                    is DataResource.Error -> {
+                        Log.d("SocketDebug", "getPointBalance error: ${resource.throwable.message}")
+                    }
+
+                    is DataResource.Loading -> {}
+                }
+            }
+        }
+    }
+
+    private fun sendCATFail() {
+        val failBytes = "FAIL\r\n".toByteArray(Charsets.UTF_8)
+        socketManager.send(failBytes)
+        updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
     }
 
     /**
@@ -563,7 +610,7 @@ class MainViewModel @Inject constructor(
             ).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> {
-                        val balance = resource.data.balance
+                        val balance = resource.data.pointBalance
                         _pointBalance.update { balance }
                         val balanceAmount = balance.toIntOrNull() ?: 0
                         val isShortage = balanceAmount == 0 ||
@@ -701,12 +748,13 @@ class MainViewModel @Inject constructor(
      *
      * @param step
      */
-    private fun updatePointDeltaStep(step: PointDeltaProcess) {
+    private fun updatePointDeltaStep(step: PointDeltaProcess, sendInit: Boolean = true) {
 
         if (step == PointDeltaProcess.NONE) {
-            val buff = PharmpayTelegram.makeInit()
-
-            socketManager.send(buff)
+            if (sendInit) {
+                val buff = PharmpayTelegram.makeInit()
+                socketManager.send(buff)
+            }
             initPointState()
         }
 
@@ -764,13 +812,14 @@ class MainViewModel @Inject constructor(
         val step = _pointDeltaStep.value
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+            PointDeltaProcess.POINT_USE_PHONE_NUM,
+            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
                 var current = _phoneNumber.value
                 if (current.length <= 10) current += input
 
                 _phoneNumber.update { current }
 
-                if (step == PointDeltaProcess.POINT_USE_PHONE_NUM && current.length == 11) {
+                if ((step == PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.CUSTOMER_PHONE_LOOKUP) && current.length == 11) {
                     checkCustomerExist(current)
                 }
             }
@@ -837,7 +886,8 @@ class MainViewModel @Inject constructor(
         val step = _pointDeltaStep.value
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+            PointDeltaProcess.POINT_USE_PHONE_NUM,
+            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
                 val current = _phoneNumber.value
                 _phoneNumber.update {
                     current.dropLast(1)
@@ -871,7 +921,8 @@ class MainViewModel @Inject constructor(
         val step = _pointDeltaStep.value
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+            PointDeltaProcess.POINT_USE_PHONE_NUM,
+            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
                 _phoneNumber.update {
                     ""
                 }
@@ -1000,13 +1051,13 @@ class MainViewModel @Inject constructor(
 //                    Dialogs.Setting
 //                }
 //            } else {
-                val bizNo = configState.value.bizNo.isEmpty()
-                val dialog: Dialogs = if (bizNo) Dialogs.Setting
-                else Dialogs.InputPassword
+            val bizNo = configState.value.bizNo.isEmpty()
+            val dialog: Dialogs = if (bizNo) Dialogs.Setting
+            else Dialogs.InputPassword
 
-                _dialog.update {
-                    dialog
-                }
+            _dialog.update {
+                dialog
+            }
 //            }
         }
     }

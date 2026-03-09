@@ -216,13 +216,16 @@ class SocketManager @Inject constructor() : CoroutineScope {
                 // 누적(프레이밍 필요 시 여기서 패킷 단위로 잘라서 처리)
                 ctx.recvBaos.write(bytes)
 
+                val receivedString = String(bytes, Charsets.UTF_8)
+
                 Log.d("SocketDebug", "데이터 수신 (${n}bytes): ${bytes.byte2String()}")
+                Log.d("SocketDebug", "데이터 수신 한글 (${n}bytes): $receivedString")
 
                 // 지금은 사용자가 하던 방식처럼 "일단 모았다가 처리" 형태로 예시
                 // 다만 이 방식은 패킷 경계가 확실하지 않으면 위험합니다.
                 val data = ctx.recvBaos.toByteArray()
                 if (data.isNotEmpty()) {
-                    val cmd = findCommand(data.size, data)
+                    val cmd = parseCatposCommand(data).ifEmpty { findCommand(data.size, data) }
 
                     Log.d("SocketDebug", "findCommand 결과: '$cmd' (data size: ${data.size})")
 
@@ -230,7 +233,7 @@ class SocketManager @Inject constructor() : CoroutineScope {
                     telegramReceiver(cmd, data)
 
                     ctx.recvBaos.reset()
-                    send(ACK_ARRAY)
+                    if (cmd != Val.CATPOS) send(ACK_ARRAY)
                 }
             }
 
@@ -248,43 +251,65 @@ class SocketManager @Inject constructor() : CoroutineScope {
     }
 
     private fun onWrite(key: SelectionKey) {
-        val sc = key.channel() as SocketChannel
-        val ctx = key.attachment() as ConnCtx
-
-        while (ctx.writeQueue.isNotEmpty()) {
-            val head = ctx.writeQueue.first()
-
-            val n = sc.write(head.buf)   // 이번 호출에서 실제로 쓴 바이트 수
-            if (n > 0) head.writtenTotal += n
-
-            if (head.buf.hasRemaining()) {
-                // 아직 다 못 씀 -> 다음 OP_WRITE에서 이어서
-                break
-            } else {
-                // 전부 썼음(커널 버퍼에 다 올림)
-                ctx.writeQueue.removeFirst()
-                head.onComplete?.invoke(head.writtenTotal)
-            }
-        }
-
-        if (ctx.writeQueue.isEmpty()) {
-            key.interestOps(key.interestOps() and SelectionKey.OP_WRITE.inv() or SelectionKey.OP_READ)
-        }
-    }
-
-    fun send(data: ByteArray, onComplete: ((written: Int) -> Unit)? = null) {
-        val key = clientKey ?: run {
-            Log.e("@#@#", "clientKey null")
-            return
-        }
-
-        if (!key.isValid) {
-            Log.e("@#@#", "key invalid")
+        val sc = key.channel() as? SocketChannel ?: run {
+            Log.w("@#@#", "onWrite: SocketChannel null")
             return
         }
 
         val ctx = key.attachment() as? ConnCtx ?: run {
-            Log.e("@#@#", "ConnCtx null")
+            Log.w("@#@#", "onWrite: ConnCtx null")
+            return
+        }
+
+        while (ctx.writeQueue.isNotEmpty()) {
+            val head = ctx.writeQueue.firstOrNull() ?: break
+
+            try {
+                val n = sc.write(head.buf)
+                if (n > 0) head.writtenTotal += n
+
+                if (head.buf.hasRemaining()) break
+                else {
+                    ctx.writeQueue.removeFirst()
+                    head.onComplete?.invoke(head.writtenTotal)
+                }
+            } catch (e: IOException) {
+                Log.e("@#@#", "onWrite IOException", e)
+                closeKey(key)
+                break
+            } catch (e: Exception) {
+                Log.e("@#@#", "onWrite Exception", e)
+                closeKey(key)
+                break
+            }
+        }
+
+        try {
+            if (ctx.writeQueue.isEmpty()) {
+                key.interestOps(key.interestOps() and SelectionKey.OP_WRITE.inv() or SelectionKey.OP_READ)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    fun send(data: ByteArray?, onComplete: ((written: Int) -> Unit)? = null) {
+        if (data == null || data.isEmpty()) {
+            Log.w("@#@#", "send 호출 시 data null 또는 empty")
+            return
+        }
+
+        val key = clientKey ?: run {
+            Log.e("@#@#", "send 실패: clientKey null")
+            return
+        }
+
+        if (!key.isValid) {
+            Log.e("@#@#", "send 실패: key invalid")
+            return
+        }
+
+        val ctx = key.attachment() as? ConnCtx ?: run {
+            Log.e("@#@#", "send 실패: ConnCtx null")
             return
         }
 
@@ -295,8 +320,12 @@ class SocketManager @Inject constructor() : CoroutineScope {
 
         Log.d("@#@#", "writeQueue size after add: ${ctx.writeQueue.size}")
 
-        key.interestOps(key.interestOps() or SelectionKey.OP_WRITE)
-        selector?.wakeup()
+        try {
+            key.interestOps(key.interestOps() or SelectionKey.OP_WRITE)
+            selector?.wakeup()
+        } catch (e: Exception) {
+            Log.e("@#@#", "send: key.interestOps 실패", e)
+        }
     }
 
     private fun closeKey(key: SelectionKey) {
@@ -327,6 +356,14 @@ class SocketManager @Inject constructor() : CoroutineScope {
         } catch (_: Exception) {
         }
         selector = null
+    }
+
+    // CATPOS 파이프 형식 파싱: "CAT|..." → "CAT"
+    private fun parseCatposCommand(data: ByteArray): String {
+        val pipeIdx = data.indexOf('|'.code.toByte())
+        if (pipeIdx <= 0) return ""
+        val candidate = String(data, 0, pipeIdx, Charsets.UTF_8).trim()
+        return if (candidate == Val.CATPOS) candidate else ""
     }
 
     private fun findCommand(

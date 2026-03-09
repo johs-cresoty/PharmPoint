@@ -33,4 +33,7 @@ sealed interface PadAction {
     data object SendToTerminalPointUse : PadAction
 
     data object RequestExpectSaveAmount : PadAction
+    data object SendToCATCustomerInfo: PadAction
+    data object SendCATFail : PadAction
+
 }

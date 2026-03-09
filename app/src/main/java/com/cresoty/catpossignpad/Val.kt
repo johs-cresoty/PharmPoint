@@ -10,6 +10,9 @@ object Val {
     const val TERMINAL_COMMAND_004 = "004"      // TRM <- PAD : [응답]포인트 사용
     const val TERMINAL_COMMAND_010 = "010"      // PAD -> TRM : 취소
 
+    const val CATPOS = "CAT" // CATPOS -> PAD
+
+
     const val TERMINAL_FLAG     = "TRM"
     const val COMM_STX : Byte = 0x02
     const val COMM_ETX : Byte = 0x03

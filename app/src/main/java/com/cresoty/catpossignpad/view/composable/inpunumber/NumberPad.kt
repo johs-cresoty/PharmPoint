@@ -2,6 +2,7 @@ package com.cresoty.catpossignpad.view.composable.inpunumber
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,18 +18,18 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.BaselineShift
-import androidx.compose.ui.text.withStyle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.R
 import com.cresoty.catpossignpad.maskingPhoneNumber
@@ -42,23 +43,23 @@ import com.cresoty.catpossignpad.model.state.MainState
 import com.cresoty.catpossignpad.model.state.PointState
 import com.cresoty.catpossignpad.model.state.PreviewState
 import com.cresoty.catpossignpad.model.state.SettingState
-import com.cresoty.catpossignpad.safeSubString
-import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.presentation.component.ClickSoundButton
-import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
+import com.cresoty.catpossignpad.presentation.theme.dpx
 import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.main04
 import com.cresoty.catpossignpad.presentation.theme.notice
 import com.cresoty.catpossignpad.presentation.theme.notice_light
-import com.cresoty.catpossignpad.presentation.theme.dpx
 import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.sub01
 import com.cresoty.catpossignpad.presentation.theme.sub02
 import com.cresoty.catpossignpad.presentation.theme.success
 import com.cresoty.catpossignpad.presentation.theme.transparent
+import com.cresoty.catpossignpad.safeSubString
+import com.cresoty.catpossignpad.toDecimalString
+import com.cresoty.catpossignpad.view.controller.LocalController
 import kotlinx.coroutines.flow.MutableStateFlow
 
 enum class PhoneButtonType(val number: String?, val fontSize: Float) {
@@ -226,13 +227,16 @@ fun PersonalInfoUseAgree(
     val isMinPointEnabled = config.isMinPointEnabled
 
     Row(
-        modifier = Modifier.size(width = 720f.dpx, height = 80f.dpx).padding(bottom = 25.dpx),
+        modifier = Modifier
+            .size(width = 720f.dpx, height = 80f.dpx)
+            .padding(bottom = 25.dpx),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+            PointDeltaProcess.POINT_USE_PHONE_NUM,
+            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
                 ClickSoundButton(
                     onClick = onClickPersonalInfoUse,
                     backgroundColor = transparent,
@@ -371,8 +375,13 @@ fun MaskingNumberField(
     val controller = LocalController.current
     val point by controller.pointState.collectAsStateWithLifecycle()
     val customer by controller.customerState.collectAsStateWithLifecycle()
-    val backgroundColor =
-        if (!customer.isCustomerExist && !customer.isExistChecking && customer.phoneNumber.length > 10 && step != PointDeltaProcess.POINT_SAVE_PHONE_NUM) notice_light else main04
+    val isInvalidCustomer = !customer.isCustomerExist &&
+            !customer.isExistChecking &&
+            customer.phoneNumber.length > 10 &&
+            step != PointDeltaProcess.POINT_SAVE_PHONE_NUM
+
+    val backgroundColor = if (isInvalidCustomer) notice_light else main04
+    val borderColor = if (isInvalidCustomer) notice else transparent
     val isMasking = point.isMasking
     val drawable = if (isMasking) R.drawable.icon_mask_activate else R.drawable.icon_mask_deactivate
 
@@ -393,6 +402,11 @@ fun MaskingNumberField(
         modifier = Modifier
             .size(width = width, height = height)
             .background(color = backgroundColor, shape = RoundedCornerShape(10f.dpx))
+            .border(
+                width = 2.dpx,
+                color = borderColor,
+                shape = RoundedCornerShape(10.dpx)
+            )
             .padding(horizontal = 13f.dpx, vertical = 20f.dpx),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -445,7 +459,11 @@ fun MaskingNumberField(
     }
 }
 
-@Preview(name = "번호 패드 - 전화번호 입력", device = "spec:width=800px,height=1319px,dpi=213", showBackground = true)
+@Preview(
+    name = "번호 패드 - 전화번호 입력",
+    device = "spec:width=800px,height=1319px,dpi=213",
+    showBackground = true
+)
 @Composable
 private fun NumberPadPhoneNumPreview() {
     val mockController = object : ViewController {
@@ -468,12 +486,17 @@ private fun NumberPadPhoneNumPreview() {
     }
 }
 
-@Preview(name = "번호 패드 - 포인트 금액 입력", device = "spec:width=800px,height=1319px,dpi=213", showBackground = true)
+@Preview(
+    name = "번호 패드 - 포인트 금액 입력",
+    device = "spec:width=800px,height=1319px,dpi=213",
+    showBackground = true
+)
 @Composable
 private fun NumberPadAmountInputPreview() {
     val mockController = object : ViewController {
         override val mainState = MutableStateFlow(MainState())
-        override val configState = MutableStateFlow(ConfigState(isMinPointEnabled = true, minPoint = 1000))
+        override val configState =
+            MutableStateFlow(ConfigState(isMinPointEnabled = true, minPoint = 1000))
         override val previewState = MutableStateFlow(PreviewState())
         override val settingState = MutableStateFlow(SettingState())
         override val pointState = MutableStateFlow(PointState(pointBalance = "5,000"))

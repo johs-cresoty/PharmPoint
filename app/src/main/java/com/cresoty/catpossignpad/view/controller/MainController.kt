@@ -53,7 +53,8 @@ fun MainController(viewModel: MainViewModel, context: Context) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_VERIFY_NUM,
-            PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> RequestPointDelta(step)
+            PointDeltaProcess.POINT_USE_AMOUNT_INPUT,
+            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> RequestPointDelta(step)
 
             PointDeltaProcess.POINT_SAVE_PROC_DONE,
             PointDeltaProcess.POINT_USE_PROC_DONE,
