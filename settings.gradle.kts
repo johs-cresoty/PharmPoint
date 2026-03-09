@@ -20,6 +20,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CatposSignpad"
+rootProject.name = "CatposPoint"
 include(":app")
  

@@ -7,17 +7,17 @@ plugins {
 }
 
 android {
-    namespace = "com.cresoty.catpossignpad"
+    namespace = "com.cresoty.catpospoint"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.cresoty.catpossignpad"
+        applicationId = "com.cresoty.catpospoin"
         minSdk = 34
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "com.cresoty.catpossignpad.HiltTestRunner"
+        testInstrumentationRunner = "com.cresoty.catpospoin.HiltTestRunner"
     }
 
     buildTypes {
