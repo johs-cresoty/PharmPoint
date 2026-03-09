@@ -7,12 +7,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,119 +31,97 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import com.cresoty.catpossignpad.R
+import com.cresoty.catpossignpad.presentation.component.PhoneMaskStrategy.Middle
+import com.cresoty.catpossignpad.presentation.component.PhoneMaskStrategy.Tail
+import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
+import com.cresoty.catpossignpad.presentation.theme.common02
 import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.main04
+import com.cresoty.catpossignpad.presentation.theme.notice
+import com.cresoty.catpossignpad.presentation.theme.notice_light
 import com.cresoty.catpossignpad.presentation.theme.spx
+import com.cresoty.catpossignpad.presentation.theme.transparent
 
 /**
- * 전화번호 / 일반 텍스트 마스킹 입력 표시 필드
+ * 전화번호 마스킹 입력 표시 필드 (010-XXXX-XXXX 형태)
  *
- * @param value             현재 입력값 (raw, 예: "01012345678")
- * @param modifier          외부 Modifier
- * @param mode              [PhoneNumberInputMode.Phone] or [PhoneNumberInputMode.Plain]
- * @param maskChar          마스킹 문자 (기본 '*')
- * @param isMasked          마스킹 여부 (외부에서 제어 가능)
- * @param onMaskToggle      마스킹 토글 클릭 콜백 (null 이면 토글 버튼 미표시)
- * @param backgroundColor   배경색
- * @param textColor         텍스트 색상
- * @param dividerColor      구분선 색상 (Phone 모드 전용)
- * @param fontSize          폰트 사이즈
- * @param width             컴포넌트 전체 너비
- * @param height            컴포넌트 전체 높이
- * @param maskIconRes       마스킹 ON 아이콘 리소스 id
- * @param unmaskIconRes     마스킹 OFF 아이콘 리소스 id
- * @param placeholder       값이 없을 때 표시할 텍스트 (null 이면 미표시)
- * @param placeholderColor  placeholder 색상
+ * @param value                현재 입력값 (raw, 예: "01012345678")
+ * @param modifier             외부 Modifier
+ * @param maskStrategy         마스킹 범위 ([PhoneMaskStrategy.Middle]: 가운데 4자리만, [PhoneMaskStrategy.Tail]: 뒤 8자리)
+ * @param isMasked             마스킹 여부 (외부에서 제어 가능)
+ * @param onMaskToggle         마스킹 토글 클릭 콜백 (null 이면 토글 버튼 미표시)
+ * @param isRegisteredCustomer 등록된 회원 여부 (true = 등록, false = 미등록)
  */
 @Composable
 fun PhoneNumberInputField(
     value: String,
     modifier: Modifier = Modifier,
-    mode: PhoneNumberInputMode = PhoneNumberInputMode.Phone(),
-    maskChar: Char = '*',
+    maskStrategy: PhoneMaskStrategy = Middle,
     isMasked: Boolean = true,
     onMaskToggle: (() -> Unit)? = null,
-    backgroundColor: Color = Color(0xFFF0F4FF),
-    textColor: Color = Color(0xFF1A1A2E),
-    dividerColor: Color = textColor,
-    fontSize: TextUnit = 40f.spx,
-    width: Dp = Dp.Unspecified,
-    height: Dp = 100f.dpx,
-    maskIconRes: Int? = null,
-    unmaskIconRes: Int? = null,
-    placeholder: String? = null,
-    placeholderColor: Color = textColor.copy(alpha = 0.35f),
+    isRegisteredCustomer: Boolean = true
 ) {
     // ── 세그먼트 분리 ──────────────────────────────────────────
-    val segments: List<String> = remember(value, isMasked, mode) {
-        buildSegments(value, isMasked, maskChar, mode)
+    val segments: List<String> = remember(value, isMasked, maskStrategy) {
+        buildSegments(value, isMasked, '*', maskStrategy)
     }
 
-    val isEmpty = value.isEmpty()
-
-    // ── 아이콘 drawable ───────────────────────────────────────
     val iconRes: Int? = when {
         onMaskToggle == null -> null
-        isMasked -> maskIconRes
-        else -> unmaskIconRes
+        isMasked -> R.drawable.icon_mask_activate
+        else -> R.drawable.icon_mask_deactivate
     }
+
+    val backgroundColor = if (isRegisteredCustomer) main04 else notice_light
+    val borderColor = if (isRegisteredCustomer) transparent else notice
 
     Row(
         modifier = modifier
-            .then(if (width != Dp.Unspecified) Modifier.width(width) else Modifier.fillMaxWidth())
-            .height(height)
-            .background(color = backgroundColor, shape = RoundedCornerShape(10f.dpx))
+            .size(width = 560f.dpx, height = 100f.dpx)
+            .background(color = backgroundColor, shape = RoundedCornerShape(10.dpx))
+            .then(
+                if (borderColor != Color.Transparent)
+                    Modifier.border(
+                        width = 2f.dpx,
+                        color = borderColor,
+                        shape = RoundedCornerShape(10.dpx)
+                    )
+                else Modifier
+            )
             .padding(horizontal = 13f.dpx, vertical = 20f.dpx),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
 
-            // ── 세그먼트 출력 ──────────────────────────────────
-            segments.forEachIndexed { index, segment ->
-                AnimatedContent(
-                    targetState = segment,
-                    transitionSpec = { fadeIn(tween(120)) togetherWith fadeOut(tween(80)) },
-                    label = "segment_$index",
-                ) { text ->
-                    if (mode is PhoneNumberInputMode.Phone) {
-                        // Phone 모드: 세그먼트별 고정 너비 Box
-                        val boxWidth = if (mode.segmentBoxWidth == Dp.Unspecified) 150f.dpx else mode.segmentBoxWidth
-                        val boxHeight = if (mode.segmentBoxHeight == Dp.Unspecified) 60f.dpx else mode.segmentBoxHeight
-                        Box(
-                            modifier = Modifier.size(
-                                width = boxWidth,
-                                height = boxHeight,
-                            ),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = text.withAsteriskBaselineShift(fontSize),
-                                fontSize = fontSize,
-                                color = textColor,
-                            )
-                        }
-                    } else {
-                        // Plain 모드
-                        Text(
-                            text = text,
-                            fontSize = fontSize,
-                            color = textColor,
-                            maxLines = 1,
-                        )
-                    }
-                }
-
-                // Phone 모드: 세그먼트 사이 구분선
-                if (mode is PhoneNumberInputMode.Phone && index != segments.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.width(12f.dpx),
-                        thickness = 2f.dpx,
-                        color = dividerColor,
+        // ── 세그먼트 출력 ──────────────────────────────────
+        segments.forEachIndexed { index, segment ->
+            AnimatedContent(
+                targetState = segment,
+                transitionSpec = { fadeIn(tween(120)) togetherWith fadeOut(tween(80)) },
+                label = "segment_$index",
+            ) { text ->
+                Box(
+                    modifier = Modifier.size(width = 150f.dpx, height = 60f.dpx),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = text.withAsteriskBaselineShift(40.spx),
+                        fontSize = 40.spx,
+                        color = common02,
                     )
                 }
             }
+
+            if (index != segments.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.width(12f.dpx),
+                    thickness = 2f.dpx,
+                    color = common02,
+                )
+            }
+        }
 
 
         // ── 마스킹 토글 버튼 ──────────────────────────────────
@@ -156,189 +134,107 @@ fun PhoneNumberInputField(
                 Image(
                     painter = painterResource(iconRes),
                     contentDescription = if (isMasked) "번호 보기" else "번호 숨기기",
-                    modifier = Modifier.height(30.dpx).width(38.dpx)
+                    modifier = Modifier
+                        .height(30.dpx)
+                        .width(38.dpx)
                 )
             }
         }
     }
 }
 
-// ── 입력 모드 ─────────────────────────────────────────────────────────────────
+/**
+ * 전화번호 마스킹 범위
+ * - [Middle]: 010-****-1234 (가운데 4자리만)
+ * - [Tail]:   010-****-**** (뒤 8자리)
+ */
+enum class PhoneMaskStrategy { Middle, Tail }
 
-sealed class PhoneNumberInputMode {
-    /**
-     * 전화번호 모드: 010-****-**** 형태로 3개 세그먼트 분리 표시
-     * @param segments 각 세그먼트 최대 자릿수 (기본 [3, 4, 4])
-     */
-    data class Phone(
-        val segmentLengths: List<Int> = listOf(3, 4, 4),
-        val segmentBoxWidth: Dp = Dp.Unspecified,
-        val segmentBoxHeight: Dp = Dp.Unspecified,
-    ) : PhoneNumberInputMode()
-
-    /**
-     * 일반 텍스트 모드: 세그먼트 구분 없이 단일 문자열로 표시
-     * (비밀번호, 포인트 등)
-     */
-    object Plain : PhoneNumberInputMode()
-}
-
-// ── 내부 유틸 ─────────────────────────────────────────────────────────────────
 
 /**
- * value → segments 변환
- * Phone 모드: ["010", "****", "****"]
- * Plain 모드: ["530521"] (단일 원소)
+ * value → 세그먼트 변환 (010 / 중간4자리 / 뒤4자리)
  */
 private fun buildSegments(
     value: String,
     isMasked: Boolean,
     maskChar: Char,
-    mode: PhoneNumberInputMode,
+    maskStrategy: PhoneMaskStrategy,
 ): List<String> {
-    return when (mode) {
-        is PhoneNumberInputMode.Phone -> {
-            val digits = value.filter { it.isDigit() }
-            var cursor = 0
-            mode.segmentLengths.map { len ->
-                val slice = digits.drop(cursor).take(len)
-                cursor += len
-                if (isMasked && slice.isNotEmpty()) {
-                    // 입력된 자리만큼만 마스킹 (미입력 자리는 공백)
-                    slice.map { maskChar }.joinToString("")
-                } else {
-                    slice
-                }
-            }
+    val digits = value.filter { it.isDigit() }
+    var cursor = 0
+    return listOf(3, 4, 4).mapIndexed { segmentIndex, len ->
+        val slice = digits.drop(cursor).take(len)
+        cursor += len
+        val shouldMask = isMasked && slice.isNotEmpty() && when (maskStrategy) {
+            Middle -> segmentIndex == 1
+            Tail -> segmentIndex >= 1
         }
-
-        PhoneNumberInputMode.Plain -> {
-            val display = if (isMasked) value.map { maskChar }.joinToString("") else value
-            listOf(display)
-        }
+        if (shouldMask) slice.map { maskChar }.joinToString("") else slice
     }
 }
 
-/**
- * '●' 문자에 BaselineShift 적용 (기존 withAsteriskBaselineShift 대응)
- */
 private fun String.withAsteriskBaselineShift(fontSize: TextUnit) = buildAnnotatedString {
     this@withAsteriskBaselineShift.forEach { ch ->
-        if (ch == '●') {
-            withStyle(SpanStyle(baselineShift = BaselineShift(0.15f))) { append(ch) }
+        if (ch == '*') {
+            withStyle(SpanStyle(baselineShift = BaselineShift(-0.2f))) { append(ch) }
         } else {
             append(ch)
         }
     }
 }
 
-// ── Preview ───────────────────────────────────────────────────────────────────
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 600)
-@Composable
-private fun PhoneNumberInputField_Phone_Masked_Preview() {
-    PhoneNumberInputField(
-        value = "01012345678",
-        mode = PhoneNumberInputMode.Phone(),
-        isMasked = true,
-        onMaskToggle = {},
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 600)
-@Composable
-private fun PhoneNumberInputField_Phone_Unmasked_Preview() {
-    PhoneNumberInputField(
-        value = "01012345678",
-        mode = PhoneNumberInputMode.Phone(),
-        isMasked = false,
-        onMaskToggle = {},
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 600)
-@Composable
-private fun PhoneNumberInputField_Phone_Partial_Preview() {
-    // 번호 일부만 입력된 상태
-    PhoneNumberInputField(
-        value = "0101234",
-        mode = PhoneNumberInputMode.Phone(),
-        isMasked = true,
-        onMaskToggle = {},
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 600)
-@Composable
-private fun PhoneNumberInputField_Phone_Empty_Preview() {
-    // 아무것도 입력 안 된 상태 (placeholder)
-    PhoneNumberInputField(
-        value = "",
-        mode = PhoneNumberInputMode.Phone(),
-        isMasked = true,
-        placeholder = "전화번호를 입력하세요",
-        onMaskToggle = {},
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 600)
-@Composable
-private fun PhoneNumberInputField_Plain_Masked_Preview() {
-    // 비밀번호 입력 (항상 마스킹)
-    PhoneNumberInputField(
-        value = "530521",
-        mode = PhoneNumberInputMode.Plain,
-        isMasked = true,
-        onMaskToggle = null,
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 600)
-@Composable
-private fun PhoneNumberInputField_Plain_Unmasked_Preview() {
-    // 포인트 입력 (마스킹 없음)
-    PhoneNumberInputField(
-        value = "15000",
-        mode = PhoneNumberInputMode.Plain,
-        isMasked = false,
-        onMaskToggle = null,
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 600)
+@Preview(
+    showBackground = true,
+    backgroundColor = 0xFFFFFFFF,
+    widthDp = 600,
+    device = "spec:width=800px,height=1319px,dpi=213",
+)
 @Composable
 private fun PhoneNumberInputField_AllStates_Preview() {
-    // 여러 상태 한눈에 보기
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12f.dpx),
-        modifier = Modifier.padding(16f.dpx),
-    ) {
-        Text("전화번호 - 마스킹", fontSize = 12f.spx, color = Color.Gray)
-        PhoneNumberInputField(
-            value = "01012345678",
-            mode = PhoneNumberInputMode.Phone(),
-            maskIconRes = R.drawable.icon_mask_activate,
-            unmaskIconRes = R.drawable.icon_mask_deactivate,
-            isMasked = true,
-            onMaskToggle = {},
-        )
+    CatposSignpadTheme {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12f.dpx),
+            modifier = Modifier.padding(16f.dpx),
+        ) {
+            Text("전화번호 - null일 때", fontSize = 12f.spx, color = Color.Gray)
+            PhoneNumberInputField(
+                value = "",
+                isMasked = true,
+                onMaskToggle = {},
+            )
 
-        Text("전화번호 - 마스킹 해제", fontSize = 12f.spx, color = Color.Gray)
-        PhoneNumberInputField(
-            value = "01012345678",
-            mode = PhoneNumberInputMode.Phone(),
-            isMasked = false,
-            maskIconRes = R.drawable.icon_mask_activate,
-            unmaskIconRes = R.drawable.icon_mask_deactivate,
-            onMaskToggle = {},
-        )
+            Text("전화번호 - 마스킹 해제", fontSize = 12f.spx, color = Color.Gray)
+            PhoneNumberInputField(
+                value = "01012345678",
+                isMasked = false,
+                onMaskToggle = {},
+            )
 
-        Text("전화번호 - 일부 입력", fontSize = 12f.spx, color = Color.Gray)
-        PhoneNumberInputField(
-            value = "0101234",
-            mode = PhoneNumberInputMode.Phone(),
-            isMasked = true,
-            onMaskToggle = {},
-        )
+            Text("전화번호 - 가운데 4자리만 마스킹 (Middle)", fontSize = 12f.spx, color = Color.Gray)
+            PhoneNumberInputField(
+                value = "01012345678",
+                maskStrategy = Middle,
+                isMasked = true,
+                onMaskToggle = {},
+            )
+
+            Text("전화번호 - 뒤 8자리 마스킹 (Tail)", fontSize = 12f.spx, color = Color.Gray)
+            PhoneNumberInputField(
+                value = "01012345678",
+                maskStrategy = Tail,
+                isMasked = true,
+                onMaskToggle = {},
+            )
+
+            Text("전화번호 - 등록되지 않은 회원", fontSize = 12f.spx, color = Color.Gray)
+            PhoneNumberInputField(
+                value = "01012345678",
+                maskStrategy = Tail,
+                isMasked = true,
+                onMaskToggle = {},
+                isRegisteredCustomer = false
+            )
+        }
     }
 }

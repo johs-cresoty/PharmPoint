@@ -2,7 +2,6 @@ package com.cresoty.catpossignpad.view.composable.inpunumber
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -23,16 +20,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.BaselineShift
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpossignpad.R
-import com.cresoty.catpossignpad.maskingPhoneNumber
 import com.cresoty.catpossignpad.model.enums.PointDeltaProcess
 import com.cresoty.catpossignpad.model.enums.PointQuickInputType
 import com.cresoty.catpossignpad.model.interfaces.PadAction
@@ -44,6 +35,7 @@ import com.cresoty.catpossignpad.model.state.PointState
 import com.cresoty.catpossignpad.model.state.PreviewState
 import com.cresoty.catpossignpad.model.state.SettingState
 import com.cresoty.catpossignpad.presentation.component.ClickSoundButton
+import com.cresoty.catpossignpad.presentation.component.PhoneNumberInputField
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
@@ -51,13 +43,11 @@ import com.cresoty.catpossignpad.presentation.theme.dpx
 import com.cresoty.catpossignpad.presentation.theme.main01
 import com.cresoty.catpossignpad.presentation.theme.main04
 import com.cresoty.catpossignpad.presentation.theme.notice
-import com.cresoty.catpossignpad.presentation.theme.notice_light
 import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.sub01
 import com.cresoty.catpossignpad.presentation.theme.sub02
 import com.cresoty.catpossignpad.presentation.theme.success
 import com.cresoty.catpossignpad.presentation.theme.transparent
-import com.cresoty.catpossignpad.safeSubString
 import com.cresoty.catpossignpad.toDecimalString
 import com.cresoty.catpossignpad.view.controller.LocalController
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -349,19 +339,6 @@ fun PhoneNumberButton(
     }
 }
 
-/**
- * '*' 문자는 폰트 baseline 기준으로 위쪽에 그려져 숫자와 함께 표시하면 위로 떠 보임.
- * '*'에만 음수 BaselineShift를 적용해 숫자와 수직 중앙이 맞도록 보정.
- */
-private fun String.withAsteriskBaselineShift(): AnnotatedString = buildAnnotatedString {
-    forEach { char ->
-        if (char == '*') {
-            withStyle(SpanStyle(baselineShift = BaselineShift(-0.2f))) { append(char) }
-        } else {
-            append(char)
-        }
-    }
-}
 
 @Composable
 fun MaskingNumberField(
@@ -369,93 +346,38 @@ fun MaskingNumberField(
 ) {
     val isPhoneNumberType = step != PointDeltaProcess.POINT_USE_VERIFY_NUM
 
-    val width = if (isPhoneNumberType) 560f.dpx else 320f.dpx
-    val height = 100f.dpx
-
     val controller = LocalController.current
     val point by controller.pointState.collectAsStateWithLifecycle()
     val customer by controller.customerState.collectAsStateWithLifecycle()
-    val isInvalidCustomer = !customer.isCustomerExist &&
-            !customer.isExistChecking &&
-            customer.phoneNumber.length > 10 &&
-            step != PointDeltaProcess.POINT_SAVE_PHONE_NUM
 
-    val backgroundColor = if (isInvalidCustomer) notice_light else main04
-    val borderColor = if (isInvalidCustomer) notice else transparent
-    val isMasking = point.isMasking
-    val drawable = if (isMasking) R.drawable.icon_mask_activate else R.drawable.icon_mask_deactivate
+    if (isPhoneNumberType) {
+        val isInvalidCustomer = !customer.isCustomerExist &&
+                !customer.isExistChecking &&
+                customer.phoneNumber.length > 10 &&
+                step != PointDeltaProcess.POINT_SAVE_PHONE_NUM
 
-    val inputNumber = if (isPhoneNumberType) customer.phoneNumber else customer.verifyNumber
-    val maskedList =
-        if (isPhoneNumberType) {
-            if (isMasking) inputNumber.maskingPhoneNumber()
-            else listOf(
-                inputNumber.safeSubString(0, 3),
-                inputNumber.safeSubString(3, 7),
-                inputNumber.safeSubString(7, 11)
+        PhoneNumberInputField(
+            value = customer.phoneNumber,
+            isMasked = point.isMasking,
+            onMaskToggle = { controller.dispatch(PadAction.OnClickMaskingToggle) },
+            isRegisteredCustomer = !isInvalidCustomer
+        )
+    } else {
+        Row(
+            modifier = Modifier
+                .size(width = 320f.dpx, height = 100f.dpx)
+                .background(color = main04, shape = RoundedCornerShape(10f.dpx))
+                .padding(horizontal = 13f.dpx, vertical = 20f.dpx),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = customer.verifyNumber,
+                fontSize = 40f.spx,
+                color = common02,
+                maxLines = 1
             )
-        } else {
-            listOf(inputNumber)
         }
-
-    Row(
-        modifier = Modifier
-            .size(width = width, height = height)
-            .background(color = backgroundColor, shape = RoundedCornerShape(10f.dpx))
-            .border(
-                width = 2.dpx,
-                color = borderColor,
-                shape = RoundedCornerShape(10.dpx)
-            )
-            .padding(horizontal = 13f.dpx, vertical = 20f.dpx),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        maskedList.mapIndexed { index, item ->
-            if (isPhoneNumberType) {
-                Box(
-                    modifier = Modifier.size(width = 150f.dpx, height = 60f.dpx),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = item.withAsteriskBaselineShift(),
-                        fontSize = 40f.spx,
-                        color = common02
-                    )
-                }
-
-                if (index != maskedList.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.width(12f.dpx),
-                        thickness = 2f.dpx,
-                        color = common02
-                    )
-                }
-            } else {
-                Text(
-                    text = item,
-                    fontSize = 40f.spx,
-                    color = common02,
-                    maxLines = 1
-                )
-            }
-
-        }
-
-        if (isPhoneNumberType) {
-            ClickSoundButton(
-                onClick = {
-                    controller.dispatch(PadAction.OnClickMaskingToggle)
-                },
-                backgroundColor = transparent
-            ) {
-                Image(
-                    painter = painterResource(drawable),
-                    contentDescription = null
-                )
-            }
-        }
-
     }
 }
 
