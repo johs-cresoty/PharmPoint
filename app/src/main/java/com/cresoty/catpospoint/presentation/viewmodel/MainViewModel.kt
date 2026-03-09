@@ -61,9 +61,7 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
-    private val POS_VER =
-        Class.forName("com.cresoty.catpossignpad.BuildConfig").getField("VERSION_NAME")
-            .get(null) as String
+    private val POS_VER = BuildConfig.VERSION_NAME
 
     // mainState
     private val _pointDeltaStep: MutableStateFlow<PointDeltaProcess> =
