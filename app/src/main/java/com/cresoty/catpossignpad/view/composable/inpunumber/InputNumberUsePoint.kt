@@ -32,13 +32,13 @@ import com.cresoty.catpossignpad.model.state.PreviewState
 import com.cresoty.catpossignpad.model.state.SettingState
 import com.cresoty.catpossignpad.presentation.component.BackStepButton
 import com.cresoty.catpossignpad.presentation.theme.CatposSignpadTheme
-import com.cresoty.catpossignpad.view.controller.LocalController
 import com.cresoty.catpossignpad.presentation.theme.common01
 import com.cresoty.catpossignpad.presentation.theme.common02
-import com.cresoty.catpossignpad.presentation.theme.notice
 import com.cresoty.catpossignpad.presentation.theme.dpx
+import com.cresoty.catpossignpad.presentation.theme.notice
 import com.cresoty.catpossignpad.presentation.theme.spx
 import com.cresoty.catpossignpad.presentation.theme.white
+import com.cresoty.catpossignpad.view.controller.LocalController
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
@@ -49,8 +49,10 @@ fun InputNumberUsePoint(
 ) {
     val controller = LocalController.current
     val customer by controller.customerState.collectAsStateWithLifecycle()
-    val isCustomerExist = customer.isCustomerExist
-    val phoneNum = customer.phoneNumber
+
+    val isInvalidCustomer = !customer.isCustomerExist &&
+            !customer.isExistChecking &&
+            customer.phoneNumber.length > 10
 
     Column(
         modifier = modifier.background(white),
@@ -80,20 +82,20 @@ fun InputNumberUsePoint(
         Spacer(modifier = Modifier.size(24f.dpx))
 
         Text(
-            text = "휴대폰 번호 입력하고 본인 인증을 진행해 주세요.",
+            text = "포인트 사용을 위해 휴대폰 번호를 입력해주세요.",
             fontSize = 30f.spx,
             lineHeight = 30f.spx,
             color = common01
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80f.dpx),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (!isCustomerExist && !customer.isExistChecking && phoneNum.length > 10) {
+        if (isInvalidCustomer) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80f.dpx),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Image(
                     modifier = Modifier.size(height = 24f.dpx, width = 25f.dpx),
                     painter = painterResource(R.drawable.icon_alert),
@@ -134,7 +136,9 @@ private fun InputNumberUsePointPreview() {
     CatposSignpadTheme {
         CompositionLocalProvider(LocalController provides mockController) {
             InputNumberUsePoint(
-                modifier = Modifier.fillMaxSize().background(white),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(white),
                 storeName = "OO약국",
                 paymentAmount = "10,000"
             )
@@ -151,17 +155,22 @@ private fun InputNumberUsePointNotFoundPreview() {
         override val previewState = MutableStateFlow(PreviewState())
         override val settingState = MutableStateFlow(SettingState())
         override val pointState = MutableStateFlow(PointState())
-        override val customerState = MutableStateFlow(CustomerState(
-            phoneNumber = "01012345678",
-            isCustomerExist = false,
-            isExistChecking = false
-        ))
+        override val customerState = MutableStateFlow(
+            CustomerState(
+                phoneNumber = "01012345678",
+                isCustomerExist = false,
+                isExistChecking = false
+            )
+        )
+
         override fun dispatch(action: PadAction) {}
     }
     CatposSignpadTheme {
         CompositionLocalProvider(LocalController provides mockController) {
             InputNumberUsePoint(
-                modifier = Modifier.fillMaxSize().background(white),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(white),
                 storeName = "OO약국",
                 paymentAmount = "10,000"
             )
