@@ -3,6 +3,7 @@ package com.cresoty.catpospoint.remote.api
 import android.util.Log
 import com.cresoty.catpospoint.BuildConfig
 import com.cresoty.catpospoint.remote.api.interceptor.CryptoInterceptor
+import com.cresoty.catpospoint.remote.constant.ServiceConstant.BASE_URL_DEV
 import com.cresoty.catpospoint.remote.constant.ServiceConstant.BASE_URL_PROD
 import com.google.gson.GsonBuilder
 import okhttp3.ConnectionPool
@@ -38,8 +39,8 @@ fun createApiService(): CatposCloudApi {
         }
     }.build()
 
-//    val baseUrl = if (BuildConfig.DEBUG) BASE_URL_DEV else BASE_URL_PROD
-    val baseUrl = BASE_URL_PROD
+    val baseUrl = if (BuildConfig.DEBUG) BASE_URL_DEV else BASE_URL_PROD
+
 
     return Retrofit.Builder()
         .baseUrl(baseUrl)
