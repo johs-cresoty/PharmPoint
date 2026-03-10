@@ -1,5 +1,6 @@
 package com.cresoty.catpospoint.presentation.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,12 +9,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.interfaces.ViewController
@@ -26,11 +28,9 @@ import com.cresoty.catpospoint.model.state.SettingState
 import com.cresoty.catpospoint.presentation.component.BackStepButton
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.common01
-import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.white
-import com.cresoty.catpospoint.toDecimalString
 import com.cresoty.catpospoint.view.controller.LocalController
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -41,9 +41,6 @@ fun InputCustomerPhoneNumber(
 ) {
     val controller = LocalController.current
 
-    val point by controller.pointState.collectAsStateWithLifecycle()
-    val pointDelta = point.pointDelta.toDecimalString()
-
     Column(
         modifier = modifier
             .background(color = white),
@@ -51,12 +48,17 @@ fun InputCustomerPhoneNumber(
     ) {
         BackStepButton { controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE)) }
 
+        Image(
+            painter = painterResource(R.drawable.logo_catposplus),
+            contentDescription = null
+        )
+
         Text(
             text = storeName,
-            fontSize = 53f.spx,
-            lineHeight = 53f.spx,
-            fontWeight = FontWeight.Medium,
-            color = common02,
+            fontSize = 45.spx,
+            fontWeight = FontWeight.Normal,
+            color = common01,
+            textAlign = TextAlign.Center,
             maxLines = 1
         )
 

@@ -354,7 +354,7 @@ fun MaskingNumberField(
         val isInvalidCustomer = !customer.isCustomerExist &&
                 !customer.isExistChecking &&
                 customer.phoneNumber.length > 10 &&
-                step != PointDeltaProcess.POINT_SAVE_PHONE_NUM
+                step != PointDeltaProcess.POINT_SAVE_PHONE_NUM && step != PointDeltaProcess.CUSTOMER_PHONE_LOOKUP
 
         PhoneNumberInputField(
             value = customer.phoneNumber,
