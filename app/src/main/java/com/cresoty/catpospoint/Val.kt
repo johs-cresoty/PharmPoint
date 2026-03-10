@@ -11,6 +11,8 @@ object Val {
     const val TERMINAL_COMMAND_010 = "010"      // PAD -> TRM : 취소
 
     const val CATPOS = "CAT" // CATPOS -> PAD
+    const val CATPOS_NUM = "001"
+    const val CATPOS_CST = "002"
 
 
     const val TERMINAL_FLAG     = "TRM"

@@ -10,6 +10,8 @@ import com.cresoty.catpospoint.ConfigKey
 import com.cresoty.catpospoint.ConfigRepository
 import com.cresoty.catpospoint.PharmpayTelegram
 import com.cresoty.catpospoint.Val
+import com.cresoty.catpospoint.Val.CATPOS_CST
+import com.cresoty.catpospoint.Val.CATPOS_NUM
 import com.cresoty.catpospoint.byte2String
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.domain.model.command.EstimatePointCommand
@@ -32,6 +34,7 @@ import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
 import com.cresoty.catpospoint.safeSubString
 import com.cresoty.catpospoint.socket.SocketManager
+import com.cresoty.catpospoint.socket.protocol.CatposMessage
 import com.cresoty.catpospoint.splitTelegram
 import com.cresoty.catpospoint.toIntOrMax
 import com.cresoty.catpospoint.view.composable.list.SettingType
@@ -200,8 +203,13 @@ class MainViewModel @Inject constructor(
         socketJob = socketManager.start()
 
         socketManager.telegramReceiver = { cmd, data ->
-            Log.d("@#@#", "received telegram : ${data.byte2String()}")
-            processTelegram(cmd, data)
+            Log.d("SocketDebug", "received telegram : ${data.byte2String()}")
+            processTerminalTelegram(cmd, data)
+        }
+
+        socketManager.pcTelegramReceiver = { msg ->
+            Log.d("SocketDebug", "received catpos msg : $msg")
+            processPcTelegram(msg)
         }
 
         initRequestPointSettings()
@@ -239,6 +247,7 @@ class MainViewModel @Inject constructor(
             PadAction.SendToTerminalPointUse -> sendToTerminalUsePoint()
             PadAction.RequestExpectSaveAmount -> checkExpectPointAmount(emptyList())
             PadAction.SendToCATCustomerInfo -> sendToCATCustomerInfo()
+            PadAction.SendToCATPhoneNumber -> sendToCATPhoneNumber()
             PadAction.SendCATFail -> sendCATFail()
         }
     }
@@ -253,10 +262,11 @@ class MainViewModel @Inject constructor(
      * @param cmd
      * @param data
      */
-    private fun processTelegram(
+    private fun processTerminalTelegram(
         cmd: String,
         data: ByteArray
     ) {
+
         val split = data.splitTelegram(Val.COMM_FS)
         val list = split.map { it.byte2String() }
 
@@ -272,9 +282,22 @@ class MainViewModel @Inject constructor(
             Val.TERMINAL_COMMAND_003 -> {
                 processPointUse(list)
             }
+        }
+    }
 
-            Val.CATPOS -> {
-                updatePointDeltaStep(PointDeltaProcess.CUSTOMER_PHONE_LOOKUP)
+    private fun processPcTelegram(msg: CatposMessage) {
+
+        when (msg.command) {
+            CATPOS_NUM -> {
+                updatePointDeltaStep(PointDeltaProcess.REQUEST_NUM)
+            }
+
+            CATPOS_CST -> {
+                updatePointDeltaStep(PointDeltaProcess.REQUEST_CST)
+            }
+
+            else -> {
+                Log.d("@#@#", "Unknown PC command: ${msg.command}")
             }
         }
     }
@@ -313,8 +336,22 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun sendToCATPhoneNumber() {
+        val phone = customerState.value.phoneNumber
+        val responseBytes = "OK|$phone\r\n".toByteArray(Charsets.UTF_8)
+        socketManager.send(responseBytes) { written ->
+            Log.d(
+                "SocketDebug",
+                "캣포스로 텍스트 전송 완료: $written bytes, 내용: '$responseBytes'"
+            )
+        }
+
+        updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
+
+    }
+
     private fun sendCATFail() {
-        val failBytes = "FAIL\r\n".toByteArray(Charsets.UTF_8)
+        val failBytes = "FAIL|100|다음에하기\r\n".toByteArray(Charsets.UTF_8)
         socketManager.send(failBytes)
         updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
     }
@@ -811,13 +848,14 @@ class MainViewModel @Inject constructor(
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
+            PointDeltaProcess.REQUEST_CST,
+            PointDeltaProcess.REQUEST_NUM -> {
                 var current = _phoneNumber.value
                 if (current.length <= 10) current += input
 
                 _phoneNumber.update { current }
 
-                if ((step == PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.CUSTOMER_PHONE_LOOKUP) && current.length == 11) {
+                if ((step == PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.REQUEST_CST) && current.length == 11) {
                     checkCustomerExist(current)
                 }
             }
@@ -885,7 +923,8 @@ class MainViewModel @Inject constructor(
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
+            PointDeltaProcess.REQUEST_CST,
+            PointDeltaProcess.REQUEST_NUM -> {
                 val current = _phoneNumber.value
                 _phoneNumber.update {
                     current.dropLast(1)
@@ -920,7 +959,8 @@ class MainViewModel @Inject constructor(
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
+            PointDeltaProcess.REQUEST_CST,
+            PointDeltaProcess.REQUEST_NUM -> {
                 _phoneNumber.update {
                     ""
                 }

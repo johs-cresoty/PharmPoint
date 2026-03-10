@@ -78,7 +78,15 @@ fun RequestPointDelta(step: PointDeltaProcess) {
                 )
             }
 
-            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
+            PointDeltaProcess.REQUEST_CST -> {
+                InputCustomerPhoneNumber(
+                    modifier = Modifier.weight(1f),
+                    storeName = storeName,
+                )
+
+            }
+
+            PointDeltaProcess.REQUEST_NUM -> {
                 InputCustomerPhoneNumber(
                     modifier = Modifier.weight(1f),
                     storeName = storeName,

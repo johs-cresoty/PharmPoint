@@ -226,7 +226,8 @@ fun PersonalInfoUseAgree(
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
             PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
+            PointDeltaProcess.REQUEST_CST,
+            PointDeltaProcess.REQUEST_NUM -> {
                 ClickSoundButton(
                     onClick = onClickPersonalInfoUse,
                     backgroundColor = transparent,
@@ -354,7 +355,7 @@ fun MaskingNumberField(
         val isInvalidCustomer = !customer.isCustomerExist &&
                 !customer.isExistChecking &&
                 customer.phoneNumber.length > 10 &&
-                step != PointDeltaProcess.POINT_SAVE_PHONE_NUM && step != PointDeltaProcess.CUSTOMER_PHONE_LOOKUP
+                step != PointDeltaProcess.POINT_SAVE_PHONE_NUM && step != PointDeltaProcess.REQUEST_CST && step != PointDeltaProcess.REQUEST_NUM
 
         PhoneNumberInputField(
             value = customer.phoneNumber,

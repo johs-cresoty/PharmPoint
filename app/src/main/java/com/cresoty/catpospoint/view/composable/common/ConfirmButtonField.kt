@@ -46,7 +46,7 @@ fun ConfirmButtonField() {
         PointDeltaProcess.POINT_USE_PHONE_NUM ->
             isCustomer && !customer.isExistChecking && isPersonalInfoUse && phoneNum.length > 10
 
-        PointDeltaProcess.POINT_SAVE_PHONE_NUM, PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> isPersonalInfoUse && phoneNum.length > 10
+        PointDeltaProcess.POINT_SAVE_PHONE_NUM, PointDeltaProcess.REQUEST_CST, PointDeltaProcess.REQUEST_NUM -> isPersonalInfoUse && phoneNum.length > 10
         PointDeltaProcess.POINT_USE_VERIFY_NUM -> verifyNumber.length > 5
         PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
             val amount = pointDelta.toIntOrNull() ?: 0
@@ -96,8 +96,12 @@ fun ConfirmButtonField() {
                     }
 
                     // 휴대폰 번호 조회
-                    PointDeltaProcess.CUSTOMER_PHONE_LOOKUP -> {
+                    PointDeltaProcess.REQUEST_CST -> {
                         controller.dispatch(PadAction.SendToCATCustomerInfo)
+                    }
+
+                    PointDeltaProcess.REQUEST_NUM ->{
+                        controller.dispatch(PadAction.SendToCATPhoneNumber)
                     }
                 }
             }
@@ -128,7 +132,7 @@ fun ConfirmButtonField() {
                 ClickSoundButton(
                     showPressOverlay = false,
                     onClick = {
-                        if (step == PointDeltaProcess.CUSTOMER_PHONE_LOOKUP) {
+                        if (step == PointDeltaProcess.REQUEST_CST || step == PointDeltaProcess.REQUEST_NUM) {
                             controller.dispatch(PadAction.SendCATFail)
                         } else {
                             controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))

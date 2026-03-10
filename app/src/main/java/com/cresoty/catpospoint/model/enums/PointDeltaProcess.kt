@@ -16,5 +16,6 @@ enum class PointDeltaProcess(val isClickable: Boolean)
     POINT_USE_PROC_DONE(true),
     POINT_USE_PROC_SHORTAGE_FAIL(true),
 
-    CUSTOMER_PHONE_LOOKUP(false),   // 고객 번호 조회 중
+    REQUEST_CST(false),   // 휴대폰 번호 + 고객 번호 요청
+    REQUEST_NUM(false),   //휴대폰 번호 요청
 }
