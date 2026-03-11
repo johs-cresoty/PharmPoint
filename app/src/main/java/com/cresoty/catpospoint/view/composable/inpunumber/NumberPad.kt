@@ -281,7 +281,7 @@ fun PersonalInfoUseAgree(
                     ) {
 
                         Text(
-                            text = "포인트는 최소 ${minPoint.toDecimalString()}부터 사용 가능합니다.",
+                            text = "포인트는 최소 ${minPoint.toDecimalString()}P부터 사용 가능합니다.",
                             fontSize = 30f.spx,
                             lineHeight = 30f.spx,
                             color = main01
