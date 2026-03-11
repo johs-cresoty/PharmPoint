@@ -138,8 +138,8 @@ fun UsePointAmountField(
 ) {
     val controller = LocalController.current
     val point by controller.pointState.collectAsStateWithLifecycle()
-    val useAmount = point.pointDelta
-    val pointBalance = point.pointBalance
+    val useAmount = point.pointDelta.toDecimalString()
+    val pointBalance = point.pointBalance.toDecimalString()
 
     val buttonList = PointQuickInputType.entries
     val amount = if (useAmount.isEmpty()) "얼마인가요?" else "$useAmount P"

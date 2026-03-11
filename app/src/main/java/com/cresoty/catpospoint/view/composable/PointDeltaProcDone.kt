@@ -52,7 +52,7 @@ fun PointDeltaProcDone(
     val timeout = config.timeout
 
     val point by controller.pointState.collectAsStateWithLifecycle()
-    val pointDelta = point.pointDelta
+    val pointDelta = point.pointDelta.toDecimalString()
     val pointBalance = point.pointBalance
 
     val (image, mainMent, subMent, balanceMent) = when (step) {
