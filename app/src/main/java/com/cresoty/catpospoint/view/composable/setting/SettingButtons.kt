@@ -22,12 +22,9 @@ import androidx.compose.ui.text.style.TextAlign
 import com.cresoty.catpospoint.model.Penta
 import com.cresoty.catpospoint.presentation.component.ClickSoundButton
 import com.cresoty.catpospoint.presentation.theme.common01
-import com.cresoty.catpospoint.presentation.theme.common02
-import com.cresoty.catpospoint.presentation.theme.main01
 import com.cresoty.catpospoint.presentation.theme.dpx
-import com.cresoty.catpospoint.presentation.theme.main04
+import com.cresoty.catpospoint.presentation.theme.main01
 import com.cresoty.catpospoint.presentation.theme.spx
-import com.cresoty.catpospoint.presentation.theme.success
 import com.cresoty.catpospoint.presentation.theme.white
 
 @Composable

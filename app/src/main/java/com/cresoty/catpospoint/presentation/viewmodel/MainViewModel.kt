@@ -525,6 +525,9 @@ class MainViewModel @Inject constructor(
         _paymentAmount.update {
             total.toString()
         }
+
+        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+
         viewModelScope.launch {
             estimatePointUseCase(
                 EstimatePointCommand.Single(
@@ -543,13 +546,10 @@ class MainViewModel @Inject constructor(
                             _pointDelta.update { _ -> it.pointAmount }
                             transactionUniqueNumber = it.sleSeq
                         }
-                        // null(재시도 소진)이어도 동일하게 다음 단계 진행
-                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
 
                     is DataResource.Error -> {
                         Log.d("jhs", "estimatePoint error: ${resource.throwable.message}")
-                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
                     }
 
                     is DataResource.Loading -> {}
