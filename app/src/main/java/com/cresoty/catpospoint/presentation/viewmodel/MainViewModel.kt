@@ -793,6 +793,14 @@ class MainViewModel @Inject constructor(
             initPointState()
         }
 
+        if (step == PointDeltaProcess.POINT_SAVE_PHONE_NUM ||
+            step == PointDeltaProcess.POINT_USE_PHONE_NUM ||
+            step == PointDeltaProcess.REQUEST_CST ||
+            step == PointDeltaProcess.REQUEST_NUM
+        ) {
+            _phoneNumber.update { "010" }
+        }
+
         _pointDeltaStep.update {
             step
         }
