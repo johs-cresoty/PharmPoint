@@ -93,7 +93,7 @@ class MainViewModel @Inject constructor(
     private val _isExist: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _verifyResult: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     private val _verifyNumber: MutableStateFlow<String> = MutableStateFlow("")
-    private val _phoneNumber: MutableStateFlow<String> = MutableStateFlow("")
+    private val _phoneNumber: MutableStateFlow<String> = MutableStateFlow("010")
 
     //포인트 적립
     private var approvalNumber: String = ""
@@ -763,7 +763,7 @@ class MainViewModel @Inject constructor(
         _pointDelta.update { "" }
         _isMasking.update { true }
         _isPersonalInfoUse.update { true }
-        _phoneNumber.update { "" }
+        _phoneNumber.update { "010" }
         _paymentAmount.update { "" }
         _isExist.update { false }
 
