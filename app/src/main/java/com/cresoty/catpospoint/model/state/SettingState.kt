@@ -7,4 +7,5 @@ data class SettingState(
     var selectedIndex : Int = 0,
     var isPasswordCorrect : Boolean = true,
     var password : String = "",
+    var isSavedToastVisible : Boolean = false,
 )

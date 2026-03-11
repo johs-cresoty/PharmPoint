@@ -37,6 +37,7 @@ fun SettingPointUse(
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
+    val setting by controller.settingState.collectAsStateWithLifecycle()
 
     var isMinPointEnabled by remember { mutableStateOf(config.isMinPointEnabled) }
     var minPoint by remember { mutableStateOf(config.minPoint.toString()) }
@@ -118,6 +119,7 @@ fun SettingPointUse(
             isLogin = false,
             enabled = !isMinPointEnabled || (minPoint.isNotEmpty() && (minPoint.replace(",", "")
                 .toIntOrNull() ?: -1) > 0),
+            isSavedToastVisible = setting.isSavedToastVisible,
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 val map = mutableMapOf<Preferences.Key<*>, Any>()

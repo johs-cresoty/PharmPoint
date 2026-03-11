@@ -35,6 +35,7 @@ fun SettingStoreInfo(
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
+    val setting by controller.settingState.collectAsStateWithLifecycle()
 
     var bizNo by remember { mutableStateOf(config.bizNo) }
     var storeName by remember { mutableStateOf(config.storeName) }
@@ -93,6 +94,7 @@ fun SettingStoreInfo(
             modifier = Modifier.weight(1f),
             isLogin = false,
             enabled = bizNo.length == 10 && storeName.isNotEmpty(),
+            isSavedToastVisible = setting.isSavedToastVisible,
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 if(bizNo.length == 10 && storeName.isNotEmpty()) {

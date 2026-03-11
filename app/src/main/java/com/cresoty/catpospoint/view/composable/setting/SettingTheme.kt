@@ -44,6 +44,7 @@ fun SettingTheme(
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
+    val setting by controller.settingState.collectAsStateWithLifecycle()
 
     var subTitle by remember{ mutableStateOf(config.subTitle) }
 
@@ -127,6 +128,7 @@ fun SettingTheme(
         SettingButtons(
             modifier = Modifier.weight(1f),
             isLogin = false,
+            isSavedToastVisible = setting.isSavedToastVisible,
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 val map = mutableMapOf<Preferences.Key<*>, Any>()

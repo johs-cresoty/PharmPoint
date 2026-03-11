@@ -82,6 +82,7 @@ class MainViewModel @Inject constructor(
     private val _selectedMenuIndex: MutableStateFlow<Int> = MutableStateFlow(0)
     private val _isPasswordCorrect: MutableStateFlow<Boolean> = MutableStateFlow(true)
     private val _password: MutableStateFlow<String> = MutableStateFlow("")
+    private val _isSavedToastVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     // previewState
     private val _isHideDialog: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -150,12 +151,14 @@ class MainViewModel @Inject constructor(
         _selectedMenuIndex,
         _isPasswordCorrect,
         _password,
-    ) { dialog, selectedMenuIndex, isPasswordCorrect, inputNumber ->
+        _isSavedToastVisible,
+    ) { dialog, selectedMenuIndex, isPasswordCorrect, inputNumber, isSavedToastVisible ->
         SettingState(
             dialog = dialog,
             selectedIndex = selectedMenuIndex,
             isPasswordCorrect = isPasswordCorrect,
             password = inputNumber,
+            isSavedToastVisible = isSavedToastVisible,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -750,7 +753,9 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            updateDialog(Dialogs.None)
+            _isSavedToastVisible.update { true }
+            kotlinx.coroutines.delay(2000)
+            _isSavedToastVisible.update { false }
         }
     }
 

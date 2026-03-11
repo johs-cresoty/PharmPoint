@@ -34,6 +34,7 @@ fun SettingIdVerify(
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
+    val setting by controller.settingState.collectAsStateWithLifecycle()
 
     var isIdVerify by remember{ mutableStateOf(config.isIdVerify) }
 
@@ -82,6 +83,7 @@ fun SettingIdVerify(
         SettingButtons(
             modifier = Modifier.weight(1f),
             isLogin = false,
+            isSavedToastVisible = setting.isSavedToastVisible,
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 val map = mutableMapOf<Preferences.Key<*>, Any>()

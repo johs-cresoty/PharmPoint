@@ -42,6 +42,7 @@ fun SettingScreenTimeout(
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
+    val setting by controller.settingState.collectAsStateWithLifecycle()
     val list = listOf(
         "1", "2", "3", "4", "5"
     )
@@ -122,6 +123,7 @@ fun SettingScreenTimeout(
         SettingButtons(
             modifier = Modifier.weight(1f),
             isLogin = false,
+            isSavedToastVisible = setting.isSavedToastVisible,
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
                 val map = mutableMapOf<Preferences.Key<*>, Any>()
