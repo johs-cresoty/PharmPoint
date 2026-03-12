@@ -13,6 +13,7 @@ object Val {
     const val CATPOS = "CAT" // CATPOS -> PAD
     const val CATPOS_NUM = "001"
     const val CATPOS_CST = "002"
+    const val CATPOS_DISCONNECT = "003"
 
 
     const val TERMINAL_FLAG     = "TRM"

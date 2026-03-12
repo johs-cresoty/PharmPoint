@@ -11,6 +11,7 @@ import com.cresoty.catpospoint.ConfigRepository
 import com.cresoty.catpospoint.PharmpayTelegram
 import com.cresoty.catpospoint.Val
 import com.cresoty.catpospoint.Val.CATPOS_CST
+import com.cresoty.catpospoint.Val.CATPOS_DISCONNECT
 import com.cresoty.catpospoint.Val.CATPOS_NUM
 import com.cresoty.catpospoint.byte2String
 import com.cresoty.catpospoint.dataresource.DataResource
@@ -289,7 +290,6 @@ class MainViewModel @Inject constructor(
     }
 
     private fun processPcTelegram(msg: CatposMessage) {
-
         when (msg.command) {
             CATPOS_NUM -> {
                 updatePointDeltaStep(PointDeltaProcess.REQUEST_NUM)
@@ -297,6 +297,9 @@ class MainViewModel @Inject constructor(
 
             CATPOS_CST -> {
                 updatePointDeltaStep(PointDeltaProcess.REQUEST_CST)
+            }
+            CATPOS_DISCONNECT ->{
+                updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
             }
 
             else -> {
