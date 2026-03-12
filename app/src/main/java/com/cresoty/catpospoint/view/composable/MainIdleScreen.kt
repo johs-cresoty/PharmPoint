@@ -3,6 +3,7 @@ package com.cresoty.catpospoint.view.composable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -80,8 +83,22 @@ fun MainIdleScreen() {
     )
 
 
+    val tapTimes = remember { mutableListOf<Long>() }
+
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    val now = System.currentTimeMillis()
+                    tapTimes.removeAll { now - it > 1000 }
+                    tapTimes.add(now)
+                    if (tapTimes.size >= 3) {
+                        tapTimes.clear()
+                        controller.dispatch(PadAction.OnClickSetting)
+                    }
+                }
+            }
     ) {
         Image(
             painter = painterResource(mainScreen),
@@ -136,15 +153,6 @@ private fun ColumnA(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(
-                modifier = Modifier.size(70f.dpx)
-            )
-
-            SetupButton(
-                modifier = Modifier.fillMaxWidth(),
-                alignment = Alignment.Center,
-                color = common02
-            )
         }
 
         PreviewCloseButton(
@@ -203,16 +211,6 @@ private fun ColumnB(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(
-                modifier = Modifier.size(70f.dpx)
-            )
-
-
-            SetupButton(
-                modifier = Modifier.fillMaxWidth(),
-                alignment = Alignment.Center,
-                color = common01
-            )
         }
 
         PreviewCloseButton(
@@ -257,20 +255,6 @@ private fun ColumnC(
             fontWeight = FontWeight.Normal,
             color = common02,
             textAlign = TextAlign.Center
-        )
-
-        Spacer(
-            modifier = Modifier.size(81f.dpx)
-        )
-
-        SetupButton(
-            modifier = Modifier.fillMaxWidth(),
-            alignment = Alignment.Center,
-            color = common02
-        )
-
-        Spacer(
-            modifier = Modifier.size(135f.dpx)
         )
 
         PreviewCloseButton(
@@ -323,70 +307,12 @@ private fun ColumnD(
                 textAlign = TextAlign.Start
             )
 
-            Spacer(
-                modifier = Modifier.size(79f.dpx)
-            )
-
-            SetupButton(
-                modifier = Modifier.fillMaxWidth(),
-                alignment = Alignment.CenterStart,
-                color = white
-            )
         }
 
         PreviewCloseButton(
             theme = MainThemes.Theme_D,
             isPreview = preSubTitle == null
         )
-    }
-}
-
-@Composable
-private fun SetupButton(
-    modifier : Modifier,
-    alignment: Alignment,
-    color: Color,
-) {
-    val shape = RoundedCornerShape(100f.dpx)
-    val controller = LocalController.current
-
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = alignment
-    ) {
-        ClickSoundButton(
-            modifier = Modifier.size(width = 200f.dpx, height = 70f.dpx),
-            backgroundColor = transparent,
-            shape = shape,
-            border = BorderStroke(1.dp, color),
-            onClick = {
-                controller.dispatch(PadAction.OnClickSetting)
-            }
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(17f.dpx),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    modifier = Modifier.size(35f.dpx),
-                    painter = painterResource(
-                        when(color) {
-                            common01 -> R.drawable.icon_setup_common01
-                            common02 -> R.drawable.icon_setup_common02
-                            else -> R.drawable.icon_setup_white
-                        }
-                    ),
-                    contentDescription = null
-                )
-
-                Text(
-                    text = "설정",
-                    color = color,
-                    fontSize = 30f.spx
-                )
-
-            }
-        }
     }
 }
 
