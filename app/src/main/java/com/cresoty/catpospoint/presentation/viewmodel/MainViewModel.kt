@@ -1,5 +1,6 @@
 package com.cresoty.catpospoint.presentation.viewmodel
 
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
@@ -89,6 +90,11 @@ class MainViewModel @Inject constructor(
     private val _isHideDialog: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _preSubTitle: MutableStateFlow<String?> = MutableStateFlow(null)
     private val _preTheme: MutableStateFlow<Int?> = MutableStateFlow(null)
+    private val _preCustomImageUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
+
+    // 사용자 지정 테마 이미지 (설정 다이얼로그 닫혀도 유지)
+    private val _customThemeImageUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
+    val customThemeImageUriState: StateFlow<Uri?> = _customThemeImageUri
 
     //customerState
     private val _isExistChecking: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -134,12 +140,14 @@ class MainViewModel @Inject constructor(
     val previewState: StateFlow<PreviewState> = combine(
         _isHideDialog,
         _preSubTitle,
-        _preTheme
-    ) { isHideDialog, preSubTitle, preTheme ->
+        _preTheme,
+        _preCustomImageUri
+    ) { isHideDialog, preSubTitle, preTheme, preCustomImageUri ->
         PreviewState(
             isHideDialog = isHideDialog,
             subTitle = preSubTitle,
-            theme = preTheme
+            theme = preTheme,
+            customImageUri = preCustomImageUri
         )
     }.stateIn(
         scope = viewModelScope,
@@ -217,6 +225,14 @@ class MainViewModel @Inject constructor(
         }
 
         initRequestPointSettings()
+
+        // 저장된 사용자 지정 이미지 URI 복원
+        viewModelScope.launch {
+            val savedUri = configRepo.getValue(ConfigKey.CUSTOM_IMAGE_URI, "")
+            if (savedUri.isNotEmpty()) {
+                _customThemeImageUri.update { Uri.parse(savedUri) }
+            }
+        }
     }
 
     /**
@@ -230,7 +246,12 @@ class MainViewModel @Inject constructor(
             is PadAction.OnClickSaveSetting -> saveSettingOption(action.type, action.data)
             is PadAction.OnClickPasswordPad -> updatePassword(action.number)
             is PadAction.OnClickAdminLogin -> passwordVerify(action.input)
-            is PadAction.OnClickShowPreview -> showPreview(action.preIndex, action.subTitle)
+            is PadAction.OnClickShowPreview -> showPreview(action.preIndex, action.subTitle, action.customImageUri)
+            is PadAction.OnCustomThemeImageCropped -> {
+                val newUri = action.uri.takeIf { it != Uri.EMPTY }
+                _customThemeImageUri.value?.path?.let { java.io.File(it).delete() }
+                _customThemeImageUri.update { newUri }
+            }
             is PadAction.OnClickNumberPad -> updateInputNumber(action.number)
             is PadAction.OnClickPointNext -> updatePointDeltaStep(action.next)
             is PadAction.OnClickAmountQuickButton -> updatePointUseAmountQuick(action.type)
@@ -750,9 +771,13 @@ class MainViewModel @Inject constructor(
                 SettingType.THEME -> {
                     val themeIndex = data[ConfigKey.MAIN_THEME] as Int
                     val subTitle = data[ConfigKey.SUB_TITLE] as String
+                    val customUri = _customThemeImageUri.value
+                        ?.takeIf { it != Uri.EMPTY }
+                        ?.toString() ?: ""
 
                     configRepo.putValue(ConfigKey.MAIN_THEME, themeIndex)
                     configRepo.putValue(ConfigKey.SUB_TITLE, subTitle)
+                    configRepo.putValue(ConfigKey.CUSTOM_IMAGE_URI, customUri)
                 }
             }
 
@@ -1007,12 +1032,13 @@ class MainViewModel @Inject constructor(
      * @param index
      * @param subTitle
      */
-    private fun showPreview(index: Int, subTitle: String) {
+    private fun showPreview(index: Int, subTitle: String, customImageUri: Uri? = null) {
         _dialog.update { Dialogs.None }
 
         _isHideDialog.update { true }
         _preTheme.update { index }
         _preSubTitle.update { subTitle }
+        _preCustomImageUri.update { customImageUri }
     }
 
     /**
@@ -1025,6 +1051,7 @@ class MainViewModel @Inject constructor(
         _isHideDialog.update { false }
         _preTheme.update { null }
         _preSubTitle.update { null }
+        _preCustomImageUri.update { null }
 
     }
 

@@ -1,37 +1,41 @@
 package com.cresoty.catpospoint.view.composable
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.cresoty.catpospoint.BuildConfig
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.MainThemes
@@ -44,14 +48,14 @@ import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
 import com.cresoty.catpospoint.presentation.component.ClickSoundButton
-import com.cresoty.catpospoint.view.controller.LocalController
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
+import com.cresoty.catpospoint.presentation.theme.NotoSansKr
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
-import com.cresoty.catpospoint.presentation.theme.transparent
 import com.cresoty.catpospoint.presentation.theme.white
+import com.cresoty.catpospoint.view.controller.LocalController
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
@@ -61,25 +65,34 @@ fun MainIdleScreen() {
     val preview by controller.previewState.collectAsStateWithLifecycle()
 
     val isPreview = preview.isHideDialog
-    val themeIndex = if(isPreview) preview.theme ?: 0 else config.themeIndex
-    val theme = MainThemes.entries[themeIndex]
-
-    val mainScreen = when(theme) {
-            MainThemes.Theme_A -> R.drawable.main_01
-            MainThemes.Theme_B -> R.drawable.main_02
-            MainThemes.Theme_C -> R.drawable.main_03
-            MainThemes.Theme_D -> R.drawable.main_04
-            MainThemes.Theme_E -> R.drawable.main_05
+    val themeIndex = if (isPreview) preview.theme ?: 0 else config.themeIndex
+    val theme = MainThemes.entries.getOrElse(themeIndex) { MainThemes.Theme_CUSTOM }
+    val isCustomTheme = theme == MainThemes.Theme_CUSTOM
+    // 커스텀 이미지 URI: 프리뷰 모드면 preview에서, 아니면 저장된 config에서 로드
+    val customImageUri: Uri? = when {
+        isPreview -> preview.customImageUri
+        isCustomTheme -> config.customImageUri.takeIf { it.isNotEmpty() }?.let { Uri.parse(it) }
+        else -> null
     }
 
-    val preSubTitle = if(isPreview) preview.subTitle else null
+    val mainScreen: Int? = when (theme) {
+        MainThemes.Theme_A -> R.drawable.main_01
+        MainThemes.Theme_B -> R.drawable.main_02
+        MainThemes.Theme_C -> R.drawable.main_03
+        MainThemes.Theme_D -> R.drawable.main_04
+        MainThemes.Theme_E -> R.drawable.main_05
+        MainThemes.Theme_CUSTOM -> null
+    }
 
-    val block = mapOf<MainThemes, @Composable () -> Unit> (
-            MainThemes.Theme_A to { ColumnA(preSubTitle) },
-            MainThemes.Theme_B to { ColumnB(preSubTitle) },
-            MainThemes.Theme_C to { ColumnC(preSubTitle) },
-            MainThemes.Theme_D to { ColumnD(preSubTitle) },
-            MainThemes.Theme_E to { ColumnD(preSubTitle) }
+    val preSubTitle = if (isPreview) preview.subTitle else null
+
+    val block = mapOf<MainThemes, @Composable () -> Unit>(
+        MainThemes.Theme_A to { ColumnA(preSubTitle) },
+        MainThemes.Theme_B to { ColumnB(preSubTitle) },
+        MainThemes.Theme_C to { ColumnC(preSubTitle) },
+        MainThemes.Theme_D to { ColumnD(preSubTitle) },
+        MainThemes.Theme_E to { ColumnE(preSubTitle) },
+        MainThemes.Theme_CUSTOM to { CustomPreview(preSubTitle, isPreview) }
     )
 
 
@@ -100,12 +113,21 @@ fun MainIdleScreen() {
                 }
             }
     ) {
-        Image(
-            painter = painterResource(mainScreen),
-            contentDescription = null,
-            modifier = Modifier.matchParentSize(),
-            contentScale = ContentScale.Crop
-        )
+        if (isCustomTheme && customImageUri != null) {
+            AsyncImage(
+                model = customImageUri,
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else if (mainScreen != null) {
+            Image(
+                painter = painterResource(mainScreen),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
 
         block.getValue(theme).invoke()
     }
@@ -113,7 +135,7 @@ fun MainIdleScreen() {
 
 @Composable
 private fun ColumnA(
-    preSubTitle : String?
+    preSubTitle: String?
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -164,7 +186,7 @@ private fun ColumnA(
 
 @Composable
 private fun ColumnB(
-    preSubTitle : String?
+    preSubTitle: String?
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -216,13 +238,13 @@ private fun ColumnB(
         PreviewCloseButton(
             theme = MainThemes.Theme_B,
             isPreview = preSubTitle == null,
-            )
+        )
     }
 }
 
 @Composable
 private fun ColumnC(
-    preSubTitle : String?
+    preSubTitle: String?
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -267,7 +289,7 @@ private fun ColumnC(
 
 @Composable
 private fun ColumnD(
-    preSubTitle : String?
+    preSubTitle: String?
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -317,26 +339,137 @@ private fun ColumnD(
 }
 
 @Composable
-private fun PreviewCloseButton(
-    isPreview : Boolean,
-    theme : MainThemes,
+private fun ColumnE(
+    preSubTitle: String?
 ) {
     val controller = LocalController.current
-    val alpha = if(theme == MainThemes.Theme_A) 0.5f else 1f
-    val image = when(theme) {
+    val config by controller.configState.collectAsStateWithLifecycle()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 80f.dpx, horizontal = 40f.dpx),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 61f.dpx)
+        ) {
+            Spacer(
+                modifier = Modifier.size(86f.dpx)
+            )
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = preSubTitle ?: config.subTitle,
+                fontSize = 30f.spx,
+                fontWeight = FontWeight.Normal,
+                color = white,
+                textAlign = TextAlign.Start
+            )
+
+            Spacer(
+                modifier = Modifier.size(18f.dpx)
+            )
+
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = config.storeName,
+                fontSize = 80f.spx,
+                lineHeight = 80f.spx,
+                fontWeight = FontWeight.Bold,
+                color = white,
+                textAlign = TextAlign.Start
+            )
+
+        }
+
+        PreviewCloseButton(
+            theme = MainThemes.Theme_E,
+            isPreview = preSubTitle == null
+        )
+    }
+}
+
+@Composable
+private fun CustomPreview(
+    preSubTitle: String?,
+    isPreview: Boolean,
+) {
+    val controller = LocalController.current
+    val config by controller.configState.collectAsStateWithLifecycle()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 80f.dpx, horizontal = 40f.dpx),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(top = 50.dpx)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            if (isPreview) {
+                Box(
+                    modifier = Modifier
+                        .width(650.dpx)
+                        .height(170.dpx)
+                        .background(
+                            color = Color(0x97000000),
+                            shape = RoundedCornerShape(size = 10.dp)
+                        )
+                        .padding(vertical = 40.dpx, horizontal = 50.dpx)
+                ) {
+                    Text(
+                        text = "사용자 지정 이미지를 사용할 경우\n약국명과 서브타이틀은 표시되지 않습니다.",
+                        style = TextStyle(
+                            fontSize = 30.spx,
+                            lineHeight = 44.8.spx,
+                            fontFamily = NotoSansKr,
+                            fontWeight = FontWeight(400),
+                            color = Color(0xFFFFFFFF),
+                            textAlign = TextAlign.Center,
+                        )
+                    )
+
+                }
+
+            }
+
+
+        }
+        Spacer(Modifier.weight(1f))
+        PreviewCloseButton(
+            theme = MainThemes.Theme_CUSTOM,
+            isPreview = preSubTitle == null
+        )
+    }
+}
+
+@Composable
+private fun PreviewCloseButton(
+    isPreview: Boolean,
+    theme: MainThemes,
+) {
+    val controller = LocalController.current
+    val alpha = if (theme == MainThemes.Theme_A) 0.5f else 1f
+    val image = when (theme) {
         MainThemes.Theme_A,
         MainThemes.Theme_C -> R.drawable.logo_common02
+
         else -> R.drawable.logo_common01
     }
 
 
-    if(isPreview) {
-        if(theme != MainThemes.Theme_B) {
+    if (isPreview) {
+        if (theme != MainThemes.Theme_B) {
             Image(
-                modifier = Modifier.size(width = 162f.dpx, height = 36f.dpx)
+                modifier = Modifier
+                    .size(width = 162f.dpx, height = 36f.dpx)
                     .alpha(alpha)
                     .clickable {
-                        if(BuildConfig.DEBUG) {
+                        if (BuildConfig.DEBUG) {
 //                            controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.POINT_USE_PHONE_NUM))
                             controller.dispatch(PadAction.RequestExpectSaveAmount)
                         }
@@ -345,10 +478,10 @@ private fun PreviewCloseButton(
                 contentDescription = null
             )
         }
-    }
-    else {
+    } else {
         ClickSoundButton(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .height(112f.dpx),
             backgroundColor = white,
             shape = RoundedCornerShape(20f.dpx),
@@ -381,6 +514,7 @@ private fun previewController() = object : ViewController {
     override val settingState = MutableStateFlow(SettingState())
     override val pointState = MutableStateFlow(PointState())
     override val customerState = MutableStateFlow(CustomerState())
+    override val customThemeImageUriState = MutableStateFlow<Uri?>(null)
     override fun dispatch(action: PadAction) = Unit
 }
 
@@ -403,3 +537,17 @@ private fun MainIdleScreenPreview_ThemeB() {
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun CustomPreviewPreview() {
+    CatposPointTheme {
+        CompositionLocalProvider(LocalController provides previewController()) {
+            CustomPreview(
+                preSubTitle = null,
+                isPreview = true
+            )
+        }
+    }
+}
+

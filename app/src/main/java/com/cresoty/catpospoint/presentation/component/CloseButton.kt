@@ -8,7 +8,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import com.cresoty.catpospoint.presentation.theme.AppTextStyle
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.dpx
@@ -18,6 +20,7 @@ import com.cresoty.catpospoint.presentation.theme.white
 @Composable
 fun CloseButton(
     text: String,
+    fontSize: TextUnit = 35.spx,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -33,8 +36,9 @@ fun CloseButton(
     ) {
         Text(
             text = text,
+            textAlign = TextAlign.Center,
             style = AppTextStyle.Button,
-            fontSize = 35.spx,
+            fontSize = fontSize,
             color = common01
         )
     }

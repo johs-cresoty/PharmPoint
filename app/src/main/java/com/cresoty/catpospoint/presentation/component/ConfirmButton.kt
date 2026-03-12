@@ -13,7 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.main01
@@ -22,6 +24,7 @@ import com.cresoty.catpospoint.presentation.theme.spx
 @Composable
 fun ConfirmButton(
     text: String,
+    fontSize: TextUnit = 35.spx,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
@@ -40,9 +43,10 @@ fun ConfirmButton(
     ) {
         Text(
             text = text,
-            fontSize = 35.spx,
+            fontSize = fontSize,
             fontWeight = FontWeight.Medium,
-            color = Color.White
+            color = Color.White,
+            textAlign = TextAlign.Center,
         )
     }
 }

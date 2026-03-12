@@ -47,8 +47,9 @@ fun SettingTheme(
     val setting by controller.settingState.collectAsStateWithLifecycle()
 
     var subTitle by remember{ mutableStateOf(config.subTitle) }
-
     var selectedIndex by remember{ mutableStateOf(config.themeIndex) }
+    // 다이얼로그 재생성 후에도 이미지 유지 → ViewModel에서 관리
+    val customImageUri by controller.customThemeImageUriState.collectAsStateWithLifecycle()
 
     val shape = RoundedCornerShape(100f.dpx)
 
@@ -97,7 +98,13 @@ fun SettingTheme(
                     modifier = Modifier.size(width = 82f.dpx, height = 26f.dpx),
                     shape = shape,
                     onClick = {
-                        controller.dispatch(PadAction.OnClickShowPreview(selectedIndex, subTitle))
+                        controller.dispatch(
+                            PadAction.OnClickShowPreview(
+                                preIndex = selectedIndex,
+                                subTitle = subTitle,
+                                customImageUri = customImageUri
+                            )
+                        )
                     },
                     backgroundColor = transparent
                 ) {
@@ -120,9 +127,12 @@ fun SettingTheme(
 
             SettingMainThemeList(
                 selectedIndex = selectedIndex,
-            ) { selection ->
-                selectedIndex = selection
-            }
+                customImageUri = customImageUri,
+                onClickTheme = { selection -> selectedIndex = selection },
+                onCustomImageCropped = { uri ->
+                    controller.dispatch(PadAction.OnCustomThemeImageCropped(uri))
+                }
+            )
         }
 
         SettingButtons(

@@ -1,6 +1,7 @@
 package com.cresoty.catpospoint.view.controller
 
 import android.content.Context
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -31,12 +32,13 @@ fun MainController(viewModel: MainViewModel, context: Context) {
 
     val controller = remember(viewModel) {
         object : ViewController {
-            override val mainState : StateFlow<MainState> = viewModel.mainState
-            override val configState : StateFlow<ConfigState> = viewModel.configState
-            override val previewState : StateFlow<PreviewState> = viewModel.previewState
-            override val settingState : StateFlow<SettingState> = viewModel.settingState
-            override val pointState : StateFlow<PointState> = viewModel.pointState
-            override val customerState : StateFlow<CustomerState> = viewModel.customerState
+            override val mainState: StateFlow<MainState> = viewModel.mainState
+            override val configState: StateFlow<ConfigState> = viewModel.configState
+            override val previewState: StateFlow<PreviewState> = viewModel.previewState
+            override val settingState: StateFlow<SettingState> = viewModel.settingState
+            override val pointState: StateFlow<PointState> = viewModel.pointState
+            override val customerState: StateFlow<CustomerState> = viewModel.customerState
+            override val customThemeImageUriState: StateFlow<Uri?> = viewModel.customThemeImageUriState
 
             override fun dispatch(action: PadAction) = viewModel.dispatch(action)
 

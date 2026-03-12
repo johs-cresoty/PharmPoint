@@ -131,6 +131,7 @@ private fun InputNumberUsePointPreview() {
         override val settingState = MutableStateFlow(SettingState())
         override val pointState = MutableStateFlow(PointState())
         override val customerState = MutableStateFlow(CustomerState(phoneNumber = "010123456"))
+        override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
         override fun dispatch(action: PadAction) {}
     }
     CatposPointTheme {
@@ -162,6 +163,7 @@ private fun InputNumberUsePointNotFoundPreview() {
                 isExistChecking = false
             )
         )
+        override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
 
         override fun dispatch(action: PadAction) {}
     }

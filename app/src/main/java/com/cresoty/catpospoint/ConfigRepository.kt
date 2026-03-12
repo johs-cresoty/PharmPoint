@@ -25,6 +25,7 @@ object ConfigKey {
     val STORE_NAME = stringPreferencesKey("store_name")
     val BIZ_NO = stringPreferencesKey("biz_no")
     val SUB_TITLE = stringPreferencesKey("sub_title")
+    val CUSTOM_IMAGE_URI = stringPreferencesKey("custom_image_uri")
 
     val MAIN_THEME = intPreferencesKey("main_theme")    // 0: A / 1: B / 2: C / 3: D
     val MINIMUM_POINT = intPreferencesKey("minimum_point")
@@ -48,6 +49,7 @@ class ConfigRepository @Inject constructor(
                 storeName = p[ConfigKey.STORE_NAME] ?: "",
                 themeIndex = p[ConfigKey.MAIN_THEME] ?: 0,
                 subTitle = p[ConfigKey.SUB_TITLE] ?: "",
+                customImageUri = p[ConfigKey.CUSTOM_IMAGE_URI] ?: "",
                 timeout = p[ConfigKey.SCREEN_TIMEOUT] ?: 5,
                 minPoint = p[ConfigKey.MINIMUM_POINT] ?: 1000,
                 minAmount = p[ConfigKey.MIN_AMOUNT] ?: 20000,

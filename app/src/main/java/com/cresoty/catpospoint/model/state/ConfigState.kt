@@ -5,6 +5,7 @@ data class ConfigState (
     var storeName : String = "",
     var themeIndex : Int = 0,
     var subTitle : String = "",
+    var customImageUri : String = "",
     var timeout : Int = 5,
     var minPoint : Int = 1000,
     var minAmount : Int = 20000,

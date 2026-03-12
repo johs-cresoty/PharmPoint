@@ -396,6 +396,7 @@ private fun NumberPadPhoneNumPreview() {
         override val settingState = MutableStateFlow(SettingState())
         override val pointState = MutableStateFlow(PointState())
         override val customerState = MutableStateFlow(CustomerState(phoneNumber = "01012"))
+        override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
         override fun dispatch(action: PadAction) {}
     }
     CatposPointTheme {
@@ -424,6 +425,7 @@ private fun NumberPadAmountInputPreview() {
         override val settingState = MutableStateFlow(SettingState())
         override val pointState = MutableStateFlow(PointState(pointBalance = "5,000"))
         override val customerState = MutableStateFlow(CustomerState())
+        override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
         override fun dispatch(action: PadAction) {}
     }
     CatposPointTheme {

@@ -1,5 +1,6 @@
 package com.cresoty.catpospoint.model.interfaces
 
+import android.net.Uri
 import androidx.datastore.preferences.core.Preferences
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
 import com.cresoty.catpospoint.model.enums.PointQuickInputType
@@ -13,7 +14,8 @@ sealed interface PadAction {
     data class OnClickPasswordPad(val number : String) : PadAction
     data class OnClickNumberPad(val number : String) : PadAction
     data class OnClickAdminLogin(val input : String) : PadAction
-    data class OnClickShowPreview(val preIndex: Int, val subTitle : String) : PadAction
+    data class OnClickShowPreview(val preIndex: Int, val subTitle: String, val customImageUri: Uri? = null) : PadAction
+    data class OnCustomThemeImageCropped(val uri: Uri) : PadAction
     data class OnClickPointNext(/*val current : PointDeltaProcess, */val next : PointDeltaProcess) : PadAction
     data class OnClickAmountQuickButton(val type : PointQuickInputType) : PadAction
 
