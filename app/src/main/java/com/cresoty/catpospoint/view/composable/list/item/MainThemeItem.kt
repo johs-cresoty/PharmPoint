@@ -5,11 +5,11 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +46,7 @@ import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.sub01
 import com.cresoty.catpospoint.presentation.theme.transparent
+import com.cresoty.catpospoint.presentation.theme.white
 import com.cresoty.catpospoint.view.composable.common.DeleteImageDialog
 import com.yalantis.ucrop.UCrop
 import java.io.File
@@ -125,7 +126,6 @@ fun AddImageBox(
     onClickItem: () -> Unit = {},
     onImageCropped: (Uri) -> Unit = {}
 ) {
-
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
@@ -144,6 +144,8 @@ fun AddImageBox(
     val context = LocalContext.current
     val shape = RoundedCornerShape(12f.dpx)
     val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val pressedColor = if (isPressed) common01 else Color(0xFFA4B0B8)
     // 2단계: UCrop 결과 수신 → 부모로 URI 전달
     val cropLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -172,14 +174,14 @@ fun AddImageBox(
             .size(158f.dpx)
             .border(
                 width = 1f.dpx,
-                color = Color(0xFFA4B0B8),
+                color = pressedColor,
                 shape = shape
             )
             .background(color = sub01, shape = shape)
             .clip(shape)
             .clickable(
                 interactionSource = interactionSource,
-                indication = if (croppedImageUri != null) null else LocalIndication.current
+                indication = null
             ) {
                 onClickItem()
                 // 이미지가 없을 때만 갤러리 열기, 있으면 라디오 선택만
@@ -211,7 +213,7 @@ fun AddImageBox(
             Icon(
                 painter = painterResource(R.drawable.icon_plus),
                 contentDescription = "add",
-                tint = Color(0xFFA4B0B8),
+                tint = pressedColor,
                 modifier = Modifier.size(28f.dpx)
             )
         }
@@ -223,6 +225,9 @@ fun ImageRemoveButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val pressedColor = if (isPressed) white else Color(0xB2FFFFFF)
     Box(
         modifier = modifier
             .shadow(
@@ -232,8 +237,11 @@ fun ImageRemoveButton(
             )
             .size(32.dpx)
             .clip(CircleShape)
-            .background(Color.White)
-            .clickable { onClick() },
+            .background(pressedColor)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
@@ -252,27 +260,27 @@ fun MainThemeItemPreview() {
         Column {
             MainThemeItem(
                 theme = MainThemes.Theme_A,
-                drawable = R.drawable.main_01,
+                drawable = R.drawable.main_1,
                 isSelected = true
             ) {}
             MainThemeItem(
                 theme = MainThemes.Theme_B,
-                drawable = R.drawable.main_02,
+                drawable = R.drawable.main_2,
                 isSelected = true
             ) {}
             MainThemeItem(
                 theme = MainThemes.Theme_C,
-                drawable = R.drawable.main_03,
+                drawable = R.drawable.main_3,
                 isSelected = true
             ) {}
             MainThemeItem(
                 theme = MainThemes.Theme_D,
-                drawable = R.drawable.main_04,
+                drawable = R.drawable.main_4,
                 isSelected = true
             ) {}
             MainThemeItem(
                 theme = MainThemes.Theme_E,
-                drawable = R.drawable.main_05,
+                drawable = R.drawable.main_5,
                 isSelected = true
             ) {}
             AddImageBox()
@@ -281,7 +289,7 @@ fun MainThemeItemPreview() {
                 isSelected = false
             )
             AddImageBox(
-                croppedImageUri = "android.resource://com.cresoty.catpospoint/${R.drawable.main_01}".toUri()
+                croppedImageUri = "android.resource://com.cresoty.catpospoint/${R.drawable.main_3}".toUri()
             )
             ThemeRadioButton(
                 title = "사용자 지정",

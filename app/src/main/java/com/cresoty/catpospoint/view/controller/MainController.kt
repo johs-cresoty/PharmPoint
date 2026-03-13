@@ -65,8 +65,7 @@ fun MainController(viewModel: MainViewModel, context: Context) {
         }
 
 
-        if(!preview.isHideDialog)
-            DialogController()
+        DialogController()
     }
 
 

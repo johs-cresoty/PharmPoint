@@ -27,11 +27,11 @@ fun SettingMainThemeList(
     onCustomImageCropped: (Uri) -> Unit
 ) {
     val list = listOf(
-        Pair(MainThemes.Theme_A, R.drawable.main_01),
-        Pair(MainThemes.Theme_B, R.drawable.main_02),
-        Pair(MainThemes.Theme_C, R.drawable.main_03),
-        Pair(MainThemes.Theme_D, R.drawable.main_04),
-        Pair(MainThemes.Theme_E, R.drawable.main_05),
+        Pair(MainThemes.Theme_A, R.drawable.main_1),
+        Pair(MainThemes.Theme_B, R.drawable.main_2),
+        Pair(MainThemes.Theme_C , R.drawable.main_3),
+        Pair(MainThemes.Theme_D, R.drawable.main_4),
+        Pair(MainThemes.Theme_E, R.drawable.main_5),
     )
     val customIndex = MainThemes.Theme_CUSTOM.ordinal
 
@@ -61,7 +61,7 @@ fun SettingMainThemeList(
                     onClickItem = { onClickTheme(customIndex) },
                     onImageCropped = { uri ->
                         onCustomImageCropped(uri)
-                        if (uri == Uri.EMPTY) onClickTheme(MainThemes.Theme_E.ordinal)
+                        if (uri == Uri.EMPTY) onClickTheme(MainThemes.Theme_A.ordinal)
                     }
                 )
                 // 라디오 버튼 영역도 탭 시 사용자 지정 선택

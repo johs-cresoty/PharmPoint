@@ -10,7 +10,11 @@ import com.cresoty.catpospoint.view.composable.SettingDialog
 @Composable
 fun DialogController() {
     val controller = LocalController.current
+    val preview by controller.previewState.collectAsStateWithLifecycle()
     val setting by controller.settingState.collectAsStateWithLifecycle()
+
+    if (preview.isHideDialog) return
+
     val dialog = setting.dialog
 
     when (dialog) {

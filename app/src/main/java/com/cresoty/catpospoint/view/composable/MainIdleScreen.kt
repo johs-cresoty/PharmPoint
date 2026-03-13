@@ -76,11 +76,11 @@ fun MainIdleScreen() {
     }
 
     val mainScreen: Int? = when (theme) {
-        MainThemes.Theme_A -> R.drawable.main_01
-        MainThemes.Theme_B -> R.drawable.main_02
-        MainThemes.Theme_C -> R.drawable.main_03
-        MainThemes.Theme_D -> R.drawable.main_04
-        MainThemes.Theme_E -> R.drawable.main_05
+        MainThemes.Theme_A -> R.drawable.main_1
+        MainThemes.Theme_B -> R.drawable.main_2
+        MainThemes.Theme_C -> R.drawable.main_3
+        MainThemes.Theme_D -> R.drawable.main_4
+        MainThemes.Theme_E -> R.drawable.main_5
         MainThemes.Theme_CUSTOM -> null
     }
 
@@ -134,7 +134,7 @@ fun MainIdleScreen() {
 }
 
 @Composable
-private fun ColumnA(
+private fun ColumnC(
     preSubTitle: String?
 ) {
     val controller = LocalController.current
@@ -185,7 +185,7 @@ private fun ColumnA(
 }
 
 @Composable
-private fun ColumnB(
+private fun ColumnD(
     preSubTitle: String?
 ) {
     val controller = LocalController.current
@@ -243,7 +243,7 @@ private fun ColumnB(
 }
 
 @Composable
-private fun ColumnC(
+private fun ColumnE(
     preSubTitle: String?
 ) {
     val controller = LocalController.current
@@ -288,7 +288,7 @@ private fun ColumnC(
 }
 
 @Composable
-private fun ColumnD(
+private fun ColumnB(
     preSubTitle: String?
 ) {
     val controller = LocalController.current
@@ -339,7 +339,7 @@ private fun ColumnD(
 }
 
 @Composable
-private fun ColumnE(
+private fun ColumnA(
     preSubTitle: String?
 ) {
     val controller = LocalController.current

@@ -20,17 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import android.net.Uri
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.view.composable.common.FilterTextField
 import com.cresoty.catpospoint.ConfigKey
+import com.cresoty.catpospoint.model.enums.MainThemes
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.presentation.component.ClickSoundButton
 import com.cresoty.catpospoint.view.composable.list.SettingMainThemeList
 import com.cresoty.catpospoint.view.composable.list.SettingType
 import com.cresoty.catpospoint.view.controller.LocalController
-import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.main03
 import com.cresoty.catpospoint.presentation.theme.dpx
@@ -131,6 +131,14 @@ fun SettingTheme(
                 onClickTheme = { selection -> selectedIndex = selection },
                 onCustomImageCropped = { uri ->
                     controller.dispatch(PadAction.OnCustomThemeImageCropped(uri))
+                    if (uri == Uri.EMPTY) {
+                        val themeEIndex = MainThemes.Theme_A.ordinal
+                        selectedIndex = themeEIndex
+                        val map = mutableMapOf<Preferences.Key<*>, Any>()
+                        map[ConfigKey.SUB_TITLE] = subTitle
+                        map[ConfigKey.MAIN_THEME] = themeEIndex
+                        controller.dispatch(PadAction.OnClickSaveSetting(SettingType.THEME, map))
+                    }
                 }
             )
         }
@@ -150,13 +158,3 @@ fun SettingTheme(
     }
 }
 
-@Preview(device = "spec:width=800px,height=1319px,dpi=213")
-@Composable
-fun SettingThemePreview() {
-    CatposPointTheme {
-        SettingTheme(
-            Modifier.fillMaxSize()
-                .background(color = white)
-        )
-    }
-}

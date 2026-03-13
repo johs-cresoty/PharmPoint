@@ -1033,7 +1033,7 @@ class MainViewModel @Inject constructor(
      * @param subTitle
      */
     private fun showPreview(index: Int, subTitle: String, customImageUri: Uri? = null) {
-        _dialog.update { Dialogs.None }
+//        _dialog.update { Dialogs.None }
 
         _isHideDialog.update { true }
         _preTheme.update { index }
