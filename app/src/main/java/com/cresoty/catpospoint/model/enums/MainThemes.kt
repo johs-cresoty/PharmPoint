@@ -8,6 +8,6 @@ enum class MainThemes(val title : String, val cropAlignment : Alignment) {
     Theme_B("테마B", Alignment.BottomCenter),
     Theme_C("테마C", Alignment.TopCenter),
     Theme_D("테마D", Alignment.Center),
-    Theme_E("테마E", Alignment.Center),
+    Theme_E("  테마E", Alignment.Center),
     Theme_CUSTOM("사용자 지정", Alignment.Center)
 }

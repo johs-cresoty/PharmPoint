@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.CatposPoint" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.CatposPoint.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/icon_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.CatposPoint</item>
+    </style>
+
 </resources>

@@ -114,6 +114,7 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("com.github.yalantis:ucrop:2.2.9")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
     kaptAndroidTest("com.google.dagger:hilt-compiler:2.48")
