@@ -1,4 +1,4 @@
-package com.cresoty.catpospoint.presentation.component
+package com.cresoty.catpospoint.ui.component
 
 import android.view.SoundEffectConstants
 import androidx.compose.foundation.BorderStroke
@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape

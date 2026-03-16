@@ -1,4 +1,4 @@
-package com.cresoty.catpospoint.presentation.component
+package com.cresoty.catpospoint.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement

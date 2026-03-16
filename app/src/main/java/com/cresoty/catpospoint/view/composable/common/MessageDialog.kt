@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
-import com.cresoty.catpospoint.presentation.component.CloseButton
-import com.cresoty.catpospoint.presentation.component.ConfirmButton
+import com.cresoty.catpospoint.ui.component.CloseButton
+import com.cresoty.catpospoint.ui.component.ConfirmButton
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.dpx

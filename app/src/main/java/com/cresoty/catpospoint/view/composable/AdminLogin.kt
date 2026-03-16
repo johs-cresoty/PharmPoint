@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.interfaces.PadAction
-import com.cresoty.catpospoint.presentation.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
 import com.cresoty.catpospoint.view.composable.common.BaseDialog
 import com.cresoty.catpospoint.view.composable.setting.SettingButtons
 import com.cresoty.catpospoint.view.controller.LocalController

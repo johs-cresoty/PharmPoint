@@ -45,8 +45,8 @@ import com.cresoty.catpospoint.model.state.MainState
 import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
-import com.cresoty.catpospoint.presentation.component.ClickSoundButton
-import com.cresoty.catpospoint.presentation.component.PointBalanceButton
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.PointBalanceButton
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.NotoSansKr
 import com.cresoty.catpospoint.presentation.theme.common01

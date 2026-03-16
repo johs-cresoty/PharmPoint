@@ -1,7 +1,8 @@
-package com.cresoty.catpospoint.presentation.component
+package com.cresoty.catpospoint.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -24,10 +25,11 @@ fun BackStepButton(
     ) {
         ClickSoundButton(
             backgroundColor = transparent,
+            contentPadding = PaddingValues(0.dpx),  // 추가
             onClick = onClickBackToMain,
         ) {
             Image(
-                modifier = Modifier.size(width = 40f.dpx, height = 34f.dpx),
+                modifier = Modifier.size(width = 40.dpx, height = 34.dpx),
                 painter = painterResource(R.drawable.icon_backstack),
                 contentDescription = null
             )

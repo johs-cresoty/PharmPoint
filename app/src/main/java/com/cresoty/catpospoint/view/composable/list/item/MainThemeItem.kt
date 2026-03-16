@@ -39,7 +39,7 @@ import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.MainThemes
-import com.cresoty.catpospoint.presentation.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.dpx

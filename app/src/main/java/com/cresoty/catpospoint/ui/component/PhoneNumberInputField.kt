@@ -1,4 +1,4 @@
-package com.cresoty.catpospoint.presentation.component
+package com.cresoty.catpospoint.ui.component
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -33,8 +33,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import com.cresoty.catpospoint.R
-import com.cresoty.catpospoint.presentation.component.PhoneMaskStrategy.Middle
-import com.cresoty.catpospoint.presentation.component.PhoneMaskStrategy.Tail
+import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.Middle
+import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.Tail
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.dpx

@@ -35,7 +35,7 @@ import com.cresoty.catpospoint.model.state.MainState
 import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
-import com.cresoty.catpospoint.presentation.component.BackStepButton
+import com.cresoty.catpospoint.ui.component.BackStepButton
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.common02

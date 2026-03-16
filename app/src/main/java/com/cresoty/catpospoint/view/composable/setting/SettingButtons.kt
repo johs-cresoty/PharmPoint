@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.cresoty.catpospoint.model.Penta
-import com.cresoty.catpospoint.presentation.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.main01

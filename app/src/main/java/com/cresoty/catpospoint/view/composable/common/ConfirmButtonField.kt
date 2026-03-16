@@ -14,7 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
 import com.cresoty.catpospoint.model.enums.PointUseSource
 import com.cresoty.catpospoint.model.interfaces.PadAction
-import com.cresoty.catpospoint.presentation.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.main01

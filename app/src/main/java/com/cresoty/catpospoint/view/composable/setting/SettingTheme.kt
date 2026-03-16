@@ -31,7 +31,7 @@ import com.cresoty.catpospoint.view.composable.common.FilterTextField
 import com.cresoty.catpospoint.ConfigKey
 import com.cresoty.catpospoint.model.enums.MainThemes
 import com.cresoty.catpospoint.model.interfaces.PadAction
-import com.cresoty.catpospoint.presentation.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
 import com.cresoty.catpospoint.view.composable.list.SettingMainThemeList
 import com.cresoty.catpospoint.view.composable.list.SettingType
 import com.cresoty.catpospoint.view.controller.LocalController

@@ -35,7 +35,7 @@ import com.cresoty.catpospoint.model.state.MainState
 import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
-import com.cresoty.catpospoint.presentation.component.ConfirmButton
+import com.cresoty.catpospoint.ui.component.ConfirmButton
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.NotoSansKr
