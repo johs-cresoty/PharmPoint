@@ -44,7 +44,7 @@ fun InputNumberPointAmount(
         modifier = modifier.background(white),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        BackStepButton { controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE)) }
+        BackStepButton { controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.POINT_USE_PHONE_NUM)) }
 
         Spacer(modifier = Modifier.size(27.dpx))
 
