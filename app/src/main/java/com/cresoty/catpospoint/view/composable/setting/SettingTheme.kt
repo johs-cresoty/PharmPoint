@@ -75,6 +75,7 @@ fun SettingTheme(
                 placeholder = "전문 약사가 정성껏 상담해 드립니다.",
                 initText = subTitle,
                 textAlign = TextAlign.Start,
+                maxLength = 20,
                 onTextChange = { subTitle = it },
                 onClickDone = { subTitle = it }
             )

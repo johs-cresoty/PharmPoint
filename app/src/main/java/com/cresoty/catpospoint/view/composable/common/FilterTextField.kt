@@ -61,6 +61,7 @@ fun FilterTextField(
     placeholder: String,
     textAlign: TextAlign = TextAlign.Start,
     filterType: FilterTextType = FilterTextType.NONE,
+    maxLength: Int = Int.MAX_VALUE,
     onTextChange: (String) -> Unit = {},
     onClickDone: (String) -> Unit = {}
 ) {
@@ -148,6 +149,8 @@ fun FilterTextField(
 
                 else -> {}
             }
+
+            if (inputText.length > maxLength) inputText = inputText.take(maxLength)
 
             textFieldValue = newValue.copy(text = inputText)
             onTextChange(inputText)
