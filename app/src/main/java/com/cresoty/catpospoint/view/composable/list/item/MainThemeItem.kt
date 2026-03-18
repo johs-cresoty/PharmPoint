@@ -47,7 +47,7 @@ import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.sub01
 import com.cresoty.catpospoint.presentation.theme.transparent
 import com.cresoty.catpospoint.presentation.theme.white
-import com.cresoty.catpospoint.view.composable.common.DeleteImageDialog
+import com.cresoty.catpospoint.view.composable.common.MessageDialog
 import com.yalantis.ucrop.UCrop
 import java.io.File
 
@@ -129,7 +129,7 @@ fun AddImageBox(
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        DeleteImageDialog(
+        MessageDialog(
             onConfirm = {
                 onImageCropped(Uri.EMPTY)
                 showDialog = false

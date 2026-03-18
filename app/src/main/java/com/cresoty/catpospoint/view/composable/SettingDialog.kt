@@ -14,7 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.model.interfaces.PadAction
+import com.cresoty.catpospoint.view.composable.common.MessageDialog
 import com.cresoty.catpospoint.model.interfaces.ViewController
 import com.cresoty.catpospoint.model.state.ConfigState
 import com.cresoty.catpospoint.model.state.CustomerState
@@ -48,9 +51,21 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun SettingDialog() {
     val controller = LocalController.current
+    val config by controller.configState.collectAsStateWithLifecycle()
     val setting by controller.settingState.collectAsStateWithLifecycle()
     val selectedIndex = setting.selectedIndex
     var selectedType = SettingType.entries[selectedIndex]
+    var showBizNoAlert by remember { mutableStateOf(false) }
+
+    if (showBizNoAlert) {
+        MessageDialog(
+            message = "사업자번호 저장 후 이용 가능합니다.",
+            confirmText = "확인",
+            dismissText = null,
+            onConfirm = { showBizNoAlert = false },
+            onDismiss = { showBizNoAlert = false }
+        )
+    }
 
     BaseDialog(
         onCreate = {},
@@ -83,8 +98,12 @@ fun SettingDialog() {
                     modifier = Modifier.weight(1f),
                     selectedIndex = selectedIndex
                 ) { index, type ->
-                    controller.dispatch(PadAction.OnClickSettingMenu(index))
-                    selectedType = type
+                    if (config.bizNo.isEmpty() && index != 0) {
+                        showBizNoAlert = true
+                    } else {
+                        controller.dispatch(PadAction.OnClickSettingMenu(index))
+                        selectedType = type
+                    }
                 }
             }
 

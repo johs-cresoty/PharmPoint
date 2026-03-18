@@ -28,7 +28,10 @@ import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 
 @Composable
-fun DeleteImageDialog(
+fun MessageDialog(
+    message: String = "사용자 지정 이미지를\n삭제하시겠습니까?",
+    confirmText: String = "예",
+    dismissText: String? = "아니오",
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -40,7 +43,6 @@ fun DeleteImageDialog(
                 .background(Color.White, RoundedCornerShape(20.dpx))
                 .padding(start = 18.dpx, end = 18.dpx, bottom = 18.dpx)
         ) {
-
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -52,7 +54,7 @@ fun DeleteImageDialog(
                 ) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = "사용자 지정 이미지를\n삭제하시겠습니까?",
+                        text = message,
                         color = common02,
                         fontSize = 30.spx,
                         lineHeight = 42.spx,
@@ -60,24 +62,35 @@ fun DeleteImageDialog(
                         textAlign = TextAlign.Center
                     )
                 }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dpx)
-                ) {
-                    CloseButton(
-                        text = "아니오",
-                        fontSize = 28.spx,
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .height(84.dpx)
-                            .width(160.dpx)
-                    )
 
+                if (dismissText != null) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dpx)
+                    ) {
+                        CloseButton(
+                            text = dismissText,
+                            fontSize = 28.spx,
+                            onClick = onDismiss,
+                            modifier = Modifier
+                                .height(84.dpx)
+                                .width(160.dpx)
+                        )
+                        ConfirmButton(
+                            text = confirmText,
+                            fontSize = 28.spx,
+                            onClick = onConfirm,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(84.dpx)
+                        )
+                    }
+                } else {
                     ConfirmButton(
-                        text = "예",
+                        text = confirmText,
                         fontSize = 28.spx,
                         onClick = onConfirm,
                         modifier = Modifier
-                            .width(336.dpx)
+                            .fillMaxWidth()
                             .height(84.dpx)
                     )
                 }
@@ -88,9 +101,9 @@ fun DeleteImageDialog(
 
 @Preview
 @Composable
-private fun DeleteImageDialogPreview() {
+private fun MessageDialogPreview() {
     CatposPointTheme {
-        DeleteImageDialog(
+        MessageDialog(
             onConfirm = {},
             onDismiss = {}
         )

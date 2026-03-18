@@ -240,6 +240,14 @@ class MainViewModel @Inject constructor(
                 _customThemeImageUri.update { Uri.parse(savedUri) }
             }
         }
+
+        // 사업자번호 미설정 시 설정 다이얼로그 자동 표시
+        viewModelScope.launch {
+            val savedBizNo = configRepo.getValue(ConfigKey.BIZ_NO, "")
+            if (savedBizNo.isEmpty()) {
+                _dialog.update { Dialogs.Setting }
+            }
+        }
     }
 
     /**
@@ -1158,6 +1166,9 @@ class MainViewModel @Inject constructor(
      * @param input
      */
     private fun updateDialog(input: Dialogs) {
+        // 사업자번호 미저장 상태에서는 다이얼로그 닫기 불가
+        if (input == Dialogs.None && configState.value.bizNo.isEmpty()) return
+
         if (input == Dialogs.None) {
             deleteAllPassword()
             updateMenuIndex(0)

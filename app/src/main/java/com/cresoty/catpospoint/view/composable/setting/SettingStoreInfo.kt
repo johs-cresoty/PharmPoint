@@ -92,11 +92,12 @@ fun SettingStoreInfo(
         SettingButtons(
             modifier = Modifier.weight(1f),
             isLogin = false,
-            enabled = bizNo.length == 10 && storeName.isNotEmpty(),
+            enabled = bizNo.length == 10,
+            isCloseEnabled = config.bizNo.isNotEmpty(),
             isSavedToastVisible = setting.isSavedToastVisible,
             onClickClose = { controller.dispatch(PadAction.CloseDialog) },
             onClickSave = {
-                if(bizNo.length == 10 && storeName.isNotEmpty()) {
+                if(bizNo.length == 10) {
                     val map = mutableMapOf<Preferences.Key<*>, Any>()
                     map[ConfigKey.BIZ_NO] = bizNo
                     map[ConfigKey.STORE_NAME] = storeName

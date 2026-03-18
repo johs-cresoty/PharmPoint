@@ -32,6 +32,7 @@ fun SettingButtons(
     modifier: Modifier,
     isLogin: Boolean,
     enabled: Boolean = true,
+    isCloseEnabled: Boolean = true,
     isSavedToastVisible: Boolean = false,
     onClickSave: () -> Unit,
     onClickClose: () -> Unit
@@ -76,9 +77,13 @@ fun SettingButtons(
         ) {
             list.map {
                 val isBorder = it.first == "닫기"
+                if (isBorder && !isCloseEnabled) {
+                    Spacer(modifier = Modifier.size(width = it.second, height = height))
+                    return@map
+                }
                 ClickSoundButton(
                     modifier = Modifier.size(width = it.second, height = height),
-                    enabled = if (it.first == "닫기") true else enabled,
+                    enabled = if (isBorder) true else enabled,
                     onClick = it.third,
                     border = BorderStroke((if (isBorder) 1f else 0f).dpx, it.fourth),
                     backgroundColor = it.fifth,
