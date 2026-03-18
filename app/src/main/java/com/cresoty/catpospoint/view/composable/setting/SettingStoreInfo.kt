@@ -58,7 +58,7 @@ fun SettingStoreInfo(
 
             Column{
                 Text(
-                    text = if(index == 0) "약국명" else "사업자번호",
+                    text = if(index == 0) "약국명(최대 15자)" else "사업자번호",
                     color = common02,
                     fontSize = 20f.spx
                 )
@@ -70,11 +70,10 @@ fun SettingStoreInfo(
                     placeholder = placeholder,
                     initText = item.third,
                     filterType = filter,
+                    maxLength = if (item.first == ConfigKey.BIZ_NO) 10 else 15,
                     onTextChange = {
                         if(item.first == ConfigKey.BIZ_NO) {
                             bizNo = it
-                            if(bizNo.length > 10)
-                                bizNo = bizNo.dropLast(1)
                         }
                         else
                             storeName = it
