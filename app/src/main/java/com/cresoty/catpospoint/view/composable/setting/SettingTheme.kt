@@ -68,7 +68,7 @@ fun SettingTheme(
         ) {
             Text(
                 //20자는 바이트 기준인지 글자수 기준인지?
-                text = "서브 타이틀(최대 20자)",
+                text = "서브 타이틀(최대 40자)",
                 fontSize = 20f.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02
@@ -79,7 +79,7 @@ fun SettingTheme(
                 placeholder = "전문 약사가 정성껏 상담해 드립니다.",
                 initText = subTitle,
                 textAlign = TextAlign.Start,
-                maxLength = 20,
+                maxLength = 40,
                 onTextChange = { subTitle = it },
                 onClickDone = { subTitle = it }
             )
