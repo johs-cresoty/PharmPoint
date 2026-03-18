@@ -29,16 +29,17 @@ import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.Quatro
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
 import com.cresoty.catpospoint.model.interfaces.PadAction
+import com.cresoty.catpospoint.presentation.theme.NotoSansKr
+import com.cresoty.catpospoint.presentation.theme.common01
+import com.cresoty.catpospoint.presentation.theme.common02
+import com.cresoty.catpospoint.presentation.theme.dpx
+import com.cresoty.catpospoint.presentation.theme.main01
+import com.cresoty.catpospoint.presentation.theme.main04
+import com.cresoty.catpospoint.presentation.theme.spx
+import com.cresoty.catpospoint.presentation.theme.white
 import com.cresoty.catpospoint.toDecimalString
 import com.cresoty.catpospoint.view.composable.common.ConfirmButtonField
 import com.cresoty.catpospoint.view.controller.LocalController
-import com.cresoty.catpospoint.presentation.theme.common01
-import com.cresoty.catpospoint.presentation.theme.common02
-import com.cresoty.catpospoint.presentation.theme.main01
-import com.cresoty.catpospoint.presentation.theme.main04
-import com.cresoty.catpospoint.presentation.theme.dpx
-import com.cresoty.catpospoint.presentation.theme.spx
-import com.cresoty.catpospoint.presentation.theme.white
 import kotlinx.coroutines.delay
 
 @Composable
@@ -121,9 +122,11 @@ fun PointDeltaProcDone(
 
         Text(
             text = subMent,
-            fontSize = 30f.spx,
-            lineHeight = 30f.spx,
+            fontSize = 30.spx,
+            lineHeight = 40.5.spx,
             color = common01,
+            fontFamily = NotoSansKr,
+            fontWeight = FontWeight(400),
             textAlign = TextAlign.Center
         )
 
