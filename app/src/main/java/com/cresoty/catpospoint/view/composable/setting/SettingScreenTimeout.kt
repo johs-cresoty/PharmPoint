@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +39,8 @@ import com.cresoty.catpospoint.presentation.theme.white
 
 @Composable
 fun SettingScreenTimeout(
-    modifier: Modifier
+    modifier: Modifier,
+    onPanelState: (hasChanges: Boolean, doSave: () -> Unit) -> Unit = { _, _ -> }
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -48,6 +50,14 @@ fun SettingScreenTimeout(
     )
     val idx = list.indexOf(config.timeout.toString())
     var selectedIndex by remember{ mutableIntStateOf(idx) }
+
+    SideEffect {
+        onPanelState(selectedIndex + 1 != config.timeout) {
+            val map = mutableMapOf<Preferences.Key<*>, Any>()
+            map[ConfigKey.SCREEN_TIMEOUT] = selectedIndex + 1
+            controller.dispatch(PadAction.OnClickSaveSetting(SettingType.SCREEN_TIMEOUT, map))
+        }
+    }
 
     val shape = RoundedCornerShape(5f.dpx)
 

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +34,8 @@ import com.cresoty.catpospoint.view.controller.LocalController
 
 @Composable
 fun SettingPointUse(
-    modifier: Modifier
+    modifier: Modifier,
+    onPanelState: (hasChanges: Boolean, doSave: () -> Unit) -> Unit = { _, _ -> }
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -41,6 +43,17 @@ fun SettingPointUse(
 
     var isMinPointEnabled by remember { mutableStateOf(config.isMinPointEnabled) }
     var minPoint by remember { mutableStateOf(config.minPoint.toString()) }
+
+    SideEffect {
+        val currentMinPoint = minPoint.replace(",", "").toIntOrNull() ?: 0
+        val canSave = !isMinPointEnabled || currentMinPoint > 0
+        onPanelState(canSave && (isMinPointEnabled != config.isMinPointEnabled || currentMinPoint != config.minPoint)) {
+            val map = mutableMapOf<Preferences.Key<*>, Any>()
+            map[ConfigKey.IS_MIN_POINT_ENABLED] = isMinPointEnabled
+            map[ConfigKey.MINIMUM_POINT] = minPoint.replace(",", "").toIntOrNull() ?: 0
+            controller.dispatch(PadAction.OnClickSaveSetting(SettingType.POINT_USE, map))
+        }
+    }
 
     Column(
         modifier = modifier,

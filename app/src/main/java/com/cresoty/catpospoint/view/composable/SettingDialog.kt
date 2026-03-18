@@ -55,7 +55,17 @@ fun SettingDialog() {
     val setting by controller.settingState.collectAsStateWithLifecycle()
     val selectedIndex = setting.selectedIndex
     var selectedType = SettingType.entries[selectedIndex]
+
     var showBizNoAlert by remember { mutableStateOf(false) }
+    var showChangesAlert by remember { mutableStateOf(false) }
+    var pendingTabIndex by remember { mutableStateOf<Int?>(null) }
+
+    var hasChanges by remember { mutableStateOf(false) }
+    val doSaveHolder = remember { object { var fn: (() -> Unit)? = null } }
+    val onPanelState: (Boolean, () -> Unit) -> Unit = { changes, save ->
+        hasChanges = changes
+        doSaveHolder.fn = save
+    }
 
     if (showBizNoAlert) {
         MessageDialog(
@@ -64,6 +74,25 @@ fun SettingDialog() {
             dismissText = null,
             onConfirm = { showBizNoAlert = false },
             onDismiss = { showBizNoAlert = false }
+        )
+    }
+
+    if (showChangesAlert) {
+        MessageDialog(
+            message = "변경사항이 있습니다.\n저장하시겠습니까?",
+            confirmText = "예",
+            dismissText = "아니오",
+            onConfirm = {
+                doSaveHolder.fn?.invoke()
+                pendingTabIndex?.let { controller.dispatch(PadAction.OnClickSettingMenu(it)) }
+                pendingTabIndex = null
+                showChangesAlert = false
+            },
+            onDismiss = {
+                pendingTabIndex?.let { controller.dispatch(PadAction.OnClickSettingMenu(it)) }
+                pendingTabIndex = null
+                showChangesAlert = false
+            }
         )
     }
 
@@ -98,11 +127,16 @@ fun SettingDialog() {
                     modifier = Modifier.weight(1f),
                     selectedIndex = selectedIndex
                 ) { index, type ->
-                    if (config.bizNo.isEmpty() && index != 0) {
-                        showBizNoAlert = true
-                    } else {
-                        controller.dispatch(PadAction.OnClickSettingMenu(index))
-                        selectedType = type
+                    when {
+                        config.bizNo.isEmpty() && index != 0 -> showBizNoAlert = true
+                        hasChanges && index != selectedIndex -> {
+                            pendingTabIndex = index
+                            showChangesAlert = true
+                        }
+                        else -> {
+                            controller.dispatch(PadAction.OnClickSettingMenu(index))
+                            selectedType = type
+                        }
                     }
                 }
             }
@@ -114,7 +148,7 @@ fun SettingDialog() {
                     .background(color = white, shape = RoundedCornerShape(topEnd = 20f.dpx, bottomEnd = 20f.dpx))
                     .padding(18f.dpx)
             ) {
-                SettingPanel(Modifier.weight(1f), selectedType)
+                SettingPanel(Modifier.weight(1f), selectedType, onPanelState)
             }
 
         }
@@ -124,19 +158,15 @@ fun SettingDialog() {
 @Composable
 fun SettingPanel(
     modifier: Modifier,
-    type : SettingType
+    type: SettingType,
+    onPanelState: (hasChanges: Boolean, doSave: () -> Unit) -> Unit
 ) {
-    val block = remember {
-        mapOf<SettingType, @Composable () -> Unit> (
-            SettingType.STORE_INFO      to { SettingStoreInfo(modifier) },
-//            SettingType.ID_VERIFY       to { SettingIdVerify(modifier) },
-            SettingType.POINT_USE       to { SettingPointUse(modifier) },
-            SettingType.SCREEN_TIMEOUT  to { SettingScreenTimeout(modifier) },
-            SettingType.THEME           to { SettingTheme(modifier) }
-            )
+    when (type) {
+        SettingType.STORE_INFO     -> SettingStoreInfo(modifier, onPanelState)
+        SettingType.POINT_USE      -> SettingPointUse(modifier, onPanelState)
+        SettingType.SCREEN_TIMEOUT -> SettingScreenTimeout(modifier, onPanelState)
+        SettingType.THEME          -> SettingTheme(modifier, onPanelState)
     }
-
-    block.getValue(type).invoke()
 }
 
 private val previewController = object : ViewController {

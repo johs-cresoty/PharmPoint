@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +32,8 @@ import com.cresoty.catpospoint.presentation.theme.white
 
 @Composable
 fun SettingStoreInfo(
-    modifier: Modifier
+    modifier: Modifier,
+    onPanelState: (hasChanges: Boolean, doSave: () -> Unit) -> Unit = { _, _ -> }
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -39,6 +41,18 @@ fun SettingStoreInfo(
 
     var bizNo by remember { mutableStateOf(config.bizNo) }
     var storeName by remember { mutableStateOf(config.storeName) }
+
+    SideEffect {
+        val canSave = bizNo.length == 10
+        onPanelState(canSave && (bizNo != config.bizNo || storeName != config.storeName)) {
+            if (bizNo.length == 10) {
+                val map = mutableMapOf<Preferences.Key<*>, Any>()
+                map[ConfigKey.BIZ_NO] = bizNo
+                map[ConfigKey.STORE_NAME] = storeName
+                controller.dispatch(PadAction.OnClickSaveSetting(SettingType.STORE_INFO, map))
+            }
+        }
+    }
 
     val list = listOf(
         Triple(ConfigKey.STORE_NAME, KeyboardType.Text, storeName),

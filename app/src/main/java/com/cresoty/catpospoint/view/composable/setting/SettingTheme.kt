@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +44,8 @@ import com.cresoty.catpospoint.presentation.theme.white
 
 @Composable
 fun SettingTheme(
-    modifier: Modifier
+    modifier: Modifier,
+    onPanelState: (hasChanges: Boolean, doSave: () -> Unit) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
     val controller = LocalController.current
@@ -56,6 +58,15 @@ fun SettingTheme(
     val customImageUri by controller.customThemeImageUriState.collectAsStateWithLifecycle()
 
     val shape = RoundedCornerShape(100f.dpx)
+
+    SideEffect {
+        onPanelState(subTitle != config.subTitle || selectedIndex != config.themeIndex) {
+            val map = mutableMapOf<Preferences.Key<*>, Any>()
+            map[ConfigKey.SUB_TITLE] = subTitle
+            map[ConfigKey.MAIN_THEME] = selectedIndex
+            controller.dispatch(PadAction.OnClickSaveSetting(SettingType.THEME, map))
+        }
+    }
 
     Column(
         modifier = modifier,
