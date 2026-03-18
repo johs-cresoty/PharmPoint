@@ -40,9 +40,10 @@ fun SettingButtons(
 
     val width = if (isLogin) 535f.dpx else 350f.dpx
 
+    val isSaveColor = if(enabled) main01 else common01
     val list = listOf(
         Penta("닫기", 160f.dpx, onClickClose, common01, white),
-        Penta(if (isLogin) "로그인" else "저장", width, onClickSave, white, main01)
+        Penta(if (isLogin) "로그인" else "저장", width, onClickSave, white, isSaveColor)
     )
 
     val shape = RoundedCornerShape(20f.dpx)

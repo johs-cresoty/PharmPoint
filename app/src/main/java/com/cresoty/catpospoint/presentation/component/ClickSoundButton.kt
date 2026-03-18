@@ -58,7 +58,6 @@ fun ClickSoundButton(
 
     Box(
         modifier = modifier
-            .alpha(if (effectiveEnabled) 1f else 0.4f)
             .clip(shape)
             .background(backgroundColor, shape)
             .then(if (border != null) Modifier.border(border, shape) else Modifier)
