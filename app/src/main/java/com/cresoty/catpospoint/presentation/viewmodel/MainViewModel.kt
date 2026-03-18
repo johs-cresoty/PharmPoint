@@ -13,6 +13,8 @@ import com.cresoty.catpospoint.PharmpayTelegram
 import com.cresoty.catpospoint.Val
 import com.cresoty.catpospoint.Val.CATPOS_CST
 import com.cresoty.catpospoint.Val.CATPOS_DISCONNECT
+import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT
+import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT_COMPLEX
 import com.cresoty.catpospoint.Val.CATPOS_NUM
 import com.cresoty.catpospoint.byte2String
 import com.cresoty.catpospoint.dataresource.DataResource
@@ -338,12 +340,141 @@ class MainViewModel @Inject constructor(
                 updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
             }
 
+            CATPOS_EARN_POINT -> {
+                processPcEarnPoint(msg.fields)
+            }
+            CATPOS_EARN_POINT_COMPLEX -> {
+                processPcEarnPointComplex(msg.fields)
+            }
+
             else -> {
                 Log.d("@#@#", "Unknown PC command: ${msg.command}")
             }
         }
     }
 
+
+    /**
+     * CAT|004|거래일자|승인번호|결제수단|결제금액 수신 후 포인트 적립 프로세스 시작
+     * fields[0] = 거래일자, fields[1] = 승인번호, fields[2] = 결제수단, fields[3] = 결제금액
+     */
+    private fun processPcEarnPoint(fields: List<String>) {
+        if (fields.size < 4) return
+        if (!configState.value.isSave) return
+
+        val dateTime = fields[0]
+        val appNum = fields[1]
+        val method = if (fields[2] == "P") "M" else fields[2]
+        val amount = fields[3].toIntOrNull() ?: 0
+
+        if (amount <= 0) return
+
+        approvalNumber = appNum
+        transactionMethod = method
+        transactionDate = dateTime.safeSubString(0, 8)
+        transactionTime = dateTime.safeSubString(8)
+
+        _paymentAmount.update { amount.toString() }
+        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+
+        viewModelScope.launch {
+            estimatePointUseCase(
+                EstimatePointCommand.Single(
+                    taxNo = configState.value.bizNo,
+                    computerName = CMPTR_NAME,
+                    posVersion = POS_VER,
+                    trnDate = transactionDate,
+                    trnGubn = transactionMethod,
+                    trnAmt = _paymentAmount.value,
+                    appNum = approvalNumber
+                )
+            ).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        resource.data?.let {
+                            _pointDelta.update { _ -> it.pointAmount }
+                            transactionUniqueNumber = it.sleSeq
+                        }
+                    }
+
+                    is DataResource.Error -> {
+                        Log.d("SocketDebug", "캣포스 적립 estimatePoint error: ${resource.throwable.message}")
+                    }
+
+                    is DataResource.Loading -> {}
+                }
+            }
+        }
+    }
+
+    /**
+     * CAT|005|거래일자|승인번호|결제수단(거래구분)|결제금액|승인번호|결제수단(거래구분)|결제금액 수신 후 복합결제 포인트 적립 프로세스 시작
+     * fields[0] = 공통 거래일자, fields[1..3] = 첫 번째 결제, fields[4..6] = 두 번째 결제
+     */
+    private fun processPcEarnPointComplex(fields: List<String>) {
+        if (fields.size < 7) return
+        if (!configState.value.isSave) return
+
+        val dateTime = fields[0]
+
+        val firstAppNum = fields[1]
+        val firstMethod = if (fields[2] == "P") "M" else fields[2]
+        val firstAmount = fields[3].toIntOrNull() ?: 0
+
+        val secondAppNum = fields[4]
+        val secondMethod = if (fields[5] == "P") "M" else fields[5]
+        val secondAmount = fields[6].toIntOrNull() ?: 0
+
+        val first = PaymentDetailCommand(
+            approvalNumber = firstAppNum,
+            transactionGubn = firstMethod,
+            transactionDate = dateTime.safeSubString(0, 8),
+            transactionTime = dateTime.safeSubString(8),
+            transactionAmount = firstAmount.toString()
+        )
+
+        val second = PaymentDetailCommand(
+            approvalNumber = secondAppNum,
+            transactionGubn = secondMethod,
+            transactionDate = dateTime.safeSubString(0, 8),
+            transactionTime = dateTime.safeSubString(8),
+            transactionAmount = secondAmount.toString()
+        )
+
+        complexTranInfo = first to second
+        transactionMethod = first.transactionGubn
+        transactionDate = first.transactionDate
+
+        _paymentAmount.update { (firstAmount + secondAmount).toString() }
+
+        viewModelScope.launch {
+            estimatePointUseCase(
+                EstimatePointCommand.Complex(
+                    taxNo = configState.value.bizNo,
+                    computerName = CMPTR_NAME,
+                    posVersion = POS_VER,
+                    payments = first to second
+                )
+            ).collect { resource ->
+                when (resource) {
+                    is DataResource.Success -> {
+                        resource.data?.let {
+                            _pointDelta.update { _ -> it.pointAmount }
+                            transactionUniqueNumber = it.sleSeq
+                        }
+                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+                    }
+
+                    is DataResource.Error -> {
+                        Log.d("SocketDebug", "PC 복합 estimatePoint error: ${resource.throwable.message}")
+                        updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PHONE_NUM)
+                    }
+
+                    is DataResource.Loading -> {}
+                }
+            }
+        }
+    }
 
     private fun sendToCATCustomerInfo() {
         viewModelScope.launch {
@@ -361,7 +492,7 @@ class MainViewModel @Inject constructor(
                         socketManager.send(responseBytes) { written ->
                             Log.d(
                                 "SocketDebug",
-                                "PC로 텍스트 전송 완료: $written bytes, 내용: 'OK|${resource.data.customerPhone}|${resource.data.customerCode}'"
+                                "캣포스로 텍스트 전송 완료: $written bytes, 내용: 'OK|${resource.data.customerPhone}|${resource.data.customerCode}'"
                             )
                         }
 
@@ -525,7 +656,7 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * 단말기에서 포인트 적립 전문(001) 수신 후
+     * 단말기..?에서 포인트 적립 전문(001) 수신 후
      * 적립 프로세스 시작
      * 예상 적립 포인트 조회
      *
