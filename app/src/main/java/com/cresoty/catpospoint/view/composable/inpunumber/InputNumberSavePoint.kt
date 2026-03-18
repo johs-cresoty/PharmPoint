@@ -14,6 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -58,6 +61,10 @@ fun InputNumberSavePoint(
 
     val isVisible = if(pointDelta == "0") 0f else 1f
 
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
+    var isFontSizeStabilized by remember(storeName) { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .background(color = white),
@@ -66,11 +73,17 @@ fun InputNumberSavePoint(
         BackStepButton { controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE)) }
 
         Text(
+            modifier = Modifier.alpha(if (isFontSizeStabilized) 1f else 0f),
             text = storeName,
-            fontSize = 45f.spx,
-            lineHeight = 45f.spx,
+            fontSize = storeNameFontSize,
+            lineHeight = storeNameFontSize,
             color = common01,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+                else isFontSizeStabilized = true
+            }
         )
 
         Text(

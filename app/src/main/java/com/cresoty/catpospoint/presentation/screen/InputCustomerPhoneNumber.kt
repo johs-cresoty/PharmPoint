@@ -9,9 +9,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +45,9 @@ fun InputCustomerPhoneNumber(
     storeName: String,
 ) {
     val controller = LocalController.current
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
+    var isFontSizeStabilized by remember(storeName) { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -54,12 +62,18 @@ fun InputCustomerPhoneNumber(
         )
 
         Text(
+            modifier = Modifier.alpha(if (isFontSizeStabilized) 1f else 0f),
             text = storeName,
-            fontSize = 45.spx,
+            fontSize = storeNameFontSize,
             fontWeight = FontWeight.Normal,
             color = common01,
             textAlign = TextAlign.Center,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+                else isFontSizeStabilized = true
+            }
         )
 
 

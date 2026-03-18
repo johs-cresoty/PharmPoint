@@ -9,8 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,6 +47,10 @@ fun InputNumberVerify(
     val customer by controller.customerState.collectAsStateWithLifecycle()
     val isSuccess = customer.verifyResult
 
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
+    var isFontSizeStabilized by remember(storeName) { mutableStateOf(false) }
+
     Column(
         modifier = modifier.background(white),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -52,11 +60,17 @@ fun InputNumberVerify(
         Spacer(modifier = Modifier.size(38f.dpx))
 
         Text(
+            modifier = Modifier.alpha(if (isFontSizeStabilized) 1f else 0f),
             text = storeName,
-            fontSize = 45f.spx,
-            lineHeight = 45f.spx,
+            fontSize = storeNameFontSize,
+            lineHeight = storeNameFontSize,
             color = common01,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+                else isFontSizeStabilized = true
+            }
         )
 
         Text(
@@ -95,7 +109,7 @@ private fun InputNumberVerifyPreview() {
         CompositionLocalProvider(LocalController provides mockController) {
             InputNumberVerify(
                 modifier = Modifier.fillMaxSize().background(white),
-                storeName = "OO약국",
+                storeName = "건강과 행복이 열리는 중앙 메디칼 약국",
                 paymentAmount = "10,000"
             )
         }
