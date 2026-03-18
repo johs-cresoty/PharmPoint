@@ -16,6 +16,7 @@ import com.cresoty.catpospoint.Val.CATPOS_DISCONNECT
 import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT
 import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT_COMPLEX
 import com.cresoty.catpospoint.Val.CATPOS_NUM
+import com.cresoty.catpospoint.Val.CATPOS_USE_POINT
 import com.cresoty.catpospoint.byte2String
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.domain.model.command.EstimatePointCommand
@@ -105,6 +106,7 @@ class MainViewModel @Inject constructor(
     private val _isExist: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val _verifyResult: MutableStateFlow<Boolean?> = MutableStateFlow(null)
     private val _verifyNumber: MutableStateFlow<String> = MutableStateFlow("")
+    private val _customerCode: MutableStateFlow<String> = MutableStateFlow("")
     private val _phoneNumber: MutableStateFlow<String> = MutableStateFlow("010")
 
     //포인트 적립
@@ -118,23 +120,23 @@ class MainViewModel @Inject constructor(
     private var transactionTime: String = ""
     private var transactionMethod: String = ""
     private var transactionUniqueNumber: String = ""   //거래고유번호
+    private var isCatUsePointFlow: Boolean = false      // CAT|006 포인트 사용 플로우 여부
 
     val configState = configRepo.configState
 
     val customerState: StateFlow<CustomerState> = combine(
-        _isExist,
-        _isExistChecking,
-        _verifyResult,
-        _verifyNumber,
-        _phoneNumber,
-    ) { isExist, isChecking, verifyResult, verifyNumber, phoneNumber ->
-        CustomerState(
-            phoneNumber = phoneNumber,
-            isCustomerExist = isExist,
-            isExistChecking = isChecking,
-            verifyResult = verifyResult,
-            verifyNumber = verifyNumber
-        )
+        combine(_isExist, _isExistChecking, _verifyResult, _verifyNumber, _phoneNumber) { isExist, isChecking, verifyResult, verifyNumber, phoneNumber ->
+            CustomerState(
+                phoneNumber = phoneNumber,
+                isCustomerExist = isExist,
+                isExistChecking = isChecking,
+                verifyResult = verifyResult,
+                verifyNumber = verifyNumber
+            )
+        },
+        _customerCode
+    ) { state, customerCode ->
+        state.copy(customerCode = customerCode)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Companion.Eagerly,
@@ -286,7 +288,10 @@ class MainViewModel @Inject constructor(
             PadAction.RequestSavePoint -> requestSavePoint()
             PadAction.RequestPointBalanceCheck -> requestPointBalanceCheck()
             PadAction.RequestCustomerVerify -> {}
-            PadAction.SendToTerminalPointUse -> sendToTerminalUsePoint()
+            PadAction.SendToTerminalPointUse -> {
+                if (isCatUsePointFlow) sendToCATUsePointResult()
+                else sendToTerminalUsePoint()
+            }
             PadAction.RequestExpectSaveAmount -> checkExpectPointAmount(emptyList())
             PadAction.SendToCATCustomerInfo -> sendToCATCustomerInfo()
             PadAction.SendToCATPhoneNumber -> sendToCATPhoneNumber()
@@ -345,6 +350,9 @@ class MainViewModel @Inject constructor(
             }
             CATPOS_EARN_POINT_COMPLEX -> {
                 processPcEarnPointComplex(msg.fields)
+            }
+            CATPOS_USE_POINT -> {
+                processPcUsePoint(msg.fields)
             }
 
             else -> {
@@ -476,6 +484,24 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * CAT|006|거래일자|결제금액|거래구분 수신 후 포인트 사용 프로세스 시작
+     * fields[0] = 거래일자, fields[1] = 결제금액
+     */
+    private fun processPcUsePoint(fields: List<String>) {
+        if (fields.size < 2) return
+
+        val dateTime = fields[0]
+        val amount = fields[1].toIntOrNull() ?: 0
+
+        transactionDate = dateTime.safeSubString(0, 8)
+        transactionTime = dateTime.safeSubString(8)
+
+        isCatUsePointFlow = true
+        _paymentAmount.update { amount.toString() }
+        updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
+    }
+
     private fun sendToCATCustomerInfo() {
         viewModelScope.launch {
             val phone = customerState.value.phoneNumber
@@ -521,6 +547,24 @@ class MainViewModel @Inject constructor(
 
         updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
 
+    }
+
+    /**
+     * CAT|006 포인트 사용 완료 후 캣포스로 응답 전송
+     * OK|고객코드|보유포인트|사용포인트
+     */
+    private fun sendToCATUsePointResult() {
+        val customerCode = customerState.value.customerCode
+        val useAmount = _pointDelta.value.toIntOrNull() ?: 0
+        val remaining = (_pointBalance.value.toIntOrNull() ?: 0) - useAmount
+
+        val responseBytes = "OK|$customerCode|$remaining|$useAmount\r\n".toByteArray(Charsets.UTF_8)
+        socketManager.send(responseBytes) { written ->
+            Log.d("SocketDebug", "캣포스 포인트사용 응답 전송 완료: $written bytes, 내용: '$responseBytes'")
+        }
+
+        _pointBalance.update { remaining.toString() }
+        updatePointDeltaStep(PointDeltaProcess.POINT_USE_PROC_DONE)
     }
 
     private fun sendCATFail() {
@@ -819,6 +863,7 @@ class MainViewModel @Inject constructor(
                 when (resource) {
                     is DataResource.Success -> {
                         val balance = resource.data.pointBalance
+                        _customerCode.update { resource.data.customerCode }
                         _pointBalance.update { balance }
                         val balanceAmount = balance.toIntOrNull() ?: 0
                         val isShortage = balanceAmount == 0 ||
@@ -953,6 +998,8 @@ class MainViewModel @Inject constructor(
         transactionUniqueNumber = ""
 
         complexTranInfo = null
+        isCatUsePointFlow = false
+        _customerCode.update { "" }
     }
 
     /**
