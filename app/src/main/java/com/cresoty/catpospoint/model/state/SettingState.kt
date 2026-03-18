@@ -8,4 +8,6 @@ data class SettingState(
     var isPasswordCorrect : Boolean = true,
     var password : String = "",
     var isSavedToastVisible : Boolean = false,
+    val editingSubTitle: String? = null,
+    val editingThemeIndex: Int? = null,
 )

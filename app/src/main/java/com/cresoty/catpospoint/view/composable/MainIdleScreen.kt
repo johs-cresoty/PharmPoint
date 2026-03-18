@@ -59,12 +59,11 @@ import com.cresoty.catpospoint.view.controller.LocalController
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun MainIdleScreen() {
+fun MainIdleScreen(isPreview: Boolean = false) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
     val preview by controller.previewState.collectAsStateWithLifecycle()
 
-    val isPreview = preview.isHideDialog
     val themeIndex = if (isPreview) preview.theme ?: 0 else config.themeIndex
     val theme = MainThemes.entries.getOrElse(themeIndex) { MainThemes.Theme_CUSTOM }
     val isCustomTheme = theme == MainThemes.Theme_CUSTOM
@@ -253,9 +252,10 @@ private fun ColumnE(
         modifier = Modifier
             .fillMaxSize()
             .padding(vertical = 80f.dpx, horizontal = 40f.dpx),
-        verticalArrangement = Arrangement.Bottom,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.size(610.dpx))
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = config.storeName,
@@ -266,19 +266,20 @@ private fun ColumnE(
             textAlign = TextAlign.Center
         )
 
-        Spacer(
-            modifier = Modifier.size(27f.dpx)
-        )
+        Spacer(modifier = Modifier.size(27.dpx))
 
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = preSubTitle ?: config.subTitle,
-            fontSize = 30f.spx,
+            fontSize = 30.spx,
+            lineHeight = 40.5.spx,
             fontWeight = FontWeight.Normal,
+            fontFamily = NotoSansKr,
             color = common02,
             textAlign = TextAlign.Center
         )
 
+        Spacer(modifier = Modifier.weight(1f))
         PreviewCloseButton(
             theme = MainThemes.Theme_C,
             isPreview = preSubTitle == null
@@ -463,17 +464,11 @@ private fun PreviewCloseButton(
 
 
     if (isPreview) {
-        if (theme != MainThemes.Theme_B) {
+        if (theme != MainThemes.Theme_B && theme != MainThemes.Theme_CUSTOM) {
             Image(
                 modifier = Modifier
                     .size(width = 162f.dpx, height = 36f.dpx)
-                    .alpha(alpha)
-                    .clickable {
-                        if (BuildConfig.DEBUG) {
-//                            controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.POINT_USE_PHONE_NUM))
-                            controller.dispatch(PadAction.RequestExpectSaveAmount)
-                        }
-                    },
+                    .alpha(alpha),
                 painter = painterResource(image),
                 contentDescription = null
             )
@@ -506,8 +501,8 @@ private fun previewController() = object : ViewController {
     override val mainState = MutableStateFlow(MainState())
     override val configState = MutableStateFlow(
         ConfigState(
-            storeName = "미리보기 카페",
-            subTitle = "포인트 적립 안내"
+            storeName = "연세온누리약국",
+            subTitle = "건강 상담, 언제든지 도와드립니다."
         )
     )
     override val previewState = MutableStateFlow(PreviewState())
@@ -518,9 +513,9 @@ private fun previewController() = object : ViewController {
     override fun dispatch(action: PadAction) = Unit
 }
 
-@Preview(showBackground = true)
+@Preview(name = "테마", device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
-private fun MainIdleScreenPreview_ThemeA() {
+private fun MainIdleScreenPreview_Theme() {
     CatposPointTheme {
         CompositionLocalProvider(LocalController provides previewController()) {
             MainIdleScreen()
@@ -528,17 +523,9 @@ private fun MainIdleScreenPreview_ThemeA() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun MainIdleScreenPreview_ThemeB() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController()) {
-            MainIdleScreen()
-        }
-    }
-}
 
-@Preview(showBackground = true)
+
+@Preview(name = "사용자 지정 미리보기", device = "spec:width=800px,height=1319px,dpi=213", showBackground = true)
 @Composable
 private fun CustomPreviewPreview() {
     CatposPointTheme {

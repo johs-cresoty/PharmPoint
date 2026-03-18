@@ -3,6 +3,12 @@
 
     <style name="Theme.CatposPoint" parent="android:Theme.Material.Light.NoActionBar" />
 
+    <style name="NoWindowAnimation">
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
     <style name="Theme.CatposPoint.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@android:color/white</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/icon_splash</item>

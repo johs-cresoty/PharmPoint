@@ -85,6 +85,8 @@ class MainViewModel @Inject constructor(
     private val _isPasswordCorrect: MutableStateFlow<Boolean> = MutableStateFlow(true)
     private val _password: MutableStateFlow<String> = MutableStateFlow("")
     private val _isSavedToastVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    private val _editingSubTitle: MutableStateFlow<String?> = MutableStateFlow(null)
+    private val _editingThemeIndex: MutableStateFlow<Int?> = MutableStateFlow(null)
 
     // previewState
     private val _isHideDialog: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -156,18 +158,23 @@ class MainViewModel @Inject constructor(
     )
 
     val settingState: StateFlow<SettingState> = combine(
-        _dialog,
-        _selectedMenuIndex,
-        _isPasswordCorrect,
-        _password,
-        _isSavedToastVisible,
-    ) { dialog, selectedMenuIndex, isPasswordCorrect, inputNumber, isSavedToastVisible ->
-        SettingState(
-            dialog = dialog,
-            selectedIndex = selectedMenuIndex,
-            isPasswordCorrect = isPasswordCorrect,
-            password = inputNumber,
-            isSavedToastVisible = isSavedToastVisible,
+        combine(_dialog, _selectedMenuIndex, _isPasswordCorrect, _password, _isSavedToastVisible) {
+                dialog, selectedMenuIndex, isPasswordCorrect, inputNumber, isSavedToastVisible ->
+            SettingState(
+                dialog = dialog,
+                selectedIndex = selectedMenuIndex,
+                isPasswordCorrect = isPasswordCorrect,
+                password = inputNumber,
+                isSavedToastVisible = isSavedToastVisible,
+            )
+        },
+        combine(_editingSubTitle, _editingThemeIndex) { subTitle, themeIndex ->
+            Pair(subTitle, themeIndex)
+        }
+    ) { base, (editingSubTitle, editingThemeIndex) ->
+        base.copy(
+            editingSubTitle = editingSubTitle,
+            editingThemeIndex = editingThemeIndex,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -1035,6 +1042,8 @@ class MainViewModel @Inject constructor(
     private fun showPreview(index: Int, subTitle: String, customImageUri: Uri? = null) {
 //        _dialog.update { Dialogs.None }
 
+        _editingSubTitle.update { subTitle }
+        _editingThemeIndex.update { index }
         _isHideDialog.update { true }
         _preTheme.update { index }
         _preSubTitle.update { subTitle }
@@ -1046,8 +1055,6 @@ class MainViewModel @Inject constructor(
      *
      */
     private fun closePreview() {
-        _dialog.update { Dialogs.Setting }
-
         _isHideDialog.update { false }
         _preTheme.update { null }
         _preSubTitle.update { null }
@@ -1155,6 +1162,8 @@ class MainViewModel @Inject constructor(
             deleteAllPassword()
             updateMenuIndex(0)
             updatePasswordCorrect(true)
+            _editingSubTitle.update { null }
+            _editingThemeIndex.update { null }
         }
 
         _dialog.update {

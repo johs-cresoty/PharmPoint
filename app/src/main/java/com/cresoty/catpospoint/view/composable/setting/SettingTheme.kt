@@ -20,7 +20,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
+import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.view.composable.common.FilterTextField
@@ -42,12 +45,13 @@ import com.cresoty.catpospoint.presentation.theme.white
 fun SettingTheme(
     modifier: Modifier
 ) {
+    val context = LocalContext.current
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
     val setting by controller.settingState.collectAsStateWithLifecycle()
 
-    var subTitle by remember{ mutableStateOf(config.subTitle) }
-    var selectedIndex by remember{ mutableStateOf(config.themeIndex) }
+    var subTitle by remember{ mutableStateOf(setting.editingSubTitle ?: config.subTitle) }
+    var selectedIndex by remember{ mutableStateOf(setting.editingThemeIndex ?: config.themeIndex) }
     // 다이얼로그 재생성 후에도 이미지 유지 → ViewModel에서 관리
     val customImageUri by controller.customThemeImageUriState.collectAsStateWithLifecycle()
 
@@ -99,13 +103,22 @@ fun SettingTheme(
                     modifier = Modifier.size(width = 82f.dpx, height = 26f.dpx),
                     shape = shape,
                     onClick = {
-                        controller.dispatch(
-                            PadAction.OnClickShowPreview(
-                                preIndex = selectedIndex,
-                                subTitle = subTitle,
-                                customImageUri = customImageUri
+                        if (Settings.canDrawOverlays(context)) {
+                            controller.dispatch(
+                                PadAction.OnClickShowPreview(
+                                    preIndex = selectedIndex,
+                                    subTitle = subTitle,
+                                    customImageUri = customImageUri
+                                )
                             )
-                        )
+                        } else {
+                            context.startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:${context.packageName}")
+                                )
+                            )
+                        }
                     },
                     backgroundColor = transparent
                 ) {

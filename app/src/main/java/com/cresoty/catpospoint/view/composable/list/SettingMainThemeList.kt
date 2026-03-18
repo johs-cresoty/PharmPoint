@@ -3,6 +3,7 @@ package com.cresoty.catpospoint.view.composable.list
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.MainThemes
@@ -26,10 +28,11 @@ fun SettingMainThemeList(
     onClickTheme: (Int) -> Unit,
     onCustomImageCropped: (Uri) -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     val list = listOf(
         Pair(MainThemes.Theme_A, R.drawable.main_1),
         Pair(MainThemes.Theme_B, R.drawable.main_2),
-        Pair(MainThemes.Theme_C , R.drawable.main_3),
+        Pair(MainThemes.Theme_C, R.drawable.main_3),
         Pair(MainThemes.Theme_D, R.drawable.main_4),
         Pair(MainThemes.Theme_E, R.drawable.main_5),
     )
@@ -68,7 +71,10 @@ fun SettingMainThemeList(
                 Box(
                     modifier = Modifier
                         .background(color = transparent)
-                        .clickable { onClickTheme(customIndex) }) {
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) { onClickTheme(customIndex) }) {
                     ThemeRadioButton(
                         title = "사용자 지정",
                         isSelected = customIndex == selectedIndex,

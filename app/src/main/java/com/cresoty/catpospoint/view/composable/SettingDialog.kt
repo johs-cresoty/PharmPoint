@@ -1,5 +1,6 @@
 package com.cresoty.catpospoint.view.composable
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -20,9 +22,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.model.interfaces.PadAction
+import com.cresoty.catpospoint.model.interfaces.ViewController
+import com.cresoty.catpospoint.model.state.ConfigState
+import com.cresoty.catpospoint.model.state.CustomerState
+import com.cresoty.catpospoint.model.state.MainState
+import com.cresoty.catpospoint.model.state.PointState
+import com.cresoty.catpospoint.model.state.PreviewState
+import com.cresoty.catpospoint.model.state.SettingState
 import com.cresoty.catpospoint.view.composable.common.BaseDialog
-import com.cresoty.catpospoint.view.composable.list.SettingTypeList
 import com.cresoty.catpospoint.view.composable.list.SettingType
+import com.cresoty.catpospoint.view.composable.list.SettingTypeList
 import com.cresoty.catpospoint.view.composable.setting.SettingPointUse
 import com.cresoty.catpospoint.view.composable.setting.SettingScreenTimeout
 import com.cresoty.catpospoint.view.composable.setting.SettingStoreInfo
@@ -33,6 +42,8 @@ import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.sub01
 import com.cresoty.catpospoint.presentation.theme.white
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun SettingDialog() {
@@ -109,10 +120,23 @@ fun SettingPanel(
     block.getValue(type).invoke()
 }
 
-@Preview(device = "spec:width=800px,height=1319px,dpi=213")
+private val previewController = object : ViewController {
+    override val mainState: StateFlow<MainState> = MutableStateFlow(MainState())
+    override val configState: StateFlow<ConfigState> = MutableStateFlow(ConfigState())
+    override val previewState: StateFlow<PreviewState> = MutableStateFlow(PreviewState())
+    override val settingState: StateFlow<SettingState> = MutableStateFlow(SettingState())
+    override val pointState: StateFlow<PointState> = MutableStateFlow(PointState())
+    override val customerState: StateFlow<CustomerState> = MutableStateFlow(CustomerState())
+    override val customThemeImageUriState: StateFlow<Uri?> = MutableStateFlow(null)
+    override fun dispatch(action: PadAction) {}
+}
+
+@Preview
 @Composable
 fun SettingDialogPreview() {
     CatposPointTheme {
-        SettingDialog()
+        CompositionLocalProvider(LocalController provides previewController) {
+            SettingDialog()
+        }
     }
 }
