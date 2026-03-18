@@ -120,7 +120,7 @@ class MainViewModel @Inject constructor(
     private var transactionTime: String = ""
     private var transactionMethod: String = ""
     private var transactionUniqueNumber: String = ""   //거래고유번호
-    private var isCatUsePointFlow: Boolean = false      // CAT|006 포인트 사용 플로우 여부
+    private val _isCatUsePointFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)  // CAT|006 포인트 사용 플로우 여부
 
     val configState = configRepo.configState
 
@@ -206,11 +206,13 @@ class MainViewModel @Inject constructor(
 
     val mainState: StateFlow<MainState> = combine(
         _pointDeltaStep,
-        _paymentAmount, //
-    ) { pointDeltaStep, paymentAmount ->
+        _paymentAmount,
+        _isCatUsePointFlow,
+    ) { pointDeltaStep, paymentAmount, isCatUsePointFlow ->
         MainState(
             pointDeltaStep = pointDeltaStep,
-            paymentAmount = paymentAmount
+            paymentAmount = paymentAmount,
+            isCatUsePointFlow = isCatUsePointFlow
         )
     }.stateIn(
         scope = viewModelScope,
@@ -289,7 +291,7 @@ class MainViewModel @Inject constructor(
             PadAction.RequestPointBalanceCheck -> requestPointBalanceCheck()
             PadAction.RequestCustomerVerify -> {}
             PadAction.SendToTerminalPointUse -> {
-                if (isCatUsePointFlow) sendToCATUsePointResult()
+                if (_isCatUsePointFlow.value) sendToCATUsePointResult()
                 else sendToTerminalUsePoint()
             }
             PadAction.RequestExpectSaveAmount -> checkExpectPointAmount(emptyList())
@@ -342,6 +344,7 @@ class MainViewModel @Inject constructor(
                 updatePointDeltaStep(PointDeltaProcess.REQUEST_CST)
             }
             CATPOS_DISCONNECT ->{
+                _isCatUsePointFlow.update { false }
                 updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
             }
 
@@ -497,7 +500,7 @@ class MainViewModel @Inject constructor(
         transactionDate = dateTime.safeSubString(0, 8)
         transactionTime = dateTime.safeSubString(8)
 
-        isCatUsePointFlow = true
+        _isCatUsePointFlow.update { true }
         _paymentAmount.update { amount.toString() }
         updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
     }
@@ -998,7 +1001,6 @@ class MainViewModel @Inject constructor(
         transactionUniqueNumber = ""
 
         complexTranInfo = null
-        isCatUsePointFlow = false
         _customerCode.update { "" }
     }
 

@@ -6,5 +6,6 @@ data class MainState (
 //    var cmd : String = "",
 //    var theme : MainThemes = MainThemes.Theme_A,
     var pointDeltaStep : PointDeltaProcess = PointDeltaProcess.NONE,
-    var paymentAmount : String = ""
+    var paymentAmount : String = "",
+    var isCatUsePointFlow : Boolean = false
 )

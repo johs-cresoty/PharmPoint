@@ -132,7 +132,7 @@ fun ConfirmButtonField() {
                 ClickSoundButton(
                     showPressOverlay = false,
                     onClick = {
-                        if (step == PointDeltaProcess.REQUEST_CST || step == PointDeltaProcess.REQUEST_NUM) {
+                        if (step == PointDeltaProcess.REQUEST_CST || step == PointDeltaProcess.REQUEST_NUM || main.isCatUsePointFlow) {
                             controller.dispatch(PadAction.SendCATFail)
                         } else {
                             controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))
