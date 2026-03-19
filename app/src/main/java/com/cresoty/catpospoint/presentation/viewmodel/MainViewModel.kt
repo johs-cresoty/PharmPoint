@@ -919,6 +919,7 @@ class MainViewModel @Inject constructor(
             val otc = list[3].toIntOrNull() ?: 0
             val vat = list[4].toIntOrNull() ?: 0
 
+            _isCatUsePointFlow.update { false }  // 단말기 포인트 사용 플로우이므로 CAT 플로우 플래그 초기화
             _paymentAmount.update {
                 (otc + vat).toString()
             }
