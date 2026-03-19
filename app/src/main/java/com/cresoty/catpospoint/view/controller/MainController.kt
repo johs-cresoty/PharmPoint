@@ -17,10 +17,12 @@ import com.cresoty.catpospoint.model.state.MainState
 import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
+import com.cresoty.catpospoint.presentation.result.ResultContract
+import com.cresoty.catpospoint.presentation.viewmodel.MainViewModel
+import com.cresoty.catpospoint.ui.result.ResultScreen
 import com.cresoty.catpospoint.view.composable.MainIdleScreen
 import com.cresoty.catpospoint.view.composable.PointDeltaProcDone
 import com.cresoty.catpospoint.view.composable.RequestPointDelta
-import com.cresoty.catpospoint.presentation.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalController = staticCompositionLocalOf<ViewController> {
@@ -53,15 +55,26 @@ fun MainController(viewModel: MainViewModel, context: Context) {
             PointDeltaProcess.NONE -> MainIdleScreen()
 
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_VERIFY_NUM,
-            PointDeltaProcess.POINT_USE_AMOUNT_INPUT,
             PointDeltaProcess.REQUEST_NUM,
             PointDeltaProcess.REQUEST_CST -> RequestPointDelta(step)
 
+            is PointDeltaProcess.POINT_USE_PHONE_NUM,
+            is PointDeltaProcess.POINT_USE_VERIFY_NUM,
+            is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> RequestPointDelta(step)
+
             PointDeltaProcess.POINT_SAVE_PROC_DONE,
             PointDeltaProcess.POINT_USE_PROC_DONE,
-            PointDeltaProcess.POINT_USE_PROC_SHORTAGE_FAIL-> PointDeltaProcDone(step)
+            PointDeltaProcess.POINT_USE_PROC_SHORTAGE_FAIL -> PointDeltaProcDone(step)
+
+            is PointDeltaProcess.POINT_BALANCE_RESULT -> ResultScreen(
+                state = step.resultState,
+                sendEvent = { event ->
+                    when (event) {
+                        ResultContract.Event.GoToWaiting ->
+                            controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))
+                    }
+                }
+            )
         }
 
 

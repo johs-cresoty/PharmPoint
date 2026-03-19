@@ -12,12 +12,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
+import com.cresoty.catpospoint.model.enums.PointUseSource
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.interfaces.ViewController
 import com.cresoty.catpospoint.model.state.ConfigState
@@ -44,6 +46,10 @@ fun InputNumberPointAmount(
 //    pointBalance : String
 ) {
     val controller = LocalController.current
+    val main by controller.mainState.collectAsStateWithLifecycle()
+    val backStep = (main.pointDeltaStep as? PointDeltaProcess.POINT_USE_AMOUNT_INPUT)
+        ?.let { PointDeltaProcess.POINT_USE_PHONE_NUM(it.source) }
+        ?: PointDeltaProcess.POINT_USE_PHONE_NUM(PointUseSource.MANUAL)
 
     val initialFontSize = 45f.spx
     var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
@@ -53,7 +59,7 @@ fun InputNumberPointAmount(
         modifier = modifier.background(white),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        BackStepButton { controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.POINT_USE_PHONE_NUM)) }
+        BackStepButton { controller.dispatch(PadAction.OnClickPointNext(backStep)) }
 
         Spacer(modifier = Modifier.size(27.dpx))
 

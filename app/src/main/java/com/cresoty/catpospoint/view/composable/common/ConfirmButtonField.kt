@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
+import com.cresoty.catpospoint.model.enums.PointUseSource
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.presentation.component.ClickSoundButton
 import com.cresoty.catpospoint.presentation.theme.common01
@@ -43,12 +44,12 @@ fun ConfirmButtonField() {
 
     val phoneNum = customer.phoneNumber
     val isClickable = when (step) {
-        PointDeltaProcess.POINT_USE_PHONE_NUM ->
+        is PointDeltaProcess.POINT_USE_PHONE_NUM ->
             isCustomer && !customer.isExistChecking && isPersonalInfoUse && phoneNum.length > 10
 
         PointDeltaProcess.POINT_SAVE_PHONE_NUM, PointDeltaProcess.REQUEST_CST, PointDeltaProcess.REQUEST_NUM -> isPersonalInfoUse && phoneNum.length > 10
-        PointDeltaProcess.POINT_USE_VERIFY_NUM -> verifyNumber.length > 5
-        PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+        is PointDeltaProcess.POINT_USE_VERIFY_NUM -> verifyNumber.length > 5
+        is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
             val amount = pointDelta.toIntOrNull() ?: 0
             amount > 0 && if (isMinPointEnabled) amount >= minPoint else true
         }
@@ -75,15 +76,16 @@ fun ConfirmButtonField() {
 
                     //////////////////////////////////////////////////
                     // 사용
-                    PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+                    is PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                         controller.dispatch(PadAction.RequestPointBalanceCheck)
+
                     }
 
-                    PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
+                    is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                         controller.dispatch(PadAction.RequestCustomerVerify)
                     }
 
-                    PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+                    is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                         controller.dispatch(PadAction.SendToTerminalPointUse)
                     }
 
@@ -100,8 +102,12 @@ fun ConfirmButtonField() {
                         controller.dispatch(PadAction.SendToCATCustomerInfo)
                     }
 
-                    PointDeltaProcess.REQUEST_NUM ->{
+                    PointDeltaProcess.REQUEST_NUM -> {
                         controller.dispatch(PadAction.SendToCATPhoneNumber)
+                    }
+
+                    is PointDeltaProcess.POINT_BALANCE_RESULT -> {
+                        controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))
                     }
                 }
             }
@@ -132,7 +138,13 @@ fun ConfirmButtonField() {
                 ClickSoundButton(
                     showPressOverlay = false,
                     onClick = {
-                        if (step == PointDeltaProcess.REQUEST_CST || step == PointDeltaProcess.REQUEST_NUM || main.isCatUsePointFlow) {
+                        val isFromCat = when (step) {
+                            is PointDeltaProcess.POINT_USE_PHONE_NUM -> step.source == PointUseSource.CAT
+                            is PointDeltaProcess.POINT_USE_VERIFY_NUM -> step.source == PointUseSource.CAT
+                            is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> step.source == PointUseSource.CAT
+                            else -> false
+                        }
+                        if (step == PointDeltaProcess.REQUEST_CST || step == PointDeltaProcess.REQUEST_NUM || isFromCat) {
                             controller.dispatch(PadAction.SendCATFail)
                         } else {
                             controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))

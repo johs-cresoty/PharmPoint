@@ -1,21 +1,28 @@
 package com.cresoty.catpospoint.model.enums
 
-enum class PointDeltaProcess(val isClickable: Boolean)
+import com.cresoty.catpospoint.presentation.result.ResultContract
+
+enum class PointUseSource { CAT, TERMINAL, MANUAL }
+
+sealed class PointDeltaProcess(val isClickable: Boolean)
 {
     //대기
-    NONE(false),
+    data object NONE : PointDeltaProcess(false)
 
     //적립
-    POINT_SAVE_PHONE_NUM(false),
-    POINT_SAVE_PROC_DONE(true),
+    data object POINT_SAVE_PHONE_NUM : PointDeltaProcess(false)
+    data object POINT_SAVE_PROC_DONE : PointDeltaProcess(true)
 
     //사용
-    POINT_USE_PHONE_NUM(false),
-    POINT_USE_VERIFY_NUM(false),
-    POINT_USE_AMOUNT_INPUT(false),
-    POINT_USE_PROC_DONE(true),
-    POINT_USE_PROC_SHORTAGE_FAIL(true),
+    data class POINT_USE_PHONE_NUM(val source: PointUseSource) : PointDeltaProcess(false)
+    data class POINT_USE_VERIFY_NUM(val source: PointUseSource) : PointDeltaProcess(false)
+    data class POINT_USE_AMOUNT_INPUT(val source: PointUseSource) : PointDeltaProcess(false)
+    data object POINT_USE_PROC_DONE : PointDeltaProcess(true)
+    data object POINT_USE_PROC_SHORTAGE_FAIL : PointDeltaProcess(true)
 
-    REQUEST_CST(false),   // 휴대폰 번호 + 고객 번호 요청
-    REQUEST_NUM(false),   //휴대폰 번호 요청
+    //잔액 조회 결과
+    data class POINT_BALANCE_RESULT(val resultState: ResultContract.State) : PointDeltaProcess(true)
+
+    data object REQUEST_CST : PointDeltaProcess(false)   // 휴대폰 번호 + 고객 번호 요청
+    data object REQUEST_NUM : PointDeltaProcess(false)   //휴대폰 번호 요청
 }

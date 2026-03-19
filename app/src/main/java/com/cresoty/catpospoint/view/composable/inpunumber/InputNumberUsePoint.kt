@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
+import com.cresoty.catpospoint.model.enums.PointUseSource
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.interfaces.ViewController
 import com.cresoty.catpospoint.model.state.ConfigState
@@ -49,7 +50,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 fun InputNumberUsePoint(
     modifier: Modifier = Modifier,
     storeName: String,
-    paymentAmount: String
+    paymentAmount: String,
+    source: PointUseSource = PointUseSource.CAT,
 ) {
     val controller = LocalController.current
     val customer by controller.customerState.collectAsStateWithLifecycle()
@@ -85,18 +87,28 @@ fun InputNumberUsePoint(
             }
         )
 
-        Text(
-            text = "${paymentAmount}원 결제",
-            fontSize = 53f.spx,
-            lineHeight = 53f.spx,
-            fontWeight = FontWeight.Medium,
-            color = common02
-        )
+        val amount = paymentAmount
+            ?.replace(",", "")
+            ?.toIntOrNull() ?: 0
+
+        if (amount>0){
+            Text(
+                text = "${paymentAmount}원 결제",
+                fontSize = 53f.spx,
+                lineHeight = 53f.spx,
+                fontWeight = FontWeight.Medium,
+                color = common02
+            )
+        }else{
+            Spacer(modifier = Modifier.size(96.dpx))
+        }
+
 
         Spacer(modifier = Modifier.size(24f.dpx))
 
         Text(
-            text = "포인트 사용을 위해 휴대폰 번호를 입력해주세요.",
+            text = if (source == PointUseSource.MANUAL) "휴대폰 번호 입력하고 포인트 확인하세요."
+                   else "포인트 사용을 위해 휴대폰 번호를 입력해주세요.",
             fontSize = 30f.spx,
             lineHeight = 30f.spx,
             color = common01

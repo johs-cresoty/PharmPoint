@@ -54,15 +54,16 @@ fun RequestPointDelta(step: PointDeltaProcess) {
                 )
             }
 
-            PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+            is PointDeltaProcess.POINT_USE_PHONE_NUM -> {
                 InputNumberUsePoint(
                     modifier = Modifier.weight(1f),
                     storeName = storeName,
                     paymentAmount = paymentAmount,
+                    source = step.source,
                 )
             }
 
-            PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
+            is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 InputNumberVerify(
                     modifier = Modifier.weight(1f),
                     storeName = storeName,
@@ -70,7 +71,7 @@ fun RequestPointDelta(step: PointDeltaProcess) {
                 )
             }
 
-            PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+            is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 InputNumberPointAmount(
                     modifier = Modifier.weight(1f),
                     storeName = storeName,

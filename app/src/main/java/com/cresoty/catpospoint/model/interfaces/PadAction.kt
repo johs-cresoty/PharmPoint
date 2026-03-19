@@ -20,6 +20,7 @@ sealed interface PadAction {
     data class OnClickAmountQuickButton(val type : PointQuickInputType) : PadAction
 
     data object OnClickSetting : PadAction
+    data object OnClickPointBalance : PadAction
     data object OnClickDeleteLastPassword : PadAction
     data object OnClickDeleteAllPassword : PadAction
     data object OnClickDeleteLastPhoneNumber : PadAction

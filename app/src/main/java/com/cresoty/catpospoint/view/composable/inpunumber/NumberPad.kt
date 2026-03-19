@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
+import com.cresoty.catpospoint.model.enums.PointUseSource
 import com.cresoty.catpospoint.model.enums.PointQuickInputType
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.interfaces.ViewController
@@ -82,14 +83,14 @@ fun NumberPad(
         else Triple(R.drawable.icon_alert, "인증번호가 일치하지 않습니다.", notice)
     }
 
-    val height = if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) 858f.dpx
+    val height = if (step is PointDeltaProcess.POINT_USE_AMOUNT_INPUT) 858f.dpx
     else 736f.dpx
 
     Column(
         modifier = Modifier.size(width = 720f.dpx, height = height),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (step == PointDeltaProcess.POINT_USE_AMOUNT_INPUT) {
+        if (step is PointDeltaProcess.POINT_USE_AMOUNT_INPUT) {
             UsePointAmountField()
 
             Spacer(modifier = Modifier.size(14f.dpx))
@@ -225,7 +226,6 @@ fun PersonalInfoUseAgree(
     ) {
         when (step) {
             PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM,
             PointDeltaProcess.REQUEST_CST,
             PointDeltaProcess.REQUEST_NUM -> {
                 ClickSoundButton(
@@ -254,7 +254,34 @@ fun PersonalInfoUseAgree(
                 }
             }
 
-            PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
+            is PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+                ClickSoundButton(
+                    onClick = onClickPersonalInfoUse,
+                    backgroundColor = transparent,
+                    showPressOverlay = false
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            modifier = Modifier.size(35f.dpx),
+                            painter = painterResource(checkbox),
+                            contentDescription = null
+                        )
+
+                        Spacer(modifier = Modifier.size(17f.dpx))
+
+                        Text(
+                            text = "[필수] 개인정보 제공 동의합니다.",
+                            fontSize = 30f.spx,
+                            lineHeight = 30f.spx,
+                            color = checkboxColor
+                        )
+                    }
+                }
+            }
+
+            is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 verify?.let {
                     Image(
                         modifier = Modifier.size(35f.dpx),
@@ -273,7 +300,7 @@ fun PersonalInfoUseAgree(
                 }
             }
 
-            PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+            is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 if (isMinPointEnabled) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -345,7 +372,7 @@ fun PhoneNumberButton(
 fun MaskingNumberField(
     step: PointDeltaProcess
 ) {
-    val isPhoneNumberType = step != PointDeltaProcess.POINT_USE_VERIFY_NUM
+    val isPhoneNumberType = step !is PointDeltaProcess.POINT_USE_VERIFY_NUM
 
     val controller = LocalController.current
     val point by controller.pointState.collectAsStateWithLifecycle()
@@ -431,7 +458,7 @@ private fun NumberPadAmountInputPreview() {
     CatposPointTheme {
         CompositionLocalProvider(LocalController provides mockController) {
             NumberPad(
-                step = PointDeltaProcess.POINT_USE_AMOUNT_INPUT,
+                step = PointDeltaProcess.POINT_USE_AMOUNT_INPUT(PointUseSource.MANUAL),
                 checkbox = R.drawable.icon_checkbox_unchecked,
                 checkboxColor = notice
             )

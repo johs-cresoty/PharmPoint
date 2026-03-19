@@ -23,9 +23,9 @@ import com.cresoty.catpospoint.presentation.theme.spx
 
 @Composable
 fun ConfirmButton(
-    text: String,
-    fontSize: TextUnit = 35.spx,
     onClick: () -> Unit,
+    text: String = "확인",
+    fontSize: TextUnit = 35.spx,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {

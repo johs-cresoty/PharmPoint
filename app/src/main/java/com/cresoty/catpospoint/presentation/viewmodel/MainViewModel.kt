@@ -29,7 +29,9 @@ import com.cresoty.catpospoint.domain.usecase.GetPointSaveSettingUseCase
 import com.cresoty.catpospoint.domain.usecase.IsCustomersUseCase
 import com.cresoty.catpospoint.domain.usecase.UpsertCustomerPointUseCase
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
+import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.model.enums.PointQuickInputType
+import com.cresoty.catpospoint.model.enums.PointUseSource
 import com.cresoty.catpospoint.model.interfaces.Dialogs
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.state.CustomerState
@@ -120,7 +122,6 @@ class MainViewModel @Inject constructor(
     private var transactionTime: String = ""
     private var transactionMethod: String = ""
     private var transactionUniqueNumber: String = ""   //거래고유번호
-    private val _isCatUsePointFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)  // CAT|006 포인트 사용 플로우 여부
 
     val configState = configRepo.configState
 
@@ -207,12 +208,10 @@ class MainViewModel @Inject constructor(
     val mainState: StateFlow<MainState> = combine(
         _pointDeltaStep,
         _paymentAmount,
-        _isCatUsePointFlow,
-    ) { pointDeltaStep, paymentAmount, isCatUsePointFlow ->
+    ) { pointDeltaStep, paymentAmount ->
         MainState(
             pointDeltaStep = pointDeltaStep,
             paymentAmount = paymentAmount,
-            isCatUsePointFlow = isCatUsePointFlow
         )
     }.stateIn(
         scope = viewModelScope,
@@ -291,14 +290,25 @@ class MainViewModel @Inject constructor(
             PadAction.RequestPointBalanceCheck -> requestPointBalanceCheck()
             PadAction.RequestCustomerVerify -> {}
             PadAction.SendToTerminalPointUse -> {
-                if (_isCatUsePointFlow.value) sendToCATUsePointResult()
-                else sendToTerminalUsePoint()
+                val source = (_pointDeltaStep.value as? PointDeltaProcess.POINT_USE_AMOUNT_INPUT)?.source
+                when (source) {
+                    PointUseSource.CAT -> sendToCATUsePointResult()
+                    PointUseSource.TERMINAL -> sendToTerminalUsePoint()
+                    PointUseSource.MANUAL, null -> {}
+                }
             }
             PadAction.RequestExpectSaveAmount -> checkExpectPointAmount(emptyList())
             PadAction.SendToCATCustomerInfo -> sendToCATCustomerInfo()
             PadAction.SendToCATPhoneNumber -> sendToCATPhoneNumber()
             PadAction.SendCATFail -> sendCATFail()
+            PadAction.OnClickPointBalance -> getPointBalance()
         }
+    }
+
+    private fun getPointBalance(){
+        //1.고객 번호 입력 화면(고객 조회)
+        updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM(PointUseSource.MANUAL))
+
     }
 
     /**
@@ -344,7 +354,6 @@ class MainViewModel @Inject constructor(
                 updatePointDeltaStep(PointDeltaProcess.REQUEST_CST)
             }
             CATPOS_DISCONNECT ->{
-                _isCatUsePointFlow.update { false }
                 updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
             }
 
@@ -500,9 +509,8 @@ class MainViewModel @Inject constructor(
         transactionDate = dateTime.safeSubString(0, 8)
         transactionTime = dateTime.safeSubString(8)
 
-        _isCatUsePointFlow.update { true }
         _paymentAmount.update { amount.toString() }
-        updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
+        updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM(PointUseSource.CAT))
     }
 
     private fun sendToCATCustomerInfo() {
@@ -857,6 +865,8 @@ class MainViewModel @Inject constructor(
      *
      */
     private fun requestPointBalanceCheck() {
+        val source = (_pointDeltaStep.value as? PointDeltaProcess.POINT_USE_PHONE_NUM)?.source
+            ?: PointUseSource.MANUAL
         viewModelScope.launch {
             val phone = customerState.value.phoneNumber
             getPointBalanceUseCase(
@@ -868,6 +878,21 @@ class MainViewModel @Inject constructor(
                         val balance = resource.data.pointBalance
                         _customerCode.update { resource.data.customerCode }
                         _pointBalance.update { balance }
+
+                        if (source == PointUseSource.MANUAL) {
+                            updatePointDeltaStep(
+                                PointDeltaProcess.POINT_BALANCE_RESULT(
+                                    ResultContract.State(
+                                        subTitle = "${configState.value.storeName}\n현재 보유하고 있는 포인트입니다.",
+                                        pointTitle = "보유 포인트",
+                                        balancePoint = balance.toIntOrNull() ?: 0,
+                                        timeOut = configState.value.timeout,
+                                    )
+                                )
+                            )
+                            return@collect
+                        }
+
                         val balanceAmount = balance.toIntOrNull() ?: 0
                         val isShortage = balanceAmount == 0 ||
                                 (configState.value.isMinPointEnabled && balanceAmount < configState.value.minPoint)
@@ -875,8 +900,8 @@ class MainViewModel @Inject constructor(
                             updatePointDeltaStep(PointDeltaProcess.POINT_USE_PROC_SHORTAGE_FAIL)
                         } else {
                             val isVerify = configState.value.isIdVerify
-                            if (isVerify) updatePointDeltaStep(PointDeltaProcess.POINT_USE_VERIFY_NUM)
-                            else updatePointDeltaStep(PointDeltaProcess.POINT_USE_AMOUNT_INPUT)
+                            if (isVerify) updatePointDeltaStep(PointDeltaProcess.POINT_USE_VERIFY_NUM(source))
+                            else updatePointDeltaStep(PointDeltaProcess.POINT_USE_AMOUNT_INPUT(source))
                         }
                     }
 
@@ -919,12 +944,11 @@ class MainViewModel @Inject constructor(
             val otc = list[3].toIntOrNull() ?: 0
             val vat = list[4].toIntOrNull() ?: 0
 
-            _isCatUsePointFlow.update { false }  // 단말기 포인트 사용 플로우이므로 CAT 플로우 플래그 초기화
             _paymentAmount.update {
                 (otc + vat).toString()
             }
 
-            updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM)
+            updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM(PointUseSource.TERMINAL))
         }
     }
 
@@ -1023,7 +1047,7 @@ class MainViewModel @Inject constructor(
         }
 
         if (step == PointDeltaProcess.POINT_SAVE_PHONE_NUM ||
-            step == PointDeltaProcess.POINT_USE_PHONE_NUM ||
+            step is PointDeltaProcess.POINT_USE_PHONE_NUM ||
             step == PointDeltaProcess.REQUEST_CST ||
             step == PointDeltaProcess.REQUEST_NUM
         ) {
@@ -1082,29 +1106,29 @@ class MainViewModel @Inject constructor(
      */
     private fun updateInputNumber(input: String) {
         val step = _pointDeltaStep.value
-        when (step) {
-            PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.REQUEST_CST,
-            PointDeltaProcess.REQUEST_NUM -> {
+        when {
+            step == PointDeltaProcess.POINT_SAVE_PHONE_NUM ||
+            step is PointDeltaProcess.POINT_USE_PHONE_NUM ||
+            step == PointDeltaProcess.REQUEST_CST ||
+            step == PointDeltaProcess.REQUEST_NUM -> {
                 var current = _phoneNumber.value
                 if (current.length <= 10) current += input
 
                 _phoneNumber.update { current }
 
-                if ((step == PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.REQUEST_CST) && current.length == 11) {
+                if ((step is PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.REQUEST_CST) && current.length == 11) {
                     checkCustomerExist(current)
                 }
             }
 
-            PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
+            step is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 var current = _verifyNumber.value
                 if (current.length <= 5) current += input
 
                 _verifyNumber.update { current }
             }
 
-            PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+            step is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 var current = _pointDelta.value
                 val payAmount = _paymentAmount.value.toIntOrMax()
                 val balance = _pointBalance.value.toIntOrMax()
@@ -1157,25 +1181,25 @@ class MainViewModel @Inject constructor(
      */
     private fun deleteNumberLast() {
         val step = _pointDeltaStep.value
-        when (step) {
-            PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.REQUEST_CST,
-            PointDeltaProcess.REQUEST_NUM -> {
+        when {
+            step == PointDeltaProcess.POINT_SAVE_PHONE_NUM ||
+            step is PointDeltaProcess.POINT_USE_PHONE_NUM ||
+            step == PointDeltaProcess.REQUEST_CST ||
+            step == PointDeltaProcess.REQUEST_NUM -> {
                 val current = _phoneNumber.value
                 _phoneNumber.update {
                     current.dropLast(1)
                 }
             }
 
-            PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
+            step is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 val current = _verifyNumber.value
                 _verifyNumber.update {
                     current.dropLast(1)
                 }
             }
 
-            PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+            step is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 val current = _pointDelta.value
                 _pointDelta.update {
                     current.dropLast(1)
@@ -1193,23 +1217,23 @@ class MainViewModel @Inject constructor(
      */
     private fun deleteAllPhoneNumber() {
         val step = _pointDeltaStep.value
-        when (step) {
-            PointDeltaProcess.POINT_SAVE_PHONE_NUM,
-            PointDeltaProcess.POINT_USE_PHONE_NUM,
-            PointDeltaProcess.REQUEST_CST,
-            PointDeltaProcess.REQUEST_NUM -> {
+        when {
+            step == PointDeltaProcess.POINT_SAVE_PHONE_NUM ||
+            step is PointDeltaProcess.POINT_USE_PHONE_NUM ||
+            step == PointDeltaProcess.REQUEST_CST ||
+            step == PointDeltaProcess.REQUEST_NUM -> {
                 _phoneNumber.update {
                     ""
                 }
             }
 
-            PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
+            step is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
                 _verifyNumber.update {
                     ""
                 }
             }
 
-            PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+            step is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
                 _pointDelta.update {
                     ""
                 }
