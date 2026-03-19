@@ -449,6 +449,7 @@ private fun CustomPreview(
         }
         Spacer(Modifier.weight(1f))
         PointBalanceButton { controller.dispatch(PadAction.OnClickPointBalance) }
+        Spacer(Modifier.size(50.dpx))
         PreviewCloseButton(
             theme = MainThemes.Theme_CUSTOM,
             isPreview = preSubTitle == null
