@@ -618,9 +618,10 @@ class MainViewModel @Inject constructor(
     private fun sendToCATUsePointResult() {
         val customerCode = customerState.value.customerCode
         val useAmount = _pointDelta.value.toIntOrNull() ?: 0
+        val pointBalance = _pointBalance.value.toIntOrNull() ?: 0
         val remaining = (_pointBalance.value.toIntOrNull() ?: 0) - useAmount
 
-        val responseBytes = "OK|$customerCode|$remaining|$useAmount\r\n".toByteArray(Charsets.UTF_8)
+        val responseBytes = "OK|$customerCode|$pointBalance|$useAmount\r\n".toByteArray(Charsets.UTF_8)
         socketManager.send(responseBytes) { written ->
             Log.d("SocketDebug", "캣포스 포인트사용 응답 전송 완료: $written bytes, 내용: '$responseBytes'")
         }
