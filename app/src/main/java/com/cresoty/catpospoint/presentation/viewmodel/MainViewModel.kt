@@ -1106,8 +1106,21 @@ class MainViewModel @Inject constructor(
             _phoneNumber.update { "010" }
         }
 
+        // 전화번호 입력 화면 전환 시 HTTP 연결 미리 수립 (checkCustomerExist 지연 방지)
+        if (step is PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.REQUEST_CST) {
+            warmupConnection()
+        }
+
         _pointDeltaStep.update {
             step
+        }
+    }
+
+    private fun warmupConnection() {
+        viewModelScope.launch {
+            runCatching {
+                getPointSaveSettingUseCase(configState.value.bizNo).collect {}
+            }
         }
     }
 
