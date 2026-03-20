@@ -44,7 +44,10 @@ import com.cresoty.catpospoint.presentation.theme.notice
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.white
 import com.cresoty.catpospoint.view.controller.LocalController
+import com.cresoty.catpospoint.model.event.AppEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 @Composable
 fun InputNumberUsePoint(
@@ -158,6 +161,7 @@ private fun InputNumberUsePointPreview() {
         override val pointState = MutableStateFlow(PointState())
         override val customerState = MutableStateFlow(CustomerState(phoneNumber = "010123456"))
         override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
+        override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
         override fun dispatch(action: PadAction) {}
     }
     CatposPointTheme {
@@ -190,6 +194,7 @@ private fun InputNumberUsePointNotFoundPreview() {
             )
         )
         override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
+        override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
 
         override fun dispatch(action: PadAction) {}
     }

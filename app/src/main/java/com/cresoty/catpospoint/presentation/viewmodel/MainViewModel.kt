@@ -27,7 +27,10 @@ import com.cresoty.catpospoint.domain.usecase.GetPointAmountSettingUseCase
 import com.cresoty.catpospoint.domain.usecase.GetPointBalanceUseCase
 import com.cresoty.catpospoint.domain.usecase.GetPointSaveSettingUseCase
 import com.cresoty.catpospoint.domain.usecase.IsCustomersUseCase
+import com.cresoty.catpospoint.domain.usecase.StartAutoUpdateUseCase
+import com.cresoty.catpospoint.domain.usecase.StartDownloadUseCase
 import com.cresoty.catpospoint.domain.usecase.UpsertCustomerPointUseCase
+import com.cresoty.catpospoint.model.event.AppEvent
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.model.enums.PointQuickInputType
@@ -48,9 +51,12 @@ import com.cresoty.catpospoint.view.composable.list.SettingType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -68,6 +74,8 @@ class MainViewModel @Inject constructor(
     private val getPointSaveSettingUseCase: GetPointSaveSettingUseCase,
     private val getPointAmountSettingUseCase: GetPointAmountSettingUseCase,
     private val getPointBalanceUseCase: GetPointBalanceUseCase,
+    private val startAutoUpdateUseCase: StartAutoUpdateUseCase,
+    private val startDownloadUseCase: StartDownloadUseCase,
 ) : ViewModel() {
 
     private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
@@ -102,6 +110,13 @@ class MainViewModel @Inject constructor(
     // 사용자 지정 테마 이미지 (설정 다이얼로그 닫혀도 유지)
     private val _customThemeImageUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
     val customThemeImageUriState: StateFlow<Uri?> = _customThemeImageUri
+
+    // 일회성 이벤트 (UI → 플랫폼 의존 작업)
+    private val _appEvents = MutableSharedFlow<AppEvent>()
+    val appEvents: SharedFlow<AppEvent> = _appEvents.asSharedFlow()
+
+    // 버전 체크 후 확정된 다운로드 URL (유저 확인 대기 중)
+    private var pendingInstallUrl: String = ""
 
     //customerState
     private val _isExistChecking: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -237,6 +252,7 @@ class MainViewModel @Inject constructor(
         }
 
         initRequestPointSettings()
+        startAutoUpdate()
 
         // 저장된 사용자 지정 이미지 URI 복원
         viewModelScope.launch {
@@ -246,11 +262,45 @@ class MainViewModel @Inject constructor(
             }
         }
 
-        // 사업자번호 미설정 시 설정 다이얼로그 자동 표시
+    }
+
+    private fun startAutoUpdate() {
         viewModelScope.launch {
-            val savedBizNo = configRepo.getValue(ConfigKey.BIZ_NO, "")
-            if (savedBizNo.isEmpty()) {
-                _dialog.update { Dialogs.Setting }
+            startAutoUpdateUseCase().collect { resource ->
+                when (resource) {
+                    is DataResource.Loading -> Unit
+                    is DataResource.Success -> {
+                        pendingInstallUrl = resource.data
+                        _dialog.update { Dialogs.UpdateBlocked }
+                    }
+                    is DataResource.Error -> Unit
+                }
+            }
+            // 업데이트 불필요(또는 API 실패) 시에만 사업자번호 체크
+            if (_dialog.value == Dialogs.None) {
+                checkSettingDialog()
+            }
+        }
+    }
+
+    private suspend fun checkSettingDialog() {
+        val savedBizNo = configRepo.getValue(ConfigKey.BIZ_NO, "")
+        if (savedBizNo.isEmpty()) {
+            _dialog.update { Dialogs.Setting }
+        }
+    }
+
+    private fun startDownload() {
+        viewModelScope.launch {
+            startDownloadUseCase(pendingInstallUrl).collect { resource ->
+                when (resource) {
+                    is DataResource.Loading -> _dialog.update { Dialogs.UpdateRequired }
+                    is DataResource.Success -> {
+                        _dialog.update { Dialogs.None }
+                        _appEvents.emit(AppEvent.InstallApk(resource.data))
+                    }
+                    is DataResource.Error -> _dialog.update { Dialogs.UpdateBlocked }
+                }
             }
         }
     }
@@ -302,6 +352,7 @@ class MainViewModel @Inject constructor(
             PadAction.SendToCATPhoneNumber -> sendToCATPhoneNumber()
             PadAction.SendCATFail -> sendCATFail()
             PadAction.OnClickPointBalance -> getPointBalance()
+            PadAction.OnAcceptUpdate -> startDownload()
         }
     }
 

@@ -51,7 +51,10 @@ import com.cresoty.catpospoint.presentation.theme.success
 import com.cresoty.catpospoint.presentation.theme.transparent
 import com.cresoty.catpospoint.toDecimalString
 import com.cresoty.catpospoint.view.controller.LocalController
+import com.cresoty.catpospoint.model.event.AppEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 enum class PhoneButtonType(val number: String?, val fontSize: Float) {
     NUMBER_1("1", 50f),
@@ -424,6 +427,7 @@ private fun NumberPadPhoneNumPreview() {
         override val pointState = MutableStateFlow(PointState())
         override val customerState = MutableStateFlow(CustomerState(phoneNumber = "01012"))
         override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
+        override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
         override fun dispatch(action: PadAction) {}
     }
     CatposPointTheme {
@@ -453,6 +457,7 @@ private fun NumberPadAmountInputPreview() {
         override val pointState = MutableStateFlow(PointState(pointBalance = "5,000"))
         override val customerState = MutableStateFlow(CustomerState())
         override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
+        override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
         override fun dispatch(action: PadAction) {}
     }
     CatposPointTheme {

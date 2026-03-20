@@ -1,6 +1,14 @@
+# 빌드 결과물
 *.iml
 .gradle
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# IDE 로컬 설정 (머신별로 다름)
 /local.properties
+local.properties
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -8,8 +16,8 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+
+# 서명 키 및 비밀번호 (절대 커밋 금지)
+*.jks
+*.keystore
+keystore.properties

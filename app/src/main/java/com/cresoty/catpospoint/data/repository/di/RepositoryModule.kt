@@ -1,7 +1,9 @@
 package com.cresoty.catpospoint.data.repository.di
 
 import com.cresoty.catpospoint.data.repository.impl.PointRepositoryImpl
+import com.cresoty.catpospoint.data.repository.impl.UpdateRepositoryImpl
 import com.cresoty.catpospoint.domain.repository.PointRepository
+import com.cresoty.catpospoint.domain.repository.UpdateRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -16,4 +18,8 @@ internal abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindPointRepository(repo: PointRepositoryImpl): PointRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUpdateRepository(repo: UpdateRepositoryImpl): UpdateRepository
 }

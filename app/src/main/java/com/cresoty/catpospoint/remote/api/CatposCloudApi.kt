@@ -7,13 +7,21 @@ import com.cresoty.catpospoint.remote.model.response.EstimatePointResponse
 import com.cresoty.catpospoint.remote.model.response.PointAmountSettingResponse
 import com.cresoty.catpospoint.remote.model.response.PointBalanceResponse
 import com.cresoty.catpospoint.remote.model.response.PointSaveSettingResponse
+import com.cresoty.catpospoint.remote.model.response.AppVersionResponse
 import com.cresoty.catpospoint.remote.model.response.UpsertCustomerPointResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface CatposCloudApi {
+
+    @GET("api/v1/app-support/{appType}/version")
+    suspend fun getAppVersion(
+        @Path("appType") appType: String
+    ): AppVersionResponse
+
 
 
     @GET("api/point/settings")

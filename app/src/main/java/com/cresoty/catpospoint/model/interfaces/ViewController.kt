@@ -1,12 +1,14 @@
 package com.cresoty.catpospoint.model.interfaces
 
 import android.net.Uri
+import com.cresoty.catpospoint.model.event.AppEvent
 import com.cresoty.catpospoint.model.state.ConfigState
 import com.cresoty.catpospoint.model.state.CustomerState
 import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.MainState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface ViewController {
@@ -17,6 +19,7 @@ interface ViewController {
     val pointState: StateFlow<PointState>
     val customerState: StateFlow<CustomerState>
     val customThemeImageUriState: StateFlow<Uri?>
+    val appEvents: SharedFlow<AppEvent>
 
     fun dispatch(action: PadAction)
 }

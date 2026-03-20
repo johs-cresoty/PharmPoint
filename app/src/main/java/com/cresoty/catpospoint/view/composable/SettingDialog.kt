@@ -45,7 +45,10 @@ import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.sub01
 import com.cresoty.catpospoint.presentation.theme.white
+import com.cresoty.catpospoint.model.event.AppEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -177,6 +180,7 @@ private val previewController = object : ViewController {
     override val pointState: StateFlow<PointState> = MutableStateFlow(PointState())
     override val customerState: StateFlow<CustomerState> = MutableStateFlow(CustomerState())
     override val customThemeImageUriState: StateFlow<Uri?> = MutableStateFlow(null)
+    override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
     override fun dispatch(action: PadAction) {}
 }
 

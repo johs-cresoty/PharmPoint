@@ -40,4 +40,6 @@ sealed interface PadAction {
     data object SendToCATPhoneNumber: PadAction
     data object SendCATFail : PadAction
 
+    data object OnAcceptUpdate : PadAction
+
 }

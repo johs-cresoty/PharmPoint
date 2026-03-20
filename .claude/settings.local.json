@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(done)",
+      "Bash(xxd:*)",
+      "Bash(rm:*)",
+      "Bash(xargs grep:*)",
+      "Bash(xargs cat:*)"
     ]
   }
 }

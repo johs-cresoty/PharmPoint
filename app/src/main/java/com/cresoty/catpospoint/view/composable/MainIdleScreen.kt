@@ -55,7 +55,10 @@ import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.white
 import com.cresoty.catpospoint.view.controller.LocalController
+import com.cresoty.catpospoint.model.event.AppEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 @Composable
 fun MainIdleScreen(isPreview: Boolean = false) {
@@ -520,6 +523,7 @@ private fun previewController(themeIndex: Int = 0) = object : ViewController {
     override val pointState = MutableStateFlow(PointState())
     override val customerState = MutableStateFlow(CustomerState())
     override val customThemeImageUriState = MutableStateFlow<Uri?>(null)
+    override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
     override fun dispatch(action: PadAction) = Unit
 }
 

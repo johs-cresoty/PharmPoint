@@ -1,13 +1,16 @@
 package com.cresoty.catpospoint.view.controller
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cresoty.catpospoint.model.event.AppEvent
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
 import com.cresoty.catpospoint.model.interfaces.ViewController
 import com.cresoty.catpospoint.model.interfaces.PadAction
@@ -23,6 +26,7 @@ import com.cresoty.catpospoint.ui.result.ResultScreen
 import com.cresoty.catpospoint.view.composable.MainIdleScreen
 import com.cresoty.catpospoint.view.composable.PointDeltaProcDone
 import com.cresoty.catpospoint.view.composable.RequestPointDelta
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalController = staticCompositionLocalOf<ViewController> {
@@ -41,6 +45,7 @@ fun MainController(viewModel: MainViewModel, context: Context) {
             override val pointState: StateFlow<PointState> = viewModel.pointState
             override val customerState: StateFlow<CustomerState> = viewModel.customerState
             override val customThemeImageUriState: StateFlow<Uri?> = viewModel.customThemeImageUriState
+            override val appEvents: SharedFlow<AppEvent> = viewModel.appEvents
 
             override fun dispatch(action: PadAction) = viewModel.dispatch(action)
 
@@ -79,6 +84,19 @@ fun MainController(viewModel: MainViewModel, context: Context) {
 
 
         DialogController()
+
+        LaunchedEffect(Unit) {
+            controller.appEvents.collect { event ->
+                when (event) {
+                    is AppEvent.InstallApk -> context.startActivity(
+                        Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(event.uri, "application/vnd.android.package-archive")
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        }
+                    )
+                }
+            }
+        }
     }
 
 

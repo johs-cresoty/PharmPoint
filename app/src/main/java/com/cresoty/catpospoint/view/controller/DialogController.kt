@@ -28,6 +28,8 @@ import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.view.composable.AdminLoginDialog
 import com.cresoty.catpospoint.view.composable.MainIdleScreen
 import com.cresoty.catpospoint.view.composable.SettingDialog
+import com.cresoty.catpospoint.view.composable.UpdateBlockedDialog
+import com.cresoty.catpospoint.view.composable.UpdateRequiredDialog
 
 @Composable
 fun DialogController() {
@@ -40,6 +42,8 @@ fun DialogController() {
         Dialogs.None -> Unit
         Dialogs.Setting -> SettingDialog()
         Dialogs.InputPassword -> AdminLoginDialog()
+        Dialogs.UpdateRequired -> UpdateRequiredDialog()
+        Dialogs.UpdateBlocked -> UpdateBlockedDialog()
     }
 
     if (preview.isHideDialog) {
