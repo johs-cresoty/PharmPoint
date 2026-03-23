@@ -58,6 +58,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -920,6 +921,10 @@ class MainViewModel @Inject constructor(
         val source = (_pointDeltaStep.value as? PointDeltaProcess.POINT_USE_PHONE_NUM)?.source
             ?: PointUseSource.MANUAL
         viewModelScope.launch {
+            // 회원 조회 중이면 완료될 때까지 대기
+            _isExistChecking.first { !it }
+            if (!_isExist.value) return@launch
+
             val phone = customerState.value.phoneNumber
             getPointBalanceUseCase(
                 taxNo = configState.value.bizNo,
