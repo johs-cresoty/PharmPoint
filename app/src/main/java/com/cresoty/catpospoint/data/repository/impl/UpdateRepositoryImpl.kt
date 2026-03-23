@@ -7,12 +7,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Environment
-import android.util.Log
 import androidx.core.net.toUri
 import com.cresoty.catpospoint.BuildConfig
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.domain.repository.UpdateRepository
 import com.cresoty.catpospoint.remote.api.CatposCloudApi
+import com.cresoty.catpospoint.remote.model.request.AppVersionCheckRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -26,11 +26,15 @@ internal class UpdateRepositoryImpl @Inject constructor(
     private val apiService: CatposCloudApi
 ) : UpdateRepository {
 
-    // 버전 체크 → 업데이트 필요하면 installUrl emit, 불필요하면 완료
+    // 버전 체크 → 강제 업데이트 필요하면 installUrl emit, 불필요하면 완료
     override fun checkForUpdate(): Flow<DataResource<String>> = flow {
         emit(DataResource.Loading)
-        val versionInfo = apiService.getAppVersion(APP_TYPE)
-        if (isUpdateRequired(BuildConfig.VERSION_NAME, versionInfo.latestVersion)) {
+        val request = AppVersionCheckRequest(
+            currentVersionCode = BuildConfig.VERSION_CODE,
+            platform = PLATFORM
+        )
+        val versionInfo = apiService.checkAppVersion(request)
+        if (versionInfo.forceUpdate) {
             emit(DataResource.Success(versionInfo.installUrl))
         }
     }.catch { emit(DataResource.Error(it)) }
@@ -66,22 +70,7 @@ internal class UpdateRepositoryImpl @Inject constructor(
         awaitClose { context.unregisterReceiver(receiver) }
     }
 
-    // current < min 이면 업데이트 필요
-    private fun isUpdateRequired(current: String, min: String): Boolean {
-        Log.d("jhs", "현재 버전:$current")
-        val c = current.split(".").map { it.toIntOrNull() ?: 0 }
-        val m = min.split(".").map { it.toIntOrNull() ?: 0 }
-        val len = maxOf(c.size, m.size)
-        for (i in 0 until len) {
-            val cv = c.getOrElse(i) { 0 }
-            val mv = m.getOrElse(i) { 0 }
-            if (cv < mv) return true
-            if (cv > mv) return false
-        }
-        return false
-    }
-
     companion object {
-        private const val APP_TYPE = "catpos"
+        private const val PLATFORM = "PharmPoint"
     }
 }

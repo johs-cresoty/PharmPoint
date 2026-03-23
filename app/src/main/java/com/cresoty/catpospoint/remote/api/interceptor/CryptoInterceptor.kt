@@ -14,8 +14,19 @@ import org.json.JSONObject
 
 class CryptoInterceptor : Interceptor {
 
+    companion object {
+        private val NO_ENCRYPT_PATHS = setOf(
+            "/api/v1/app-support/version/check"
+        )
+    }
+
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
+
+        if (originalRequest.url.encodedPath in NO_ENCRYPT_PATHS) {
+            return chain.proceed(originalRequest)
+        }
 
         val newRequest = when (originalRequest.method) {
             "GET", "DELETE" -> encryptGetRequest(originalRequest)
