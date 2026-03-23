@@ -71,9 +71,8 @@ jobs:
         run: |
           MESSAGE_TITLE="${{ github.event.inputs.message_title || '업데이트 안내' }}"
           MESSAGE="${{ github.event.inputs.message || '안정적인 이용을 위해 최신 버전으로 업데이트해 주세요.' }}"
-          curl -X POST ${{ secrets.API_BASE_URL }}/api/app/version \
+          curl -f -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
             -d "{
               \"platform\": \"PharmPoint\",
               \"versionCode\": ${{ steps.version.outputs.code }},

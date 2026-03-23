@@ -6,7 +6,10 @@
       "Bash(xxd:*)",
       "Bash(rm:*)",
       "Bash(xargs grep:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(keytool.exe:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(powershell.exe:*)"
     ]
   }
 }
