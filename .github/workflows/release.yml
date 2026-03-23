@@ -65,7 +65,7 @@ jobs:
       - name: Upload APK to S3
         run: |
           aws s3 cp app/build/outputs/apk/release/app-release.apk \
-            s3://${{ secrets.S3_BUCKET_NAME }}/catpos/catpos-v${{ steps.version.outputs.code }}.apk
+            s3://${{ secrets.S3_BUCKET_NAME }}/pharmPoint/pharmPoint-v${{ steps.version.outputs.code }}.apk
 
       - name: Register version to server
         run: |
