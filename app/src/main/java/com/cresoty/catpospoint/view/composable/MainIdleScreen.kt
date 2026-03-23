@@ -287,7 +287,7 @@ private fun ColumnE(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.size(30.dpx))
-        PointBalanceButton { controller.dispatch(PadAction.OnClickPointBalance) }
+        PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
 
         Spacer(modifier = Modifier.weight(1f))
         PreviewCloseButton(
@@ -451,7 +451,7 @@ private fun CustomPreview(
 
         }
         Spacer(Modifier.weight(1f))
-        PointBalanceButton { controller.dispatch(PadAction.OnClickPointBalance) }
+        PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
         Spacer(Modifier.size(50.dpx))
         PreviewCloseButton(
             theme = MainThemes.Theme_CUSTOM,
