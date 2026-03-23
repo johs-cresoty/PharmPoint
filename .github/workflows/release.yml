@@ -71,7 +71,7 @@ jobs:
         run: |
           MESSAGE_TITLE="${{ github.event.inputs.message_title || '업데이트 안내' }}"
           MESSAGE="${{ github.event.inputs.message || '안정적인 이용을 위해 최신 버전으로 업데이트해 주세요.' }}"
-          curl -f -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
+          RESPONSE=$(curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
             -H "Content-Type: application/json" \
             -d "{
               \"platform\": \"PharmPoint\",
@@ -79,4 +79,9 @@ jobs:
               \"versionName\": \"${{ steps.version.outputs.name }}\",
               \"messageTitle\": \"$MESSAGE_TITLE\",
               \"message\": \"$MESSAGE\"
-            }"
+            }")
+          echo "Response: $RESPONSE"
+          if echo "$RESPONSE" | grep -q '"CODE"'; then
+            echo "서버 오류: $RESPONSE"
+            exit 1
+          fi
