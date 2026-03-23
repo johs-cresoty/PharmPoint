@@ -20,9 +20,19 @@ android {
         testInstrumentationRunner = "com.cresoty.catpospoin.HiltTestRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "../my-release-key.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "cadev82695"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "my-key-alias"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "cadev82695"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -61,7 +71,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-    implementation(files("libs\\commons-codec-1.4.jar"))
+    implementation(files("libs/commons-codec-1.4.jar"))
 
     implementation("androidx.datastore:datastore-preferences:$datastore_version")
 
