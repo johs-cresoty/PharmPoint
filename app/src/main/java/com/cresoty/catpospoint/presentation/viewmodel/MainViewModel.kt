@@ -223,13 +223,17 @@ class MainViewModel @Inject constructor(
         initialValue = PointState()
     )
 
+    private val _isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     val mainState: StateFlow<MainState> = combine(
         _pointDeltaStep,
         _paymentAmount,
-    ) { pointDeltaStep, paymentAmount ->
+        _isLoading,
+    ) { pointDeltaStep, paymentAmount, isLoading ->
         MainState(
             pointDeltaStep = pointDeltaStep,
             paymentAmount = paymentAmount,
+            isLoading = isLoading,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -934,14 +938,17 @@ class MainViewModel @Inject constructor(
                 )
             }
 
+            _isLoading.update { true }
             upsertCustomerPointUseCase(command).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> {
+                        _isLoading.update { false }
                         _pointBalance.update { resource.data ?: "0" }
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PROC_DONE)
                     }
 
                     is DataResource.Error -> {
+                        _isLoading.update { false }
                         Log.d("jhs", "에러: ${resource.throwable.message}")
                         // 기존 NetworkManager의 safeNetworkCall이 delegate?.onNetworkError 호출하던 부분
                         // 필요하다면 에러 state 추가
@@ -966,12 +973,14 @@ class MainViewModel @Inject constructor(
             if (!_isExist.value) return@launch
 
             val phone = customerState.value.phoneNumber
+            _isLoading.update { true }
             getPointBalanceUseCase(
                 taxNo = configState.value.bizNo,
                 customerPhone = phone
             ).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> {
+                        _isLoading.update { false }
                         val balance = resource.data.pointBalance
                         _customerCode.update { resource.data.customerCode }
                         _pointBalance.update { balance }
@@ -1003,6 +1012,7 @@ class MainViewModel @Inject constructor(
                     }
 
                     is DataResource.Error -> {
+                        _isLoading.update { false }
                         Log.d("jhs", "getPointBalance error: ${resource.throwable.message}")
                     }
 

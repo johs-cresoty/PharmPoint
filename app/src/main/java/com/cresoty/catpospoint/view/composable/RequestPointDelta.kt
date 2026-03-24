@@ -1,6 +1,7 @@
 package com.cresoty.catpospoint.view.composable
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import com.cresoty.catpospoint.presentation.theme.notice
 import com.cresoty.catpospoint.presentation.theme.white
 import com.cresoty.catpospoint.toDecimalString
 import com.cresoty.catpospoint.view.composable.common.ConfirmButtonField
+import com.cresoty.catpospoint.view.composable.common.LoadingOverlay
 import com.cresoty.catpospoint.view.composable.inpunumber.InputNumberPointAmount
 import com.cresoty.catpospoint.view.composable.inpunumber.InputNumberSavePoint
 import com.cresoty.catpospoint.view.composable.inpunumber.InputNumberUsePoint
@@ -39,72 +41,74 @@ fun RequestPointDelta(step: PointDeltaProcess) {
         if (isPersonalInfoUse) R.drawable.icon_checkbox_checked else R.drawable.icon_checkbox_unchecked
     val checkboxColor = if (isPersonalInfoUse) main01 else notice
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(white)
-            .padding(top = 45f.dpx, start = 40f.dpx, end = 40f.dpx)
-    ) {
-        when (step) {
-            PointDeltaProcess.POINT_SAVE_PHONE_NUM -> {
-                InputNumberSavePoint(
-                    modifier = Modifier.weight(1f),
-                    storeName = storeName,
-                    paymentAmount = paymentAmount,
-                )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(white)
+                .padding(top = 45f.dpx, start = 40f.dpx, end = 40f.dpx)
+        ) {
+            when (step) {
+                PointDeltaProcess.POINT_SAVE_PHONE_NUM -> {
+                    InputNumberSavePoint(
+                        modifier = Modifier.weight(1f),
+                        storeName = storeName,
+                        paymentAmount = paymentAmount,
+                    )
+                }
+
+                is PointDeltaProcess.POINT_USE_PHONE_NUM -> {
+                    InputNumberUsePoint(
+                        modifier = Modifier.weight(1f),
+                        storeName = storeName,
+                        paymentAmount = paymentAmount,
+                        source = step.source,
+                    )
+                }
+
+                is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
+                    InputNumberVerify(
+                        modifier = Modifier.weight(1f),
+                        storeName = storeName,
+                        paymentAmount = paymentAmount
+                    )
+                }
+
+                is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
+                    InputNumberPointAmount(
+                        modifier = Modifier.weight(1f),
+                        storeName = storeName,
+                        paymentAmount = paymentAmount
+                    )
+                }
+
+                PointDeltaProcess.REQUEST_CST -> {
+                    InputCustomerPhoneNumber(
+                        modifier = Modifier.weight(1f),
+                        storeName = storeName,
+                    )
+                }
+
+                PointDeltaProcess.REQUEST_NUM -> {
+                    InputCustomerPhoneNumber(
+                        modifier = Modifier.weight(1f),
+                        storeName = storeName,
+                    )
+                }
+
+                else -> {}
             }
 
-            is PointDeltaProcess.POINT_USE_PHONE_NUM -> {
-                InputNumberUsePoint(
-                    modifier = Modifier.weight(1f),
-                    storeName = storeName,
-                    paymentAmount = paymentAmount,
-                    source = step.source,
-                )
-            }
+            NumberPad(
+                checkbox = checkbox,
+                checkboxColor = checkboxColor,
+                step = step,
+            )
 
-            is PointDeltaProcess.POINT_USE_VERIFY_NUM -> {
-                InputNumberVerify(
-                    modifier = Modifier.weight(1f),
-                    storeName = storeName,
-                    paymentAmount = paymentAmount
-                )
-            }
-
-            is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
-                InputNumberPointAmount(
-                    modifier = Modifier.weight(1f),
-                    storeName = storeName,
-                    paymentAmount = paymentAmount
-                )
-            }
-
-            PointDeltaProcess.REQUEST_CST -> {
-                InputCustomerPhoneNumber(
-                    modifier = Modifier.weight(1f),
-                    storeName = storeName,
-                )
-
-            }
-
-            PointDeltaProcess.REQUEST_NUM -> {
-                InputCustomerPhoneNumber(
-                    modifier = Modifier.weight(1f),
-                    storeName = storeName,
-                )
-
-            }
-
-            else -> {}
+            ConfirmButtonField()
         }
 
-        NumberPad(
-            checkbox = checkbox,
-            checkboxColor = checkboxColor,
-            step = step,
-        )
-
-        ConfirmButtonField()
+        LoadingOverlay(isVisible = main.isLoading)
     }
 
 }

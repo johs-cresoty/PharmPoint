@@ -7,4 +7,5 @@ data class MainState (
 //    var theme : MainThemes = MainThemes.Theme_A,
     var pointDeltaStep : PointDeltaProcess = PointDeltaProcess.NONE,
     var paymentAmount : String = "",
+    var isLoading : Boolean = false,
 )

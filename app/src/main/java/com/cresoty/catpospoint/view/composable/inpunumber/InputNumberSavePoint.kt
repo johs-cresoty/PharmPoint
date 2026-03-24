@@ -38,11 +38,11 @@ import com.cresoty.catpospoint.toDecimalString
 import com.cresoty.catpospoint.presentation.component.BackStepButton
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.view.controller.LocalController
+import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.common02
+import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.main02
 import com.cresoty.catpospoint.presentation.theme.main04
-import com.cresoty.catpospoint.presentation.theme.common01
-import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.transparent
 import com.cresoty.catpospoint.presentation.theme.white
