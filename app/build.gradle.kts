@@ -14,8 +14,8 @@ android {
         applicationId = "com.cresoty.catpospoin"
         minSdk = 34
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "com.cresoty.catpospoin.HiltTestRunner"
     }
@@ -24,7 +24,7 @@ android {
         create("release") {
             storeFile = file(System.getenv("KEYSTORE_PATH") ?: "../my-release-key.jks")
             storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "cadev82695"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "my-key-alias"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "farm point"
             keyPassword = System.getenv("KEY_PASSWORD") ?: "cadev82695"
         }
     }

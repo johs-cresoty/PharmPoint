@@ -47,7 +47,7 @@ internal class UpdateRepositoryImpl @Inject constructor(
         val request = DownloadManager.Request(installUrl.toUri())
             .setMimeType("application/vnd.android.package-archive")
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, "catpos_update.apk")
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "catpos_update.apk")
         val downloadId = dm.enqueue(request)
 
         val receiver = object : BroadcastReceiver() {
