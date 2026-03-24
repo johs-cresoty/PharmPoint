@@ -1234,6 +1234,10 @@ class MainViewModel @Inject constructor(
                 var current = _phoneNumber.value
                 if (current.length <= 10) current += input
 
+                if ((step is PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.REQUEST_CST) && current.length == 11) {
+                    _isExistChecking.update { true }
+                }
+
                 _phoneNumber.update { current }
 
                 if ((step is PointDeltaProcess.POINT_USE_PHONE_NUM || step == PointDeltaProcess.REQUEST_CST) && current.length == 11) {

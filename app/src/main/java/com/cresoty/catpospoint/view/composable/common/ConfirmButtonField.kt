@@ -45,7 +45,7 @@ fun ConfirmButtonField() {
     val phoneNum = customer.phoneNumber
     val isClickable = when (step) {
         is PointDeltaProcess.POINT_USE_PHONE_NUM ->
-            (isCustomer || customer.isExistChecking) && isPersonalInfoUse && phoneNum.length > 10
+            isCustomer && isPersonalInfoUse && phoneNum.length > 10
 
         PointDeltaProcess.POINT_SAVE_PHONE_NUM, PointDeltaProcess.REQUEST_CST, PointDeltaProcess.REQUEST_NUM -> isPersonalInfoUse && phoneNum.length > 10
         is PointDeltaProcess.POINT_USE_VERIFY_NUM -> verifyNumber.length > 5
