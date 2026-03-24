@@ -38,6 +38,8 @@ sealed interface PadAction {
     data object RequestExpectSaveAmount : PadAction
     data object SendToCATCustomerInfo: PadAction
     data object SendToCATPhoneNumber: PadAction
+    data object SendToCATUsePoint: PadAction
+    data object SendToCATUsePointResult: PadAction
     data object SendCATFail : PadAction
 
     data object OnAcceptUpdate : PadAction

@@ -16,7 +16,7 @@ sealed class PointDeltaProcess(val isClickable: Boolean)
     //사용
     data class POINT_USE_PHONE_NUM(val source: PointUseSource) : PointDeltaProcess(false)
     data class POINT_USE_VERIFY_NUM(val source: PointUseSource) : PointDeltaProcess(false)
-    data class POINT_USE_AMOUNT_INPUT(val source: PointUseSource) : PointDeltaProcess(false)
+    data class POINT_USE_AMOUNT_INPUT(val source: PointUseSource, val withCustomer: Boolean = false) : PointDeltaProcess(false)
     data object POINT_USE_PROC_DONE : PointDeltaProcess(true)
     data object POINT_USE_PROC_SHORTAGE_FAIL : PointDeltaProcess(true)
 

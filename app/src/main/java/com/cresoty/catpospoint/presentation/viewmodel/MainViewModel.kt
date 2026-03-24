@@ -11,12 +11,14 @@ import com.cresoty.catpospoint.ConfigKey
 import com.cresoty.catpospoint.ConfigRepository
 import com.cresoty.catpospoint.PharmpayTelegram
 import com.cresoty.catpospoint.Val
+import com.cresoty.catpospoint.Val.CATPOS_CONNECT
 import com.cresoty.catpospoint.Val.CATPOS_CST
 import com.cresoty.catpospoint.Val.CATPOS_DISCONNECT
 import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT
 import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT_COMPLEX
 import com.cresoty.catpospoint.Val.CATPOS_NUM
-import com.cresoty.catpospoint.Val.CATPOS_USE_POINT
+import com.cresoty.catpospoint.Val.CATPOS_USE_POINT_NO_CUSTOMER
+import com.cresoty.catpospoint.Val.CATPOS_USE_POINT_WITH_CUSTOMER
 import com.cresoty.catpospoint.byte2String
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.domain.model.command.EstimatePointCommand
@@ -30,11 +32,10 @@ import com.cresoty.catpospoint.domain.usecase.IsCustomersUseCase
 import com.cresoty.catpospoint.domain.usecase.StartAutoUpdateUseCase
 import com.cresoty.catpospoint.domain.usecase.StartDownloadUseCase
 import com.cresoty.catpospoint.domain.usecase.UpsertCustomerPointUseCase
-import com.cresoty.catpospoint.model.event.AppEvent
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
-import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.model.enums.PointQuickInputType
 import com.cresoty.catpospoint.model.enums.PointUseSource
+import com.cresoty.catpospoint.model.event.AppEvent
 import com.cresoty.catpospoint.model.interfaces.Dialogs
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.state.CustomerState
@@ -42,6 +43,7 @@ import com.cresoty.catpospoint.model.state.MainState
 import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
+import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.safeSubString
 import com.cresoty.catpospoint.socket.SocketManager
 import com.cresoty.catpospoint.socket.protocol.CatposMessage
@@ -253,7 +255,7 @@ class MainViewModel @Inject constructor(
         }
 
         initRequestPointSettings()
-        startAutoUpdate()
+//        startAutoUpdate()
 
         // 저장된 사용자 지정 이미지 URI 복원
         viewModelScope.launch {
@@ -340,17 +342,12 @@ class MainViewModel @Inject constructor(
             PadAction.RequestSavePoint -> requestSavePoint()
             PadAction.RequestPointBalanceCheck -> requestPointBalanceCheck()
             PadAction.RequestCustomerVerify -> {}
-            PadAction.SendToTerminalPointUse -> {
-                val source = (_pointDeltaStep.value as? PointDeltaProcess.POINT_USE_AMOUNT_INPUT)?.source
-                when (source) {
-                    PointUseSource.CAT -> sendToCATUsePointResult()
-                    PointUseSource.TERMINAL -> sendToTerminalUsePoint()
-                    PointUseSource.MANUAL, null -> {}
-                }
-            }
+            PadAction.SendToTerminalPointUse -> sendToTerminalUsePoint()
+            PadAction.SendToCATUsePointResult -> sendToCATUsePointResult()
             PadAction.RequestExpectSaveAmount -> checkExpectPointAmount(emptyList())
             PadAction.SendToCATCustomerInfo -> sendToCATCustomerInfo()
             PadAction.SendToCATPhoneNumber -> sendToCATPhoneNumber()
+            PadAction.SendToCATUsePoint -> sendToCATUsePoint()
             PadAction.SendCATFail -> sendCATFail()
             PadAction.OnClickPointBalance -> getPointBalance()
             PadAction.OnAcceptUpdate -> startDownload()
@@ -398,6 +395,9 @@ class MainViewModel @Inject constructor(
 
     private fun processPcTelegram(msg: CatposMessage) {
         when (msg.command) {
+            CATPOS_CONNECT -> {
+                sendToCATConnectState()
+            }
             CATPOS_NUM -> {
                 updatePointDeltaStep(PointDeltaProcess.REQUEST_NUM)
             }
@@ -415,8 +415,11 @@ class MainViewModel @Inject constructor(
             CATPOS_EARN_POINT_COMPLEX -> {
                 processPcEarnPointComplex(msg.fields)
             }
-            CATPOS_USE_POINT -> {
+            CATPOS_USE_POINT_NO_CUSTOMER -> {
                 processPcUsePoint(msg.fields)
+            }
+            CATPOS_USE_POINT_WITH_CUSTOMER ->{
+                updatePointUseWithConsumer(msg.fields)
             }
 
             else -> {
@@ -563,6 +566,43 @@ class MainViewModel @Inject constructor(
 
         _paymentAmount.update { amount.toString() }
         updatePointDeltaStep(PointDeltaProcess.POINT_USE_PHONE_NUM(PointUseSource.CAT))
+    }
+
+
+    /**
+     * CAT|007|보유포인트|결제금액 수신 후 포인트 사용 입력 프로세스 시작
+     * fields[0] = 보유포인트, fields[1] = 결제금액
+     */
+    private fun updatePointUseWithConsumer(fields: List<String>) {
+        if (fields.size < 2) return
+
+        val pointBalance = fields[0].toIntOrNull() ?: 0
+        val amount = fields[1].toIntOrNull() ?: 0
+
+        _pointBalance.update { pointBalance.toString() }
+        _paymentAmount.update { amount.toString() }
+        updatePointDeltaStep(PointDeltaProcess.POINT_USE_AMOUNT_INPUT(PointUseSource.CAT, withCustomer = true))
+    }
+
+
+    private fun sendToCATConnectState() {
+        val responseBytes = "OK|\r\n".toByteArray(Charsets.UTF_8)
+        socketManager.send(responseBytes) { written ->
+            Log.d("SocketDebug", "캣포스로 텍스트 전송 완료: $written bytes, 내용: '$responseBytes'")
+        }
+    }
+
+    private fun sendToCATUsePoint(){
+        val usePoint = pointState.value.pointDelta
+        val responseBytes = "OK|$usePoint\r\n".toByteArray(Charsets.UTF_8)
+        socketManager.send(responseBytes) { written ->
+            Log.d(
+                "SocketDebug",
+                "캣포스로 텍스트 전송 완료: $written bytes, 내용: '$responseBytes'"
+            )
+        }
+
+        updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
     }
 
     private fun sendToCATCustomerInfo() {

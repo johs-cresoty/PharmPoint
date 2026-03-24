@@ -86,7 +86,11 @@ fun ConfirmButtonField() {
                     }
 
                     is PointDeltaProcess.POINT_USE_AMOUNT_INPUT -> {
-                        controller.dispatch(PadAction.SendToTerminalPointUse)
+                        when {
+                            step.source == PointUseSource.CAT && step.withCustomer -> controller.dispatch(PadAction.SendToCATUsePoint)
+                            step.source == PointUseSource.CAT -> controller.dispatch(PadAction.SendToCATUsePointResult)
+                            else -> controller.dispatch(PadAction.SendToTerminalPointUse)
+                        }
                     }
 
                     //////////////////////////////////////////////////

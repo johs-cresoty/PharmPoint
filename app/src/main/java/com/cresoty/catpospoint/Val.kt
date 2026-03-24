@@ -11,12 +11,14 @@ object Val {
     const val TERMINAL_COMMAND_010 = "010"      // PAD -> TRM : 취소
 
     const val CATPOS = "CAT" // CATPOS -> PAD
+     const val CATPOS_CONNECT = "000"                   // CATPOS -> PAD : 연결 테스트
     const val CATPOS_NUM = "001"
     const val CATPOS_CST = "002"
     const val CATPOS_DISCONNECT = "003"
-    const val CATPOS_EARN_POINT = "004"             // CATPOS -> PAD : 포인트 적립(단일 결제)
-    const val CATPOS_EARN_POINT_COMPLEX = "005"     // CATPOS -> PAD : 포인트 적립(복합 결제)
-    const val CATPOS_USE_POINT = "006"              // CATPOS -> PAD : 포인트 사용
+    const val CATPOS_EARN_POINT = "004"                 // CATPOS -> PAD : 포인트 적립(단일 결제)
+    const val CATPOS_EARN_POINT_COMPLEX = "005"         // CATPOS -> PAD : 포인트 적립(복합 결제)
+    const val CATPOS_USE_POINT_NO_CUSTOMER = "006"      // CATPOS -> PAD : 포인트 사용(고객 미선택)
+    const val CATPOS_USE_POINT_WITH_CUSTOMER = "007"    // CATPOS -> PAD : 포인트 사용(고객 선택)
 
 
     const val TERMINAL_FLAG     = "TRM"
