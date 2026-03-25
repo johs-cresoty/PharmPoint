@@ -1,6 +1,5 @@
-package com.cresoty.catpospoint.ui.phoneNumberInput
+package com.cresoty.catpospoint.presentation.phoneNumberInput
 
-import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputContract
 import javax.inject.Inject
 
 class PhoneNumberInputReducer @Inject constructor() {

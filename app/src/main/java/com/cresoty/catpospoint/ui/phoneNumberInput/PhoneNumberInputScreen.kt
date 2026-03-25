@@ -66,6 +66,8 @@ fun PhoneNumberInputScreen(
             !state.isCustomerExist &&
             !state.isExistChecking &&
             state.phoneNumber.length > 10
+    val isConfirmEnabled = state.isCheckBox && state.phoneNumber.length == 11 &&
+            (mode !is PhoneNumberInputContract.Mode.Lookup || state.isCustomerExist)
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(
@@ -145,8 +147,6 @@ fun PhoneNumberInputScreen(
             onClick = { sendEvent(PhoneNumberInputContract.Event.OnClickCheckBox(!state.isCheckBox)) }
         )
         Spacer(modifier = Modifier.size(23.dpx))
-        val isConfirmEnabled = state.isCheckBox && state.phoneNumber.length == 11 &&
-                (mode !is PhoneNumberInputContract.Mode.Lookup || state.isCustomerExist)
         ConfirmButton(
             modifier = Modifier.height(112.dpx),
             text = "확인",

@@ -1,10 +1,9 @@
-package com.cresoty.catpospoint.ui.phoneNumberInput
+package com.cresoty.catpospoint.presentation.phoneNumberInput
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cresoty.catpospoint.domain.usecase.EstimatePointUseCase
 import com.cresoty.catpospoint.domain.usecase.GetConfigUseCase
-import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputContract
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +23,7 @@ class PhoneNumberInputViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(PhoneNumberInputContract.State())
     val uiState = _uiState.asStateFlow()
 
-    private val _effect = Channel<PhoneNumberInputContract.Effect>(Channel.BUFFERED)
+    private val _effect = Channel<PhoneNumberInputContract.Effect>(Channel.Factory.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
     fun dispatch(event: PhoneNumberInputContract.Event) {
