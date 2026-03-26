@@ -1,8 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches: [ release ]
   workflow_dispatch:
     inputs:
       message_title:
@@ -69,9 +67,9 @@ jobs:
 
       - name: Register version to server
         run: |
-          MESSAGE_TITLE="${{ github.event.inputs.message_title || '업데이트 안내' }}"
-          MESSAGE="${{ github.event.inputs.message || '안정적인 이용을 위해 최신 버전으로 업데이트해 주세요.' }}"
-          RESPONSE=$(curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
+          MESSAGE_TITLE="${{ github.event.inputs.message_title }}"
+          MESSAGE="${{ github.event.inputs.message }}"
+          RESPONSE=$(curl -sv -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
             -H "Content-Type: application/json" \
             -d "{
               \"platform\": \"PharmPoint\",
