@@ -74,10 +74,10 @@ fun MainController(viewModel: MainViewModel, context: Context) {
             is PointDeltaProcess.POINT_BALANCE_RESULT -> ResultScreen(
                 state = step.resultState,
                 sendEvent = { event ->
-                    when (event) {
-                        ResultContract.Event.GoToWaiting ->
-                            controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))
-                    }
+//                    when (event) {
+//                        ResultContract.Event.GoToWaiting ->
+//                            controller.dispatch(PadAction.OnClickPointNext(PointDeltaProcess.NONE))
+//                    }
                 }
             )
         }

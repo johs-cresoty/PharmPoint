@@ -2,7 +2,11 @@ package com.cresoty.catpospoint.model.enums
 
 import com.cresoty.catpospoint.presentation.result.ResultContract
 
-enum class PointUseSource { CAT, TERMINAL, MANUAL }
+enum class PointUseSource { CAT, CAT_WITH_CUSTOMER, TERMINAL, MANUAL }
+enum class PaymentType {
+    SINGLE,
+    MULTIPLE
+}
 
 sealed class PointDeltaProcess(val isClickable: Boolean)
 {

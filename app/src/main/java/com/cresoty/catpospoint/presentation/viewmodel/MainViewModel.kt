@@ -1,25 +1,13 @@
 package com.cresoty.catpospoint.presentation.viewmodel
 
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cresoty.catpospoint.BuildConfig
 import com.cresoty.catpospoint.ConfigKey
 import com.cresoty.catpospoint.ConfigRepository
 import com.cresoty.catpospoint.PharmpayTelegram
-import com.cresoty.catpospoint.Val
-import com.cresoty.catpospoint.Val.CATPOS_CONNECT
-import com.cresoty.catpospoint.Val.CATPOS_CST
-import com.cresoty.catpospoint.Val.CATPOS_DISCONNECT
-import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT
-import com.cresoty.catpospoint.Val.CATPOS_EARN_POINT_COMPLEX
-import com.cresoty.catpospoint.Val.CATPOS_NUM
-import com.cresoty.catpospoint.Val.CATPOS_USE_POINT_NO_CUSTOMER
-import com.cresoty.catpospoint.Val.CATPOS_USE_POINT_WITH_CUSTOMER
-import com.cresoty.catpospoint.byte2String
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.domain.model.command.EstimatePointCommand
 import com.cresoty.catpospoint.domain.model.command.PaymentDetailCommand
@@ -30,6 +18,9 @@ import com.cresoty.catpospoint.domain.usecase.GetPointBalanceUseCase
 import com.cresoty.catpospoint.domain.usecase.GetPointSaveSettingUseCase
 import com.cresoty.catpospoint.domain.usecase.IsCustomersUseCase
 import com.cresoty.catpospoint.domain.usecase.StartAutoUpdateUseCase
+import com.cresoty.catpospoint.device.DeviceInfoProvider
+import com.cresoty.catpospoint.domain.socket.SocketEvent
+import com.cresoty.catpospoint.domain.socket.SocketEventRepository
 import com.cresoty.catpospoint.domain.usecase.StartDownloadUseCase
 import com.cresoty.catpospoint.domain.usecase.UpsertCustomerPointUseCase
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
@@ -46,13 +37,10 @@ import com.cresoty.catpospoint.model.state.SettingState
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.safeSubString
 import com.cresoty.catpospoint.socket.SocketManager
-import com.cresoty.catpospoint.socket.protocol.CatposMessage
-import com.cresoty.catpospoint.splitTelegram
 import com.cresoty.catpospoint.toIntOrMax
 import com.cresoty.catpospoint.view.composable.list.SettingType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -79,10 +67,9 @@ class MainViewModel @Inject constructor(
     private val getPointBalanceUseCase: GetPointBalanceUseCase,
     private val startAutoUpdateUseCase: StartAutoUpdateUseCase,
     private val startDownloadUseCase: StartDownloadUseCase,
+    private val deviceInfoProvider: DeviceInfoProvider,
+    private val socketEventRepository: SocketEventRepository,
 ) : ViewModel() {
-
-    private val CMPTR_NAME = "${Build.BRAND}_${Build.MODEL}"
-    private val POS_VER = BuildConfig.VERSION_NAME
 
     // mainState
     private val _pointDeltaStep: MutableStateFlow<PointDeltaProcess> =
@@ -241,21 +228,11 @@ class MainViewModel @Inject constructor(
         initialValue = MainState()
     )
 
-    private var socketJob: Job? = null
-
-
     init {
-        Log.d("SocketDebug", "SocketManager.start() 호출")
-        socketJob = socketManager.start()
-
-        socketManager.telegramReceiver = { cmd, data ->
-            Log.d("SocketDebug", "received telegram : ${data.byte2String()}")
-            processTerminalTelegram(cmd, data)
-        }
-
-        socketManager.pcTelegramReceiver = { msg ->
-            Log.d("SocketDebug", "received catpos msg : $msg")
-            processPcTelegram(msg)
+        viewModelScope.launch {
+            socketEventRepository.events.collect { event ->
+                processSocketEvent(event)
+            }
         }
 
         initRequestPointSettings()
@@ -364,71 +341,22 @@ class MainViewModel @Inject constructor(
 
     }
 
-    /**
-     * 단말기로부터 수신한 전문 파싱 및 수신한 전문 종류(cmd)에 따라 프로세스 진행
-     * 001 : 적립요청
-     * 002 : 적립요청(복합결제)
-     * 003 : 사용요청
-     * CAT : 고객 조회(없을 경우 신규 가입)
-     *
-     * @param cmd
-     * @param data
-     */
-    private fun processTerminalTelegram(
-        cmd: String,
-        data: ByteArray
-    ) {
+    private fun processSocketEvent(event: SocketEvent) {
+        when (event) {
+            // ── 단말기 전문 ──────────────────────────────────────
+            is SocketEvent.TerminalEarnPointSingle  -> checkExpectPointAmount(event.data)
+            is SocketEvent.TerminalEarnPointComplex -> checkExpectPointAmountComplex(event.data)
+            is SocketEvent.TerminalUsePoint         -> processPointUse(event.data)
 
-        val split = data.splitTelegram(Val.COMM_FS)
-        val list = split.map { it.byte2String() }
-
-        when (cmd) {
-            Val.TERMINAL_COMMAND_001 -> {
-                checkExpectPointAmount(list)
-            }
-
-            Val.TERMINAL_COMMAND_002 -> {
-                checkExpectPointAmountComplex(list)
-            }
-
-            Val.TERMINAL_COMMAND_003 -> {
-                processPointUse(list)
-            }
-        }
-    }
-
-    private fun processPcTelegram(msg: CatposMessage) {
-        when (msg.command) {
-            CATPOS_CONNECT -> {
-                sendToCATConnectState()
-            }
-            CATPOS_NUM -> {
-                updatePointDeltaStep(PointDeltaProcess.REQUEST_NUM)
-            }
-
-            CATPOS_CST -> {
-                updatePointDeltaStep(PointDeltaProcess.REQUEST_CST)
-            }
-            CATPOS_DISCONNECT ->{
-                updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
-            }
-
-            CATPOS_EARN_POINT -> {
-                processPcEarnPoint(msg.fields)
-            }
-            CATPOS_EARN_POINT_COMPLEX -> {
-                processPcEarnPointComplex(msg.fields)
-            }
-            CATPOS_USE_POINT_NO_CUSTOMER -> {
-                processPcUsePoint(msg.fields)
-            }
-            CATPOS_USE_POINT_WITH_CUSTOMER ->{
-                updatePointUseWithConsumer(msg.fields)
-            }
-
-            else -> {
-                Log.d("@#@#", "Unknown PC command: ${msg.command}")
-            }
+            // ── 캣포스 전문 ──────────────────────────────────────
+            is SocketEvent.CatConnect          -> sendToCATConnectState()
+            is SocketEvent.CatRequestNum       -> updatePointDeltaStep(PointDeltaProcess.REQUEST_NUM)
+            is SocketEvent.CatRequestCustomer  -> updatePointDeltaStep(PointDeltaProcess.REQUEST_CST)
+            is SocketEvent.CatDisconnect       -> updatePointDeltaStep(PointDeltaProcess.NONE, sendInit = false)
+            is SocketEvent.CatEarnPointSingle       -> processPcEarnPoint(event.fields)
+            is SocketEvent.CatEarnPointComplex      -> processPcEarnPointComplex(event.fields)
+            is SocketEvent.CatUsePointNoCustomer    -> processPcUsePoint(event.fields)
+            is SocketEvent.CatUsePointWithCustomer  -> updatePointUseWithConsumer(event.fields)
         }
     }
 
@@ -460,8 +388,8 @@ class MainViewModel @Inject constructor(
             estimatePointUseCase(
                 EstimatePointCommand.Single(
                     taxNo = configState.value.bizNo,
-                    computerName = CMPTR_NAME,
-                    posVersion = POS_VER,
+                    computerName = deviceInfoProvider.computerName,
+                    posVersion = deviceInfoProvider.posVersion,
                     trnDate = transactionDate,
                     trnGubn = transactionMethod,
                     trnAmt = _paymentAmount.value,
@@ -530,8 +458,8 @@ class MainViewModel @Inject constructor(
             estimatePointUseCase(
                 EstimatePointCommand.Complex(
                     taxNo = configState.value.bizNo,
-                    computerName = CMPTR_NAME,
-                    posVersion = POS_VER,
+                    computerName = deviceInfoProvider.computerName,
+                    posVersion = deviceInfoProvider.posVersion,
                     payments = first to second
                 )
             ).collect { resource ->
@@ -556,7 +484,7 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * CAT|006|거래일자|결제금액|거래구분 수신 후 포인트 사용 프로세스 시작
+     * CAT|006|거래일자|결제금액 수신 후 포인트 사용 프로세스 시작
      * fields[0] = 거래일자, fields[1] = 결제금액
      */
     private fun processPcUsePoint(fields: List<String>) {
@@ -754,8 +682,8 @@ class MainViewModel @Inject constructor(
             estimatePointUseCase(
                 EstimatePointCommand.Complex(
                     taxNo = configState.value.bizNo,
-                    computerName = CMPTR_NAME,
-                    posVersion = POS_VER,
+                    computerName = deviceInfoProvider.computerName,
+                    posVersion = deviceInfoProvider.posVersion,
                     payments = first to second
                 )
             ).collect { resource ->
@@ -854,8 +782,8 @@ class MainViewModel @Inject constructor(
             estimatePointUseCase(
                 EstimatePointCommand.Single(
                     taxNo = configState.value.bizNo,
-                    computerName = CMPTR_NAME,
-                    posVersion = POS_VER,
+                    computerName = deviceInfoProvider.computerName,
+                    posVersion = deviceInfoProvider.posVersion,
                     trnDate = transactionDate,
                     trnGubn = transactionMethod,
                     trnAmt = _paymentAmount.value,
@@ -886,74 +814,28 @@ class MainViewModel @Inject constructor(
      */
     private fun requestSavePoint() {
         viewModelScope.launch {
-            val phone = customerState.value.phoneNumber
-            val bizNo = configState.value.bizNo
-
-
-            val command = complexTranInfo?.let { pair ->
-                if (transactionUniqueNumber.isNotEmpty()) {
-                    // 복합결제 sle_seq 있을 때 → BySleSeq
-                    UpsertCustomerPointCommand.BySleSeq(
-                        taxNo = bizNo,
-                        computerName = CMPTR_NAME,
-                        posVersion = POS_VER,
-                        customerPhone = phone,
-                        transactionDate = transactionDate,
-                        sleSeq = transactionUniqueNumber
-                    )
-                } else {
-                    // 복합결제 sle_seq 없을 때 → ByMultiplePayment
-                    UpsertCustomerPointCommand.ByMultiplePayment(
-                        taxNo = bizNo,
-                        computerName = CMPTR_NAME,
-                        posVersion = POS_VER,
-                        customerPhone = phone,
-                        transactionDate = transactionDate,
-                        transactionAmount = _paymentAmount.value,
-                        payments = listOf(pair.first, pair.second)
-                    )
-                }
-            } ?: if (transactionUniqueNumber.isNotEmpty()) {
-                // 단일결제 sle_seq 있을 때 → BySleSeq
-                UpsertCustomerPointCommand.BySleSeq(
-                    taxNo = bizNo,
-                    computerName = CMPTR_NAME,
-                    posVersion = POS_VER,
-                    customerPhone = phone,
-                    transactionDate = transactionDate,
-                    sleSeq = transactionUniqueNumber
-                )
-            } else {
-                // 단일결제 sle_seq 없을 때 → BySinglePayment
-                UpsertCustomerPointCommand.BySinglePayment(
-                    taxNo = bizNo,
-                    computerName = CMPTR_NAME,
-                    posVersion = POS_VER,
-                    customerPhone = phone,
-                    transactionDate = transactionDate,
-                    transactionGubn = transactionMethod,
-                    transactionTime = transactionTime,
-                    transactionAmount = _paymentAmount.value,
-                    approvalNumber = approvalNumber
-                )
-            }
-
             _isLoading.update { true }
-            upsertCustomerPointUseCase(command).collect { resource ->
+            upsertCustomerPointUseCase(
+                taxNo = configState.value.bizNo,
+                customerPhone = customerState.value.phoneNumber,
+                transactionDate = transactionDate,
+                transactionUniqueNumber = transactionUniqueNumber,
+                transactionMethod = transactionMethod,
+                transactionTime = transactionTime,
+                transactionAmount = _paymentAmount.value,
+                approvalNumber = approvalNumber,
+                complexTranInfo = complexTranInfo
+            ).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> {
                         _isLoading.update { false }
                         _pointBalance.update { resource.data ?: "0" }
                         updatePointDeltaStep(PointDeltaProcess.POINT_SAVE_PROC_DONE)
                     }
-
                     is DataResource.Error -> {
                         _isLoading.update { false }
                         Log.d("jhs", "에러: ${resource.throwable.message}")
-                        // 기존 NetworkManager의 safeNetworkCall이 delegate?.onNetworkError 호출하던 부분
-                        // 필요하다면 에러 state 추가
                     }
-
                     is DataResource.Loading -> {}
                 }
             }
@@ -1277,8 +1159,8 @@ class MainViewModel @Inject constructor(
             _isExistChecking.update { true }
 
             isCustomersUseCase(
-                computerName = "POS",
-                posVersion = BuildConfig.VERSION_NAME,
+                computerName = deviceInfoProvider.computerName,
+                posVersion = deviceInfoProvider.posVersion,
                 taxNo = configState.value.bizNo,
                 customerHp = phone
             ).collect { resource ->
@@ -1469,6 +1351,14 @@ class MainViewModel @Inject constructor(
      * (개발 편의상 DEBUG모드일 경우 비밀번호 입력창 skip)
      *
      */
+    fun openSettingDialog() {
+        viewModelScope.launch { _dialog.update { Dialogs.Setting } }
+    }
+
+    fun openPasswordDialog() {
+        viewModelScope.launch { _dialog.update { Dialogs.InputPassword } }
+    }
+
     private fun updateDialogSetting() {
         viewModelScope.launch {
 //            if (BuildConfig.DEBUG) {

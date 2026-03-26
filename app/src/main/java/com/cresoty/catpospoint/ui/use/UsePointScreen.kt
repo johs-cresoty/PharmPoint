@@ -43,14 +43,14 @@ import com.cresoty.catpospoint.ui.component.NumberPadGrid
 import com.cresoty.catpospoint.ui.component.PadKey
 
 @Composable
-fun PointUseScreen(
+fun UsePointScreen(
     state: UseContract.State,
     sendEvent: (UseContract.Event) -> Unit,
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
     val buttonList = PointQuickInputType.entries
-    val amount = if (state.usePoint < 1) "얼마인가요?" else "${state.usePoint} P"
+    val amount = if (state.usePoint < 1) " 얼마인가요?" else "${state.usePoint.toDecimalString()} P"
     val fontColor = if (state.usePoint < 1) sub02 else main01
     val fontWeight = if (state.usePoint < 1) FontWeight.Normal else FontWeight.Bold
     val isConfirmEnabled =
@@ -62,7 +62,7 @@ fun PointUseScreen(
             .padding(start = 40.dpx, end = 40.dpx, top = 45.dpx),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        BackStepButton { }
+        BackStepButton { sendEvent(UseContract.Event.OnClickBack) }
         Spacer(modifier = Modifier.size(27.dpx))
         Text(
             text = state.storeName,
@@ -106,7 +106,7 @@ fun PointUseScreen(
         Spacer(modifier = Modifier.size(31.dpx))
 
         Text(
-            text = "보유 포인트 ${state.balancePoint}P",
+            text = "보유 포인트 ${state.balancePoint.toDecimalString()}P",
             fontFamily = NotoSansKr,
             fontWeight = FontWeight(400),
             fontSize = 30.spx,
@@ -125,8 +125,7 @@ fun PointUseScreen(
                     modifier = Modifier.size(width = 150f.dpx, height = 60f.dpx),
                     backgroundColor = sub01,
                     onClick = {
-
-//                        controller.dispatch(PadAction.OnClickAmountQuickButton(item))
+                        sendEvent(UseContract.Event.OnQuickInput(item))
                     },
                     shape = RoundedCornerShape(50f.dpx)
                 ) {
@@ -150,12 +149,12 @@ fun PointUseScreen(
                 }
             }
         )
-        Spacer(modifier = Modifier.size(24.dpx))
+
         if (state.isMinPointEnabled) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dpx),
+                    .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -166,8 +165,10 @@ fun PointUseScreen(
                     color = main01
                 )
             }
+        } else {
+            Spacer(modifier = Modifier.size(80.dpx))
         }
-        Spacer(modifier = Modifier.size(23.dpx))
+
         ConfirmButton(
             modifier = Modifier.height(112.dpx),
             text = "확인",
@@ -201,7 +202,7 @@ fun PointUseScreen(
     showBackground = true
 )
 @Composable
-private fun PointUseScreenPreview() {
+private fun UsePointScreenPreview() {
     val dummyState = UseContract.State(
         storeName = "다나아 약국",
         payAmount = 15000,
@@ -211,6 +212,6 @@ private fun PointUseScreenPreview() {
         isMinPointEnabled = true
     )
     CatposPointTheme {
-        PointUseScreen(state = dummyState, sendEvent = {})
+        UsePointScreen(state = dummyState, sendEvent = {})
     }
 }

@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.cresoty.catpospoint.view.controller.MainController
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.viewmodel.MainViewModel
+import com.cresoty.catpospoint.ui.navigation.AppNavGraph
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -26,7 +27,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CatposPointTheme {
-                MainController(viewModel, applicationContext)
+                AppNavGraph()
+//                MainController(viewModel, applicationContext)
             }
         }
     }

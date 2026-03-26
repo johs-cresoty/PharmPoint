@@ -67,6 +67,12 @@ fun ResultScreen(
     sendEvent: (ResultContract.Event) -> Unit
 ) {
     var leftTime by remember { mutableIntStateOf(state.timeOut) }
+    val imageId = when (state.status) {
+        ResultStatus.FETCH_SUCCESS -> R.drawable.icon_store
+        ResultStatus.EARN_SUCCESS -> R.drawable.icon_point_earn_done
+        ResultStatus.USE_SUCCESS -> R.drawable.icon_point_use_done
+        ResultStatus.USE_UNAVAILABLE -> R.drawable.icon_point_use_shortage
+    }
     LaunchedEffect(Unit) {
         while (leftTime != 0) {
             delay(1000)
@@ -85,7 +91,7 @@ fun ResultScreen(
     ) {
         Spacer(modifier = Modifier.size(288.dpx))
         Image(
-            painter = painterResource(R.drawable.icon_store),
+            painter = painterResource(imageId),
             contentDescription = null
         )
 
@@ -117,7 +123,7 @@ fun ResultScreen(
 
         Spacer(modifier = Modifier.size(52.dpx))
 
-        BalancePoint(state.status, state.pointTitle, state.balancePoint)
+        BalancePoint(state.status, state.pointTitle, state.balancePoint, state.remainingPoint)
 
         Spacer(modifier = Modifier.weight(1f))
 

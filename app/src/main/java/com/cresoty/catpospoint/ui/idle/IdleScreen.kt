@@ -38,7 +38,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.MainThemes
-import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.interfaces.ViewController
 import com.cresoty.catpospoint.model.state.ConfigState
 import com.cresoty.catpospoint.model.state.CustomerState
@@ -92,12 +91,12 @@ fun IdleScreen(
     val preSubTitle = if (state.isPreview) preview.subTitle else null
 
     val block = mapOf<MainThemes, @Composable () -> Unit>(
-        MainThemes.Theme_A to { ColumnA(preSubTitle, state.isPreview) },
-        MainThemes.Theme_B to { ColumnB(preSubTitle, state.isPreview) },
-        MainThemes.Theme_C to { ColumnC(preSubTitle, state.isPreview) },
-        MainThemes.Theme_D to { ColumnD(preSubTitle, state.isPreview) },
-        MainThemes.Theme_E to { ColumnE(preSubTitle, state.isPreview) },
-        MainThemes.Theme_CUSTOM to { CustomPreview(preSubTitle, state.isPreview) }
+        MainThemes.Theme_A to { ColumnA(preSubTitle, state.isPreview, sendEvent) },
+        MainThemes.Theme_B to { ColumnB(preSubTitle, state.isPreview, sendEvent) },
+        MainThemes.Theme_C to { ColumnC(preSubTitle, state.isPreview, sendEvent) },
+        MainThemes.Theme_D to { ColumnD(preSubTitle, state.isPreview, sendEvent) },
+        MainThemes.Theme_E to { ColumnE(preSubTitle, state.isPreview, sendEvent) },
+        MainThemes.Theme_CUSTOM to { CustomPreview(preSubTitle, state.isPreview, sendEvent) }
     )
 
 
@@ -113,7 +112,7 @@ fun IdleScreen(
                     tapTimes.add(now)
                     if (tapTimes.size >= 3) {
                         tapTimes.clear()
-                        controller.dispatch(PadAction.OnClickSetting)
+                        sendEvent(IdleContract.Event.OnTripleTap)
                     }
                 }
             }
@@ -142,6 +141,7 @@ fun IdleScreen(
 private fun ColumnC(
     preSubTitle: String?,
     isPreview: Boolean,
+    sendEvent: (IdleContract.Event) -> Unit,
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -182,7 +182,7 @@ private fun ColumnC(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
         }
 
         PreviewCloseButton(
@@ -196,6 +196,7 @@ private fun ColumnC(
 private fun ColumnD(
     preSubTitle: String?,
     isPreview: Boolean,
+    sendEvent: (IdleContract.Event) -> Unit,
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -242,7 +243,7 @@ private fun ColumnD(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
         }
 
         PreviewCloseButton(
@@ -256,6 +257,7 @@ private fun ColumnD(
 private fun ColumnE(
     preSubTitle: String?,
     isPreview: Boolean,
+    sendEvent: (IdleContract.Event) -> Unit,
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -291,7 +293,7 @@ private fun ColumnE(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.size(30.dpx))
-        PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+        PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
 
         Spacer(modifier = Modifier.weight(1f))
         PreviewCloseButton(
@@ -306,6 +308,7 @@ private fun ColumnE(
 private fun ColumnB(
     preSubTitle: String?,
     isPreview: Boolean,
+    sendEvent: (IdleContract.Event) -> Unit,
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -343,7 +346,7 @@ private fun ColumnB(
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
         }
 
         PreviewCloseButton(
@@ -357,6 +360,7 @@ private fun ColumnB(
 private fun ColumnA(
     preSubTitle: String?,
     isPreview: Boolean,
+    sendEvent: (IdleContract.Event) -> Unit,
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -394,7 +398,7 @@ private fun ColumnA(
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
         }
 
         PreviewCloseButton(
@@ -408,6 +412,7 @@ private fun ColumnA(
 private fun CustomPreview(
     preSubTitle: String?,
     isPreview: Boolean,
+    sendEvent: (IdleContract.Event) -> Unit,
 ) {
     val controller = LocalController.current
     val config by controller.configState.collectAsStateWithLifecycle()
@@ -455,7 +460,7 @@ private fun CustomPreview(
 
         }
         Spacer(Modifier.weight(1f))
-        PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+        PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
         Spacer(Modifier.size(50.dpx))
         PreviewCloseButton(
             theme = MainThemes.Theme_CUSTOM,
@@ -498,7 +503,7 @@ private fun PreviewCloseButton(
             shape = RoundedCornerShape(20f.dpx),
             border = BorderStroke(width = 1.dp, color = common01),
             onClick = {
-                controller.dispatch(PadAction.OnClickClosePreview)
+//                controller.dispatch(PadAction.OnClickClosePreview)
             }
         ) {
             Text(
@@ -511,119 +516,119 @@ private fun PreviewCloseButton(
     }
 }
 
-
-// 미리보기
-private fun previewController(themeIndex: Int = 0) = object : ViewController {
-    override val mainState = MutableStateFlow(MainState())
-    override val configState = MutableStateFlow(
-        ConfigState(
-            storeName = "연세온누리약국",
-            subTitle = "건강 상담, 언제든지 도와드립니다.",
-            themeIndex = themeIndex
-        )
-    )
-    override val previewState = MutableStateFlow(PreviewState())
-    override val settingState = MutableStateFlow(SettingState())
-    override val pointState = MutableStateFlow(PointState())
-    override val customerState = MutableStateFlow(CustomerState())
-    override val customThemeImageUriState = MutableStateFlow<Uri?>(null)
-    override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
-    override fun dispatch(action: PadAction) = Unit
-}
-
-@Preview(name = "테마A", device = "spec:width=800px,height=1319px,dpi=213")
-@Composable
-private fun IdleScreenPreview_ThemeA() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController(0)) {
-            IdleScreen(
-                state = IdleContract.State(isPreview = false),
-                sendEvent = {}
-            )
-        }
-    }
-}
-
-@Preview(name = "테마B", device = "spec:width=800px,height=1319px,dpi=213")
-@Composable
-private fun IdleScreenPreview_ThemeB() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController(1)) {
-            IdleScreen(
-                state = IdleContract.State(isPreview = false),
-                sendEvent = {}
-            )
-        }
-    }
-}
-
-@Preview(name = "테마C", device = "spec:width=800px,height=1319px,dpi=213")
-@Composable
-private fun IdleScreenPreview_ThemeC() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController(2)) {
-            IdleScreen(
-                state = IdleContract.State(isPreview = false),
-                sendEvent = {}
-            )
-        }
-    }
-}
-
-@Preview(name = "테마D", device = "spec:width=800px,height=1319px,dpi=213")
-@Composable
-private fun IdleScreenPreview_ThemeD() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController(3)) {
-            IdleScreen(
-                state = IdleContract.State(isPreview = false),
-                sendEvent = {}
-            )
-        }
-    }
-}
-
-@Preview(name = "테마E", device = "spec:width=800px,height=1319px,dpi=213")
-@Composable
-private fun IdleScreenPreview_ThemeE() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController(4)) {
-            IdleScreen(
-                state = IdleContract.State(isPreview = false),
-                sendEvent = {}
-            )
-        }
-    }
-}
-
-@Preview(name = "테마CUSTOM", device = "spec:width=800px,height=1319px,dpi=213")
-@Composable
-private fun IdleScreenPreview_ThemeCUSTOM() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController(5)) {
-            IdleScreen(
-                state = IdleContract.State(isPreview = false),
-                sendEvent = {}
-            )
-        }
-    }
-}
-
-
-@Preview(
-    name = "사용자 지정 미리보기",
-    device = "spec:width=800px,height=1319px,dpi=213",
-    showBackground = true
-)
-@Composable
-private fun CustomPreviewPreview() {
-    CatposPointTheme {
-        CompositionLocalProvider(LocalController provides previewController()) {
-            CustomPreview(
-                preSubTitle = null,
-                isPreview = true
-            )
-        }
-    }
-}
+//
+//// 미리보기
+//private fun previewController(themeIndex: Int = 0) = object : ViewController {
+//    override val mainState = MutableStateFlow(MainState())
+//    override val configState = MutableStateFlow(
+//        ConfigState(
+//            storeName = "연세온누리약국",
+//            subTitle = "건강 상담, 언제든지 도와드립니다.",
+//            themeIndex = themeIndex
+//        )
+//    )
+//    override val previewState = MutableStateFlow(PreviewState())
+//    override val settingState = MutableStateFlow(SettingState())
+//    override val pointState = MutableStateFlow(PointState())
+//    override val customerState = MutableStateFlow(CustomerState())
+//    override val customThemeImageUriState = MutableStateFlow<Uri?>(null)
+//    override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
+//    override fun dispatch(action: PadAction) = Unit
+//}
+//
+//@Preview(name = "테마A", device = "spec:width=800px,height=1319px,dpi=213")
+//@Composable
+//private fun IdleScreenPreview_ThemeA() {
+//    CatposPointTheme {
+//        CompositionLocalProvider(LocalController provides previewController(0)) {
+//            IdleScreen(
+//                state = IdleContract.State(isPreview = false),
+//                sendEvent = {}
+//            )
+//        }
+//    }
+//}
+//
+//@Preview(name = "테마B", device = "spec:width=800px,height=1319px,dpi=213")
+//@Composable
+//private fun IdleScreenPreview_ThemeB() {
+//    CatposPointTheme {
+//        CompositionLocalProvider(LocalController provides previewController(1)) {
+//            IdleScreen(
+//                state = IdleContract.State(isPreview = false),
+//                sendEvent = {}
+//            )
+//        }
+//    }
+//}
+//
+//@Preview(name = "테마C", device = "spec:width=800px,height=1319px,dpi=213")
+//@Composable
+//private fun IdleScreenPreview_ThemeC() {
+//    CatposPointTheme {
+//        CompositionLocalProvider(LocalController provides previewController(2)) {
+//            IdleScreen(
+//                state = IdleContract.State(isPreview = false),
+//                sendEvent = {}
+//            )
+//        }
+//    }
+//}
+//
+//@Preview(name = "테마D", device = "spec:width=800px,height=1319px,dpi=213")
+//@Composable
+//private fun IdleScreenPreview_ThemeD() {
+//    CatposPointTheme {
+//        CompositionLocalProvider(LocalController provides previewController(3)) {
+//            IdleScreen(
+//                state = IdleContract.State(isPreview = false),
+//                sendEvent = {}
+//            )
+//        }
+//    }
+//}
+//
+//@Preview(name = "테마E", device = "spec:width=800px,height=1319px,dpi=213")
+//@Composable
+//private fun IdleScreenPreview_ThemeE() {
+//    CatposPointTheme {
+//        CompositionLocalProvider(LocalController provides previewController(4)) {
+//            IdleScreen(
+//                state = IdleContract.State(isPreview = false),
+//                sendEvent = {}
+//            )
+//        }
+//    }
+//}
+//
+//@Preview(name = "테마CUSTOM", device = "spec:width=800px,height=1319px,dpi=213")
+//@Composable
+//private fun IdleScreenPreview_ThemeCUSTOM() {
+//    CatposPointTheme {
+//        CompositionLocalProvider(LocalController provides previewController(5)) {
+//            IdleScreen(
+//                state = IdleContract.State(isPreview = false),
+//                sendEvent = {}
+//            )
+//        }
+//    }
+//}
+//
+//
+//@Preview(
+//    name = "사용자 지정 미리보기",
+//    device = "spec:width=800px,height=1319px,dpi=213",
+//    showBackground = true
+//)
+//@Composable
+//private fun CustomPreviewPreview() {
+//    CatposPointTheme {
+//        CompositionLocalProvider(LocalController provides previewController()) {
+//            CustomPreview(
+//                preSubTitle = null,
+//                isPreview = true
+//            )
+//        }
+//    }
+//}
 

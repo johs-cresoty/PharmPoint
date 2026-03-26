@@ -19,7 +19,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -80,10 +83,15 @@ fun PhoneNumberInputScreen(
 
         when {
             mode is PhoneNumberInputContract.Mode.Lookup && mode.source == PointUseSource.CAT ->
-                CATPOSInputInfo(storeName = state.storeName)
+                TerminalInputInfo(storeName = state.storeName, payAmount = state.payAmount)
 
             mode is PhoneNumberInputContract.Mode.Lookup && mode.source == PointUseSource.TERMINAL ->
                 TerminalInputInfo(storeName = state.storeName, payAmount = state.payAmount)
+
+            mode is PhoneNumberInputContract.Mode.Lookup && mode.source == PointUseSource.MANUAL ->
+                CheckPointInfo(storeName = state.storeName)
+
+            mode is PhoneNumberInputContract.Mode.CatRequestCustomer -> CATPOSInputInfo(storeName = state.storeName)
 
             else ->
                 PhoneNumberInputInfo(
@@ -97,17 +105,17 @@ fun PhoneNumberInputScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dpx),
+                    .height(83.dpx),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    modifier = Modifier.size(height = 24f.dpx, width = 25f.dpx),
+                    modifier = Modifier.size(height = 24.dpx, width = 25.dpx),
                     painter = painterResource(R.drawable.icon_alert),
                     contentDescription = null
                 )
 
-                Spacer(modifier = Modifier.size(12f.dpx))
+                Spacer(modifier = Modifier.size(12.dpx))
 
                 Text(
                     text = "등록된 회원이 없습니다.",
@@ -115,6 +123,10 @@ fun PhoneNumberInputScreen(
                     color = notice
                 )
             }
+        }
+
+        if (!isInvalidCustomer && state.mode !is PhoneNumberInputContract.Mode.Save) {
+            Spacer(modifier = Modifier.size(83.dpx))
         }
 
         PhoneNumberInputField(
@@ -175,6 +187,42 @@ fun PhoneNumberInputScreen(
     }
 }
 
+
+@Composable
+fun CheckPointInfo(storeName: String) {
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
+    Column(
+        modifier = Modifier.background(white),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Spacer(modifier = Modifier.size(27.dpx))
+
+        Text(
+            text = storeName,
+            fontSize = storeNameFontSize,
+            lineHeight = storeNameFontSize,
+            color = common01,
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+            }
+        )
+
+
+
+        Spacer(modifier = Modifier.size(96.dpx))
+
+        Text(
+            text = "휴대폰 번호 입력하고 포인트 확인하세요.",
+            fontSize = 30f.spx,
+            lineHeight = 30f.spx,
+            color = common01
+        )
+    }
+}
 
 @Composable
 fun PhoneNumberInputInfo(storeName: String, payAmount: Int, estimatedPoint: Int) {
@@ -371,6 +419,7 @@ private fun PhoneNumberScreenLookupTerminalPreview() {
                 .background(white),
             state = PhoneNumberInputContract.State(
                 mode = PhoneNumberInputContract.Mode.Lookup(PointUseSource.TERMINAL),
+                isCustomerExist = false,
                 phoneNumber = "01012345678",
                 storeName = "크레소티",
                 payAmount = 10000
@@ -417,5 +466,17 @@ private fun CATPOSInputInfoPreview() {
 private fun TerminalInputInfoPreview() {
     CatposPointTheme {
         TerminalInputInfo(storeName = "다나아약국", payAmount = 5000)
+    }
+}
+
+@Preview(
+    name = "포인트 조회 - MANUAL",
+    device = "spec:width=800px,height=1340px,dpi=213",
+    showBackground = true
+)
+@Composable
+private fun CheckPointInfoPreview() {
+    CatposPointTheme {
+        CheckPointInfo(storeName = "다나아약국")
     }
 }
