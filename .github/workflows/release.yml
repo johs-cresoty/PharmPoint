@@ -11,6 +11,10 @@ on:
         description: '업데이트 내용'
         required: true
         default: '안정적인 이용을 위해 최신 버전으로 업데이트해 주세요.'
+      target_version:
+        description: '롤백 대상 버전 코드 (일반 배포 시 비워두세요)'
+        required: false
+        default: ''
 
 jobs:
   release:
@@ -69,17 +73,26 @@ jobs:
         run: |
           MESSAGE_TITLE="${{ github.event.inputs.message_title }}"
           MESSAGE="${{ github.event.inputs.message }}"
-          RESPONSE=$(curl -sv -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
+          TARGET_VERSION="${{ github.event.inputs.target_version }}"
+          if [ -z "$TARGET_VERSION" ]; then
+            TARGET_VERSION_JSON="null"
+          else
+            TARGET_VERSION_JSON="$TARGET_VERSION"
+          fi
+          HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
             -H "Content-Type: application/json" \
             -d "{
               \"platform\": \"PharmPoint\",
               \"versionCode\": ${{ steps.version.outputs.code }},
               \"versionName\": \"${{ steps.version.outputs.name }}\",
+              \"targetVersion\": $TARGET_VERSION_JSON,
               \"messageTitle\": \"$MESSAGE_TITLE\",
               \"message\": \"$MESSAGE\"
             }")
+          RESPONSE=$(cat /tmp/response.txt)
+          echo "HTTP Status: $HTTP_CODE"
           echo "Response: $RESPONSE"
-          if echo "$RESPONSE" | grep -q '"CODE"'; then
-            echo "서버 오류: $RESPONSE"
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "서버 오류: HTTP $HTTP_CODE"
             exit 1
           fi
