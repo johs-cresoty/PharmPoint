@@ -61,6 +61,11 @@ class AppViewModel @Inject constructor(
             // ── 단말기 전문 ─────────────────────────────────────────
 
             is SocketEvent.TerminalEarnPointSingle -> {
+                // isAfterUse(data[7]="1"): 포인트 사용(003) 이후 적립(001) 전문 → 무시
+                val isAfterUse = event.data.getOrElse(7) { "0" } == "1"
+                val otc = event.data.getOrElse(5) { "0" }.toIntOrNull() ?: 0
+                val config = getConfigUseCase().value
+                if (isAfterUse || !config.isSave || otc == 0) return
                 val td = TransactionDataParser.parseTerminalSingle(event.data)
                 _uiState.update {
                     it.copy(
@@ -75,6 +80,11 @@ class AppViewModel @Inject constructor(
             }
 
             is SocketEvent.TerminalEarnPointComplex -> {
+                // isAfterUse(data[7]="1"): 포인트 사용(003) 이후 적립(001) 전문 → 무시
+                val isAfterUse = event.data.getOrElse(7) { "0" } == "1"
+                val otc = event.data.getOrElse(5) { "0" }.toIntOrNull() ?: 0
+                val config = getConfigUseCase().value
+                if (isAfterUse || !config.isSave || otc == 0) return
                 val td = TransactionDataParser.parseTerminalComplex(event.data)
                 _uiState.update {
                     it.copy(
