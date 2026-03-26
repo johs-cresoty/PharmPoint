@@ -111,7 +111,7 @@ class AppViewModel @Inject constructor(
                         _uiState.update { it.copy(dialog = Dialogs.None) }
                         emitEffect(AppContract.Effect.InstallApk(resource.data))
                     }
-                    is DataResource.Error -> _uiState.update { it.copy(dialog = Dialogs.UpdateBlocked(updateInfo.messageTitle, updateInfo.message)) }
+                    is DataResource.Error -> _uiState.update { it.copy(dialog = Dialogs.UpdateBlocked(updateInfo.messageTitle, "다운로드 실패\nURL: ${updateInfo.installUrl}")) }
                 }
             }
         }
