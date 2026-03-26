@@ -88,6 +88,6 @@ internal class UpdateRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        private const val PLATFORM = "PharmPoint"
+        private const val PLATFORM = "pharmPoint"
     }
 }
