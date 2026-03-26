@@ -15,6 +15,7 @@ import com.cresoty.catpospoint.domain.repository.UpdateRepository
 import com.cresoty.catpospoint.remote.api.CatposCloudApi
 import com.cresoty.catpospoint.remote.model.request.AppVersionCheckRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
+import timber.log.Timber
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -59,7 +60,19 @@ internal class UpdateRepositoryImpl @Inject constructor(
                 val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
                 if (id == downloadId) {
                     val apkUri = dm.getUriForDownloadedFile(id)
-                    trySend(DataResource.Success(apkUri))
+                    if (apkUri != null) {
+                        trySend(DataResource.Success(apkUri))
+                    } else {
+                        val query = DownloadManager.Query().setFilterById(id)
+                        val cursor = dm.query(query)
+                        if (cursor.moveToFirst()) {
+                            val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                            val reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON))
+                            Timber.e("downloadUpdate 실패: status=$status, reason=$reason")
+                        }
+                        cursor.close()
+                        trySend(DataResource.Error(Exception("다운로드 실패: apkUri null")))
+                    }
                     close()
                 }
             }
