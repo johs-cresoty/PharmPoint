@@ -37,24 +37,36 @@ class SocketEventRepositoryImpl @Inject constructor(
     )
     override val events: SharedFlow<SocketEvent> = _events.asSharedFlow()
 
+    // 777 수신 시 true, 444 수신 시 false
+    // true 동안 단말기(TRM) 전문은 emit하지 않음
+    @Volatile
+    private var isCatSessionActive: Boolean = false
+
     init {
         // 소켓 서버 시작 (싱글톤 → 앱 수명 동안 한 번만)
         socketManager.start()
 
         // 단말기 전문 콜백 → SocketEvent 변환
+        // CAT 세션 활성 중에는 단말기 신호를 무시한다
         socketManager.telegramReceiver = { cmd, data ->
-            val list = data.splitTelegram(Val.COMM_FS).map { it.byte2String() }
-            val event: SocketEvent? = when (cmd) {
-                Val.TERMINAL_COMMAND_001 -> SocketEvent.TerminalEarnPointSingle(list)
-                Val.TERMINAL_COMMAND_002 -> SocketEvent.TerminalEarnPointComplex(list)
-                Val.TERMINAL_COMMAND_003 -> SocketEvent.TerminalUsePoint(list)
-                else -> null
+            if (!isCatSessionActive) {
+                val list = data.splitTelegram(Val.COMM_FS).map { it.byte2String() }
+                val event: SocketEvent? = when (cmd) {
+                    Val.TERMINAL_COMMAND_001 -> SocketEvent.TerminalEarnPointSingle(list)
+                    Val.TERMINAL_COMMAND_002 -> SocketEvent.TerminalEarnPointComplex(list)
+                    Val.TERMINAL_COMMAND_003 -> SocketEvent.TerminalUsePoint(list)
+                    else -> null
+                }
+                event?.let { scope.launch { _events.emit(it) } }
             }
-            event?.let { scope.launch { _events.emit(it) } }
         }
 
         // 캣포스(PC) 전문 콜백 → SocketEvent 변환
         socketManager.pcTelegramReceiver = { msg ->
+            when (msg.command) {
+                Val.CATPOS_SESSION_START -> isCatSessionActive = true
+                Val.CATPOS_SESSION_END   -> isCatSessionActive = false
+            }
             val event: SocketEvent? = when (msg.command) {
                 Val.CATPOS_CONNECT             -> SocketEvent.CatConnect
                 Val.CATPOS_NUM                 -> SocketEvent.CatRequestNum

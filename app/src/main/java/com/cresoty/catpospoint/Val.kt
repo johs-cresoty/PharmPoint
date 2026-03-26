@@ -19,6 +19,8 @@ object Val {
     const val CATPOS_EARN_POINT_COMPLEX = "005"         // CATPOS -> PAD : 포인트 적립(복합 결제)
     const val CATPOS_USE_POINT_NO_CUSTOMER = "006"      // CATPOS -> PAD : 포인트 사용(고객 미선택)
     const val CATPOS_USE_POINT_WITH_CUSTOMER = "007"    // CATPOS -> PAD : 포인트 사용(고객 선택)
+    const val CATPOS_SESSION_START = "777"              // CATPOS -> PAD : CAT 세션 시작 (단말기 신호 차단)
+    const val CATPOS_SESSION_END = "444"                // CATPOS -> PAD : CAT 세션 종료 (단말기 신호 차단 해제)
 
 
     const val TERMINAL_FLAG     = "TRM"
