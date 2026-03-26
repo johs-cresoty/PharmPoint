@@ -1,19 +1,14 @@
 package com.cresoty.catpospoint.presentation.idle
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cresoty.catpospoint.ConfigKey
 import com.cresoty.catpospoint.ConfigRepository
 import com.cresoty.catpospoint.dataresource.DataResource
-import com.cresoty.catpospoint.domain.socket.SocketEvent
-import com.cresoty.catpospoint.domain.socket.SocketEventRepository
 import com.cresoty.catpospoint.domain.usecase.GetConfigUseCase
 import com.cresoty.catpospoint.domain.usecase.GetPointAmountSettingUseCase
 import com.cresoty.catpospoint.domain.usecase.GetPointSaveSettingUseCase
-import com.cresoty.catpospoint.model.enums.PaymentType
-import com.cresoty.catpospoint.model.enums.PointUseSource
 import com.cresoty.catpospoint.socket.SocketManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -32,7 +27,6 @@ class IdleViewModel @Inject constructor(
     private val getConfigUseCase: GetConfigUseCase,
     private val getPointSaveSettingUseCase: GetPointSaveSettingUseCase,
     private val getPointAmountSettingUseCase: GetPointAmountSettingUseCase,
-    private val socketEventRepository: SocketEventRepository,
     private val reducer: IdleReducer,
 ) : ViewModel() {
 
@@ -47,12 +41,6 @@ class IdleViewModel @Inject constructor(
     private val _customThemeImageUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
 
     init {
-        viewModelScope.launch {
-            socketEventRepository.events.collect { event ->
-//                handleSocketEvent(event)
-            }
-        }
-
         initRequestPointSettings()
 
         // 저장된 사용자 지정 이미지 URI 복원
@@ -104,43 +92,4 @@ class IdleViewModel @Inject constructor(
             }
         }
     }
-
-//    private fun handleSocketEvent(event: SocketEvent) {
-//        when (event) {
-//            // ── 단말기 전문 ──────────────────────────────────────
-//            is SocketEvent.TerminalEarnPointSingle ->
-//                dispatch(IdleContract.Event.GoToEarnPoint(PointUseSource.TERMINAL, PaymentType.SINGLE, event.data))
-//
-//            is SocketEvent.TerminalEarnPointComplex ->
-//                dispatch(IdleContract.Event.GoToEarnPoint(PointUseSource.TERMINAL, PaymentType.MULTIPLE, event.data))
-//
-//            is SocketEvent.TerminalUsePoint ->
-//                dispatch(IdleContract.Event.GoToInputPhoneNumber(PointUseSource.TERMINAL, event.data))
-//
-//            // ── 캣포스 전문 ──────────────────────────────────────
-//            is SocketEvent.CatConnect -> {
-//                val response = "OK|\r\n".toByteArray(Charsets.UTF_8)
-//                socketManager.send(response) { written ->
-//                    Log.d("IdleViewModel", "CAT 연결 응답 전송: $written bytes")
-//                }
-//            }
-//
-//            is SocketEvent.CatEarnPointSingle ->
-//                dispatch(IdleContract.Event.GoToEarnPoint(PointUseSource.CAT, PaymentType.SINGLE, event.fields))
-//
-//            is SocketEvent.CatEarnPointComplex ->
-//                dispatch(IdleContract.Event.GoToEarnPoint(PointUseSource.CAT, PaymentType.MULTIPLE, event.fields))
-//
-//            is SocketEvent.CatUsePointNoCustomer ->
-//                dispatch(IdleContract.Event.GoToInputPhoneNumber(PointUseSource.CAT, event.fields))
-//
-//            is SocketEvent.CatUsePointWithCustomer ->
-//                dispatch(IdleContract.Event.GoToUsePoint(PointUseSource.CAT, event.fields))
-//
-//            // 연결 상태 변경 — 현재 IdleScreen 에서 별도 처리 없음
-//            is SocketEvent.CatRequestNum,
-//            is SocketEvent.CatRequestCustomer,
-//            is SocketEvent.CatDisconnect -> Unit
-//        }
-//    }
 }

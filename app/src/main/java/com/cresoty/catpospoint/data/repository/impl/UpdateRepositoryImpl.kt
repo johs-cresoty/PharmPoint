@@ -10,6 +10,7 @@ import android.os.Environment
 import androidx.core.net.toUri
 import com.cresoty.catpospoint.BuildConfig
 import com.cresoty.catpospoint.dataresource.DataResource
+import com.cresoty.catpospoint.domain.model.UpdateInfo
 import com.cresoty.catpospoint.domain.repository.UpdateRepository
 import com.cresoty.catpospoint.remote.api.CatposCloudApi
 import com.cresoty.catpospoint.remote.model.request.AppVersionCheckRequest
@@ -26,16 +27,19 @@ internal class UpdateRepositoryImpl @Inject constructor(
     private val apiService: CatposCloudApi
 ) : UpdateRepository {
 
-    // 버전 체크 → 강제 업데이트 필요하면 installUrl emit, 불필요하면 완료
-    override fun checkForUpdate(): Flow<DataResource<String>> = flow {
+    override fun checkForUpdate(): Flow<DataResource<UpdateInfo>> = flow {
         emit(DataResource.Loading)
         val request = AppVersionCheckRequest(
             currentVersionCode = BuildConfig.VERSION_CODE,
             platform = PLATFORM
         )
-        val versionInfo = apiService.checkAppVersion(request)
-        if (versionInfo.forceUpdate) {
-            emit(DataResource.Success(versionInfo.installUrl))
+        val response = apiService.checkAppVersion(request)
+        if (response.forceUpdate) {
+            emit(DataResource.Success(UpdateInfo(
+                installUrl   = response.installUrl,
+                messageTitle = response.messageTitle ?: "",
+                message      = response.message ?: "",
+            )))
         }
     }.catch { emit(DataResource.Error(it)) }
 

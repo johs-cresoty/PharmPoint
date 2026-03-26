@@ -105,8 +105,8 @@ class MainViewModel @Inject constructor(
     private val _appEvents = MutableSharedFlow<AppEvent>()
     val appEvents: SharedFlow<AppEvent> = _appEvents.asSharedFlow()
 
-    // 버전 체크 후 확정된 다운로드 URL (유저 확인 대기 중)
-    private var pendingInstallUrl: String = ""
+    // 버전 체크 후 확정된 업데이트 정보 (유저 확인 대기 중)
+    private var pendingUpdateInfo: com.cresoty.catpospoint.domain.model.UpdateInfo? = null
 
     //customerState
     private val _isExistChecking: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -229,14 +229,14 @@ class MainViewModel @Inject constructor(
     )
 
     init {
-        viewModelScope.launch {
-            socketEventRepository.events.collect { event ->
-                processSocketEvent(event)
-            }
-        }
+//        viewModelScope.launch {
+//            socketEventRepository.events.collect { event ->
+//                processSocketEvent(event)
+//            }
+//        }
 
         initRequestPointSettings()
-//        startAutoUpdate()
+        // startAutoUpdate() → AppViewModel 로 이전
 
         // 저장된 사용자 지정 이미지 URI 복원
         viewModelScope.launch {
@@ -254,8 +254,8 @@ class MainViewModel @Inject constructor(
                 when (resource) {
                     is DataResource.Loading -> Unit
                     is DataResource.Success -> {
-                        pendingInstallUrl = resource.data
-                        _dialog.update { Dialogs.UpdateBlocked }
+                        pendingUpdateInfo = resource.data
+                        _dialog.update { Dialogs.UpdateBlocked(resource.data.messageTitle, resource.data.message) }
                     }
                     is DataResource.Error -> Unit
                 }
@@ -275,15 +275,16 @@ class MainViewModel @Inject constructor(
     }
 
     private fun startDownload() {
+        val updateInfo = pendingUpdateInfo ?: return
         viewModelScope.launch {
-            startDownloadUseCase(pendingInstallUrl).collect { resource ->
+            startDownloadUseCase(updateInfo.installUrl).collect { resource ->
                 when (resource) {
                     is DataResource.Loading -> _dialog.update { Dialogs.UpdateRequired }
                     is DataResource.Success -> {
                         _dialog.update { Dialogs.None }
                         _appEvents.emit(AppEvent.InstallApk(resource.data))
                     }
-                    is DataResource.Error -> _dialog.update { Dialogs.UpdateBlocked }
+                    is DataResource.Error -> _dialog.update { Dialogs.UpdateBlocked(updateInfo.messageTitle, updateInfo.message) }
                 }
             }
         }

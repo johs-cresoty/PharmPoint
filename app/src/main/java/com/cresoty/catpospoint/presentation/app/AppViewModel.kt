@@ -3,12 +3,19 @@ package com.cresoty.catpospoint.presentation.app
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cresoty.catpospoint.ConfigKey
+import com.cresoty.catpospoint.ConfigRepository
+import com.cresoty.catpospoint.dataresource.DataResource
+import com.cresoty.catpospoint.domain.model.UpdateInfo
 import com.cresoty.catpospoint.domain.parser.TransactionDataParser
 import com.cresoty.catpospoint.domain.socket.SocketEvent
 import com.cresoty.catpospoint.domain.socket.SocketEventRepository
 import com.cresoty.catpospoint.domain.usecase.GetConfigUseCase
+import com.cresoty.catpospoint.domain.usecase.StartAutoUpdateUseCase
+import com.cresoty.catpospoint.domain.usecase.StartDownloadUseCase
 import com.cresoty.catpospoint.model.enums.PaymentType
 import com.cresoty.catpospoint.model.enums.PointUseSource
+import com.cresoty.catpospoint.model.interfaces.Dialogs
 import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputContract
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.presentation.use.UseContract
@@ -39,6 +46,9 @@ class AppViewModel @Inject constructor(
     private val socketEventRepository: SocketEventRepository,
     private val socketManager: SocketManager,
     private val getConfigUseCase: GetConfigUseCase,
+    private val startAutoUpdateUseCase: StartAutoUpdateUseCase,
+    private val startDownloadUseCase: StartDownloadUseCase,
+    private val configRepo: ConfigRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppContract.State())
@@ -47,10 +57,62 @@ class AppViewModel @Inject constructor(
     private val _effect = Channel<AppContract.Effect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
+    // 업데이트 확정 후 다운로드 대기 중인 정보
+    private var pendingUpdateInfo: UpdateInfo? = null
+
     init {
         viewModelScope.launch {
             socketEventRepository.events.collect { event ->
                 handleSocketEvent(event)
+            }
+        }
+        startAutoUpdate()
+    }
+
+    fun dispatch(event: AppContract.Event) {
+        when (event) {
+            AppContract.Event.OnAcceptUpdate -> startDownload()
+        }
+    }
+
+    private fun startAutoUpdate() {
+        viewModelScope.launch {
+            startAutoUpdateUseCase().collect { resource ->
+                when (resource) {
+                    is DataResource.Loading -> Unit
+                    is DataResource.Success -> {
+                        pendingUpdateInfo = resource.data
+                        _uiState.update { it.copy(dialog = Dialogs.UpdateBlocked(resource.data.messageTitle, resource.data.message)) }
+                    }
+                    is DataResource.Error -> Unit
+                }
+            }
+            // 업데이트 불필요(또는 API 실패) 시 사업자번호 설정 여부 확인
+            if (_uiState.value.dialog == Dialogs.None) {
+                checkSettingDialog()
+            }
+        }
+    }
+
+    private suspend fun checkSettingDialog() {
+        val savedBizNo = configRepo.getValue(ConfigKey.BIZ_NO, "")
+        if (savedBizNo.isEmpty()) {
+            emitEffect(AppContract.Effect.ShowSettingDialog)
+        }
+    }
+
+    private fun startDownload() {
+        val updateInfo = pendingUpdateInfo ?: return
+        viewModelScope.launch {
+            startDownloadUseCase(updateInfo.installUrl).collect { resource ->
+                when (resource) {
+                    is DataResource.Loading -> _uiState.update { it.copy(dialog = Dialogs.UpdateRequired) }
+                    is DataResource.Success -> {
+                        _uiState.update { it.copy(dialog = Dialogs.None) }
+                        emitEffect(AppContract.Effect.InstallApk(resource.data))
+                    }
+                    is DataResource.Error -> _uiState.update { it.copy(dialog = Dialogs.UpdateBlocked(updateInfo.messageTitle, updateInfo.message)) }
+                }
             }
         }
     }

@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 
 @Composable
-fun UpdateBlockedDialog() {
+fun UpdateBlockedDialog(messageTitle: String, message: String) {
     val controller = LocalController.current
     BaseDialog(onDismiss = {}) {
         Box(
@@ -52,7 +52,7 @@ fun UpdateBlockedDialog() {
 
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "업데이트 후에 사용 가능합니다",
+                    text = messageTitle,
                     color = common02,
                     fontSize = 30.spx,
                     lineHeight = 42.spx,
@@ -63,7 +63,7 @@ fun UpdateBlockedDialog() {
 
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "업데이트 내용\n- 인증 기능이 추가됐어요\n- UI가 개선되었어요",
+                    text =  message,
                     color = common02,
                     fontSize = 25.spx,
                     lineHeight = 30.spx,
@@ -103,7 +103,7 @@ private fun InputCustomerPhoneNumberPreview() {
     }
     CatposPointTheme {
         CompositionLocalProvider(LocalController provides mockController) {
-            UpdateBlockedDialog()
+            UpdateBlockedDialog(messageTitle = "업데이트 안내", message = "필수 업데이트가 있습니다.")
         }
     }
 }

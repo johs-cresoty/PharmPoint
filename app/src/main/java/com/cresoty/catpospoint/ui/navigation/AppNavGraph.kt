@@ -12,6 +12,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -21,10 +22,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.cresoty.catpospoint.model.event.AppEvent
+import com.cresoty.catpospoint.model.interfaces.Dialogs
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.interfaces.ViewController
 import com.cresoty.catpospoint.model.enums.PointUseSource
+import com.cresoty.catpospoint.model.state.SettingState
 import com.cresoty.catpospoint.presentation.app.AppContract
 import com.cresoty.catpospoint.presentation.app.AppViewModel
 import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputContract
@@ -35,6 +37,9 @@ import com.cresoty.catpospoint.ui.result.ResultRoute
 import com.cresoty.catpospoint.ui.use.UseRoute
 import com.cresoty.catpospoint.view.controller.DialogController
 import com.cresoty.catpospoint.view.controller.LocalController
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * 앱 전역 NavGraph.
@@ -61,38 +66,36 @@ fun AppNavGraph(
     // ── LocalController 브리지 ─────────────────────────────────────────
     // IdleScreen 등 구 아키텍처 화면이 MainViewModel 의 상태/이벤트에 접근할 수 있도록
     // CompositionLocal 로 제공한다. 신 아키텍처 화면은 LocalController 를 사용하지 않는다.
-    val controller = remember(mainVm) {
+    //
+    // settingState: AppViewModel 의 다이얼로그 상태를 우선 반영한다.
+    //   (업데이트 관련 Dialogs 는 AppViewModel 이 관리)
+    // dispatch:     PadAction.OnAcceptUpdate 는 AppViewModel 로 라우팅한다.
+    val scope = rememberCoroutineScope()
+    val mergedSettingState = remember(mainVm, appVm, scope) {
+        combine(mainVm.settingState, appVm.uiState) { setting, appState ->
+            if (appState.dialog != Dialogs.None) setting.copy(dialog = appState.dialog) else setting
+        }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), SettingState())
+    }
+    val controller = remember(mainVm, appVm, mergedSettingState) {
         object : ViewController {
             override val mainState = mainVm.mainState
             override val configState = mainVm.configState
             override val previewState = mainVm.previewState
-            override val settingState = mainVm.settingState
+            override val settingState = mergedSettingState
             override val pointState = mainVm.pointState
             override val customerState = mainVm.customerState
             override val customThemeImageUriState = mainVm.customThemeImageUriState
             override val appEvents = mainVm.appEvents
-            override fun dispatch(action: PadAction) = mainVm.dispatch(action)
+            override fun dispatch(action: PadAction) {
+                if (action == PadAction.OnAcceptUpdate) appVm.dispatch(AppContract.Event.OnAcceptUpdate)
+                else mainVm.dispatch(action)
+            }
         }
     }
 
     CompositionLocalProvider(LocalController provides controller) {
 
-        // AppEvent 처리 (APK 설치 등) — MainViewModel 제거 시 함께 삭제
-        LaunchedEffect(Unit) {
-            controller.appEvents.collect { event ->
-                when (event) {
-                    is AppEvent.InstallApk -> context.startActivity(
-                        Intent(Intent.ACTION_VIEW).apply {
-                            setDataAndType(event.uri, "application/vnd.android.package-archive")
-                            flags =
-                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        }
-                    )
-                }
-            }
-        }
-
-        // ── 소켓 이벤트 → 화면 전환 ──────────────────────────────────
+        // ── AppViewModel effect 처리 ──────────────────────────────────
         LaunchedEffect(Unit) {
             appVm.effect.collect { effect ->
                 when (effect) {
@@ -113,6 +116,17 @@ fun AppNavGraph(
 
                     AppContract.Effect.NavigateToCatRequestCustomer ->
                         navController.navigate(AppDestination.CatRequestCustomer.route)
+
+                    // 업데이트 다운로드 완료 → APK 설치
+                    is AppContract.Effect.InstallApk -> context.startActivity(
+                        Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(effect.uri, "application/vnd.android.package-archive")
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        }
+                    )
+
+                    // 업데이트 불필요 & 사업자번호 미설정 → 설정 다이얼로그
+                    AppContract.Effect.ShowSettingDialog -> mainVm.openSettingDialog()
                 }
             }
         }
@@ -147,17 +161,6 @@ fun AppNavGraph(
                     )
                 }
 
-//                // ── 포인트 적립 ───────────────────────────────────
-//                composable(AppDestination.EarnPoint.route) {
-//                    val state by appVm.uiState.collectAsStateWithLifecycle()
-//                    val args = state.earnPointArgs ?: return@composable
-//                    // TODO: EarnPointRoute(
-//                    //   args        = args,
-//                    //   onGoToResult  = { resultModel -> navController.navigate(AppDestination.Result.route) },
-//                    //   onGoToWaiting = { navController.popBackStack(AppDestination.Idle.route, inclusive = false) }
-//                    // )
-//                    Box(Modifier.fillMaxSize())
-//                }
 
                 // ── 휴대폰 번호 입력 (고객 조회 / 적립) ─────────────
                 composable(AppDestination.PhoneNumberInput.route) {

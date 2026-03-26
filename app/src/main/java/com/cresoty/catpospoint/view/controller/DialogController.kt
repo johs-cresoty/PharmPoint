@@ -43,7 +43,7 @@ fun DialogController() {
         Dialogs.Setting -> SettingDialog()
         Dialogs.InputPassword -> AdminLoginDialog()
         Dialogs.UpdateRequired -> UpdateRequiredDialog()
-        Dialogs.UpdateBlocked -> UpdateBlockedDialog()
+        is Dialogs.UpdateBlocked -> UpdateBlockedDialog(messageTitle = dialog.messageTitle, message = dialog.message)
     }
 
     if (preview.isHideDialog) {
