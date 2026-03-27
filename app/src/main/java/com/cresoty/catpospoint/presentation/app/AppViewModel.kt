@@ -177,23 +177,15 @@ class AppViewModel @Inject constructor(
 
             is SocketEvent.CatConnect -> sendCatConnectAck()
 
-            is SocketEvent.CatRequestNum -> {
-                _uiState.update {
-                    it.copy(
-                        phoneNumberInputArgs = AppContract.PhoneNumberInputArgs(
-                            mode = PhoneNumberInputContract.Mode.CatRequestNum,
-                        )
-                    )
-                }
-                emitEffect(AppContract.Effect.NavigateToCatRequestNum)
-            }
-
+            is SocketEvent.CatRequestNum,
             is SocketEvent.CatRequestCustomer -> {
+                val mode = when (event) {
+                    is SocketEvent.CatRequestNum -> PhoneNumberInputContract.Mode.CatRequestNum
+                    else -> PhoneNumberInputContract.Mode.CatRequestCustomer
+                }
                 _uiState.update {
                     it.copy(
-                        phoneNumberInputArgs = AppContract.PhoneNumberInputArgs(
-                            mode = PhoneNumberInputContract.Mode.CatRequestCustomer,
-                        )
+                        phoneNumberInputArgs = AppContract.PhoneNumberInputArgs(mode = mode)
                     )
                 }
                 emitEffect(AppContract.Effect.NavigateToCatRequestCustomer)

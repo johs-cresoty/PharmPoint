@@ -111,9 +111,6 @@ fun AppNavGraph(
                     AppContract.Effect.NavigateToUsePoint ->
                         navController.navigate(AppDestination.UsePoint.route)
 
-                    AppContract.Effect.NavigateToCatRequestNum ->
-                        navController.navigate(AppDestination.CatRequestNum.route)
-
                     AppContract.Effect.NavigateToCatRequestCustomer ->
                         navController.navigate(AppDestination.CatRequestCustomer.route)
 
@@ -213,31 +210,14 @@ fun AppNavGraph(
                     )
                 }
 
-                // ── CATPOS CAT NUM (휴대폰 번호 요청) ────────────
-                composable(AppDestination.CatRequestNum.route) {
-                    val state by appVm.uiState.collectAsStateWithLifecycle()
-                    val args = state.phoneNumberInputArgs ?: return@composable
-                    PhoneNumberInputRoute(
-                        args = args,
-                        onNavigateResult = { resultState ->
-                            appVm.setResultArgs(resultState)
-                            navController.navigate(AppDestination.Result.route)
-                        },
-                        onNavigateUsePoint = {},
-                        onNavigateBack = {
-                            navController.popBackStack(AppDestination.Idle.route, inclusive = false)
-                        },
-                    )
-                }
-
-                // ── CATPOS CAT CST (휴대폰+고객 번호 요청) ───────
+                // ── CATPOS CAT NUM / CAT CST (휴대폰 번호 요청 공용) ─
                 composable(AppDestination.CatRequestCustomer.route) {
                     val state by appVm.uiState.collectAsStateWithLifecycle()
                     val args = state.phoneNumberInputArgs ?: return@composable
                     PhoneNumberInputRoute(
                         args = args,
                         onNavigateUsePoint = {},
-                        onNavigateResult = {},  // CAT 002는 결과 화면 없음
+                        onNavigateResult = {},
                         onNavigateBack = {
                             navController.popBackStack(AppDestination.Idle.route, inclusive = false)
                         },

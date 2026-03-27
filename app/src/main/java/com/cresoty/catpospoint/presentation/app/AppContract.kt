@@ -71,10 +71,7 @@ object AppContract {
         /** 포인트 사용 화면 */
         data object NavigateToUsePoint : Effect
 
-        /** CATPOS 휴대폰 번호 요청 화면 (CAT NUM) */
-        data object NavigateToCatRequestNum : Effect
-
-        /** CATPOS 휴대폰 번호 + 고객 번호 요청 화면 (CAT CST) */
+        /** CATPOS 휴대폰 번호 요청 화면 (CAT NUM / CAT CST 공용) */
         data object NavigateToCatRequestCustomer : Effect
 
         /** 다운로드 완료 → APK 설치 인텐트 실행 */

@@ -21,9 +21,6 @@ sealed class AppDestination(val route: String) {
     /** 처리 결과 화면 */
     data object Result : AppDestination("result")
 
-    /** CATPOS 휴대폰 번호 요청 화면 (CAT NUM) */
-    data object CatRequestNum : AppDestination("cat_request_num")
-
-    /** CATPOS 휴대폰 번호 + 고객 번호 요청 화면 (CAT CST) */
+    /** CATPOS 휴대폰 번호 요청 화면 (CAT NUM / CAT CST 공용) */
     data object CatRequestCustomer : AppDestination("cat_request_customer")
 }

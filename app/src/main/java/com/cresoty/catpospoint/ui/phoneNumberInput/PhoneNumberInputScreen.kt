@@ -91,7 +91,9 @@ fun PhoneNumberInputScreen(
             mode is PhoneNumberInputContract.Mode.Lookup && mode.source == PointUseSource.MANUAL ->
                 CheckPointInfo(storeName = state.storeName)
 
-            mode is PhoneNumberInputContract.Mode.CatRequestCustomer -> CATPOSInputInfo(storeName = state.storeName)
+            mode is PhoneNumberInputContract.Mode.CatRequestCustomer || mode is PhoneNumberInputContract.Mode.CatRequestNum -> CATPOSInputInfo(
+                storeName = state.storeName
+            )
 
             else ->
                 PhoneNumberInputInfo(
