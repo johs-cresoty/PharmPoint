@@ -110,7 +110,7 @@ class PhoneNumberInputReducer @Inject constructor() {
                         state to listOf(PhoneNumberInputContract.Effect.SendToCATPhoneNumber(event.phoneNumber))
 
                     PhoneNumberInputContract.Mode.CatRequestCustomer ->
-                        state to listOf(
+                        state.copy(isLoading = true) to listOf(
                             PhoneNumberInputContract.Effect.SendToCATCustomerInfo(
                                 state.bizNo,
                                 event.phoneNumber

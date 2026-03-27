@@ -103,14 +103,14 @@ fun PhoneNumberInputScreen(
                 )
         }
 
-        if (isInvalidCustomer) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(83.dpx),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dpx),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isInvalidCustomer) {
                 Image(
                     modifier = Modifier.size(height = 24.dpx, width = 25.dpx),
                     painter = painterResource(R.drawable.icon_alert),
@@ -127,10 +127,6 @@ fun PhoneNumberInputScreen(
             }
         }
 
-        if (!isInvalidCustomer && state.mode !is PhoneNumberInputContract.Mode.Save) {
-            Spacer(modifier = Modifier.size(83.dpx))
-        }
-
         PhoneNumberInputField(
             value = state.phoneNumber,
             maskStrategy = Middle,
@@ -138,12 +134,7 @@ fun PhoneNumberInputScreen(
             onMaskToggle = { sendEvent(PhoneNumberInputContract.Event.OnMaskToggle) },
             isRegisteredCustomer = !isInvalidCustomer
         )
-        if (mode is PhoneNumberInputContract.Mode.Lookup) {
-            Spacer(modifier = Modifier.size(80.dpx))
-        } else {
-            Spacer(modifier = Modifier.size(43.dpx))
-        }
-
+        Spacer(modifier = Modifier.weight(1f))
         NumberPadGrid(
             modifier = Modifier.size(width = 720.dpx, height = 440.dpx),
             keys = NUMBER_PAD_KEYS,
@@ -167,7 +158,8 @@ fun PhoneNumberInputScreen(
             onClick = {
                 sendEvent(PhoneNumberInputContract.Event.OnClickConfirm(state.phoneNumber))
             },
-            enabled = isConfirmEnabled
+            enabled = isConfirmEnabled,
+            isLoading = state.isLoading,
         )
         Box(
             modifier = Modifier
@@ -288,7 +280,7 @@ fun PhoneNumberInputInfo(storeName: String, payAmount: Int, estimatedPoint: Int)
             }
             Spacer(modifier = Modifier.size(20.dpx))
         } else {
-            Spacer(modifier = Modifier.size(107.dpx))
+            Spacer(modifier = Modifier.size(24.dpx))
         }
 
 
@@ -300,7 +292,6 @@ fun PhoneNumberInputInfo(storeName: String, payAmount: Int, estimatedPoint: Int)
             fontWeight = FontWeight(400),
             color = common01
         )
-        Spacer(modifier = Modifier.size(64.dpx))
     }
 }
 
@@ -402,7 +393,7 @@ private fun PhoneNumberScreenLookupCatPreview() {
                 .fillMaxSize()
                 .background(white),
             state = PhoneNumberInputContract.State(
-                mode = PhoneNumberInputContract.Mode.Lookup(PointUseSource.CAT),
+                mode = PhoneNumberInputContract.Mode.CatRequestCustomer,
                 phoneNumber = "01012345678",
                 storeName = "크레소티"
             ),

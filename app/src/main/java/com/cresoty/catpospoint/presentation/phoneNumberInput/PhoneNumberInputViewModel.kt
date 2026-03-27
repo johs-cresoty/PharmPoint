@@ -220,7 +220,7 @@ class PhoneNumberInputViewModel @Inject constructor(
             sendCATCustomerInfoUseCase(configState.value.bizNo, phoneNumber).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> dispatch(PhoneNumberInputContract.Event.GoToTheWaitingScreen)
-                    is DataResource.Error -> {}
+                    is DataResource.Error -> dispatch(PhoneNumberInputContract.Event.OnSavePointError)
                     is DataResource.Loading -> {}
                 }
             }

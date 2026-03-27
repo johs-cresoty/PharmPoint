@@ -12,7 +12,6 @@ import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputCon
 import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputViewModel
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.presentation.use.UseContract
-import com.cresoty.catpospoint.view.composable.common.LoadingOverlay
 
 @Composable
 fun PhoneNumberInputRoute(
@@ -47,5 +46,4 @@ fun PhoneNumberInputRoute(
             sendEvent = vm::dispatch,
         )
     }
-    LoadingOverlay(isVisible = state.value.isLoading)
 }

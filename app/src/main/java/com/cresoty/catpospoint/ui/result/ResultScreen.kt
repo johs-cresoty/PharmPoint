@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -91,6 +92,9 @@ fun ResultScreen(
     ) {
         Spacer(modifier = Modifier.size(288.dpx))
         Image(
+            modifier = Modifier
+                .width(237.dpx)
+                .height(159.dpx),
             painter = painterResource(imageId),
             contentDescription = null
         )
