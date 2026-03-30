@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +50,8 @@ fun UsePointScreen(
     state: UseContract.State,
     sendEvent: (UseContract.Event) -> Unit,
 ) {
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(state.storeName) { mutableStateOf(initialFontSize) }
 
     val interactionSource = remember { MutableInteractionSource() }
     val buttonList = PointQuickInputType.entries
@@ -66,13 +71,17 @@ fun UsePointScreen(
         Spacer(modifier = Modifier.size(27.dpx))
         Text(
             text = state.storeName,
-            fontSize = 45.spx,
+            fontSize = storeNameFontSize,
             lineHeight = 60.75.spx,
             fontFamily = NotoSansKr,
             fontWeight = FontWeight(400),
             color = common01,
             textAlign = TextAlign.Center,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+            }
         )
         Text(
             text = "${state.payAmount.toDecimalString()}원 결제",
@@ -204,7 +213,7 @@ fun UsePointScreen(
 @Composable
 private fun UsePointScreenPreview() {
     val dummyState = UseContract.State(
-        storeName = "다나아 약국",
+        storeName = "일이삼사오육칠팔구십일이삼사오육칠팔구십",
         payAmount = 15000,
         usePoint = 0,
         balancePoint = 10000,

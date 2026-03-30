@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -220,16 +221,23 @@ fun CheckPointInfo(storeName: String) {
 
 @Composable
 fun PhoneNumberInputInfo(storeName: String, payAmount: Int, estimatedPoint: Int) {
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = storeName,
-            fontSize = 45.spx,
+            fontSize = storeNameFontSize,
             lineHeight = 60.75.spx,
             fontFamily = NotoSansKr,
             fontWeight = FontWeight(400),
             color = common01,
             textAlign = TextAlign.Center,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+            }
         )
         Text(
             text = "${payAmount.toDecimalString()}원 결제",
@@ -297,6 +305,9 @@ fun PhoneNumberInputInfo(storeName: String, payAmount: Int, estimatedPoint: Int)
 
 @Composable
 fun CATPOSInputInfo(storeName: String) {
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(modifier = Modifier.size(21.5.dpx))
         Image(
@@ -307,12 +318,16 @@ fun CATPOSInputInfo(storeName: String) {
         Spacer(modifier = Modifier.size(34.5.dpx))
         Text(
             text = storeName,
-            fontSize = 45.spx,
+            fontSize = storeNameFontSize,
             fontFamily = NotoSansKr,
             fontWeight = FontWeight(400),
             color = common01,
             textAlign = TextAlign.Center,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+            }
         )
 
         Spacer(modifier = Modifier.size(23.dpx))
@@ -330,16 +345,23 @@ fun CATPOSInputInfo(storeName: String) {
 
 @Composable
 fun TerminalInputInfo(storeName: String, payAmount: Int) {
+    val initialFontSize = 45f.spx
+    var storeNameFontSize by remember(storeName) { mutableStateOf(initialFontSize) }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(modifier = Modifier.size(27.dpx))
         Text(
             text = storeName,
-            fontSize = 45.spx,
+            fontSize = storeNameFontSize,
             fontFamily = NotoSansKr,
             fontWeight = FontWeight(400),
             color = common01,
             textAlign = TextAlign.Center,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            onTextLayout = {
+                if (it.didOverflowWidth) storeNameFontSize *= 0.9f
+            }
         )
         Text(
             text = "${payAmount.toDecimalString()}원 결제",
@@ -431,7 +453,7 @@ private fun PhoneNumberScreenLookupTerminalPreview() {
 private fun PhoneNumberInputInfoPreview() {
     CatposPointTheme {
         PhoneNumberInputInfo(
-            storeName = "다나아약국",
+            storeName = "일이삼사오육칠팔구십일이삼사오육칠팔구십",
             payAmount = 10000,
             estimatedPoint = 5000,
         )
