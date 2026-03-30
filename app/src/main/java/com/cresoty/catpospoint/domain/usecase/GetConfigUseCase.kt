@@ -1,6 +1,6 @@
 package com.cresoty.catpospoint.domain.usecase
 
-import com.cresoty.catpospoint.ConfigRepository
+import com.cresoty.catpospoint.data.repository.ConfigRepository
 import com.cresoty.catpospoint.model.state.ConfigState
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject

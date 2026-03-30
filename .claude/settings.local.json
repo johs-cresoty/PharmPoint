@@ -9,7 +9,12 @@
       "Bash(xargs cat:*)",
       "Bash(keytool.exe:*)",
       "Bash(cmd.exe:*)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(grep:*)",
+      "Bash(./gradlew :app:compileDebugKotlin:*)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" ./gradlew :app:compileDebugKotlin:*)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" ./gradlew :app:assembleDebug:*)",
+      "Bash(ls:*)"
     ]
   }
 }

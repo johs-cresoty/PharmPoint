@@ -4,7 +4,7 @@ import android.net.Uri
 import com.cresoty.catpospoint.domain.model.TransactionData
 import com.cresoty.catpospoint.model.enums.PaymentType
 import com.cresoty.catpospoint.model.enums.PointUseSource
-import com.cresoty.catpospoint.model.interfaces.Dialogs
+import com.cresoty.catpospoint.presentation.Dialogs
 import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputContract
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.presentation.use.UseContract

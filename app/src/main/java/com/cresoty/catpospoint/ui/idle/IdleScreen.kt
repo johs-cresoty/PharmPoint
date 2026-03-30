@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,49 +30,33 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.MainThemes
-import com.cresoty.catpospoint.model.interfaces.ViewController
-import com.cresoty.catpospoint.model.state.ConfigState
-import com.cresoty.catpospoint.model.state.CustomerState
-import com.cresoty.catpospoint.model.state.MainState
-import com.cresoty.catpospoint.model.state.PointState
-import com.cresoty.catpospoint.model.state.PreviewState
-import com.cresoty.catpospoint.model.state.SettingState
-import com.cresoty.catpospoint.ui.component.ClickSoundButton
-import com.cresoty.catpospoint.ui.component.PointBalanceButton
-import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
+import com.cresoty.catpospoint.presentation.idle.IdleContract
 import com.cresoty.catpospoint.presentation.theme.NotoSansKr
 import com.cresoty.catpospoint.presentation.theme.common01
 import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.white
-import com.cresoty.catpospoint.view.controller.LocalController
-import com.cresoty.catpospoint.model.event.AppEvent
-import com.cresoty.catpospoint.presentation.idle.IdleContract
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.PointBalanceButton
 
 @Composable
 fun IdleScreen(
     state: IdleContract.State,
-    sendEvent: (IdleContract.Event) -> Unit) {
-    val controller = LocalController.current
-    val config by controller.configState.collectAsStateWithLifecycle()
-    val preview by controller.previewState.collectAsStateWithLifecycle()
+    sendEvent: (IdleContract.Event) -> Unit
+) {
+    val config = state.config
 
-    val themeIndex = if (state.isPreview) preview.theme ?: 0 else config.themeIndex
+    val themeIndex = if (state.isPreview) state.preTheme ?: 0 else config.themeIndex
     val theme = MainThemes.entries.getOrElse(themeIndex) { MainThemes.Theme_CUSTOM }
     val isCustomTheme = theme == MainThemes.Theme_CUSTOM
-    // 커스텀 이미지 URI: 프리뷰 모드면 preview에서, 아니면 저장된 config에서 로드
+    // 커스텀 이미지 URI: 프리뷰 모드면 state에서, 아니면 저장된 config에서 로드
     val customImageUri: Uri? = when {
-        state.isPreview -> preview.customImageUri
+        state.isPreview -> state.preCustomImageUri
         isCustomTheme -> config.customImageUri.takeIf { it.isNotEmpty() }?.let { Uri.parse(it) }
         else -> null
     }
@@ -88,14 +70,14 @@ fun IdleScreen(
         MainThemes.Theme_CUSTOM -> null
     }
 
-    val preSubTitle = if (state.isPreview) preview.subTitle else null
+    val preSubTitle = if (state.isPreview) state.preSubTitle else null
 
     val block = mapOf<MainThemes, @Composable () -> Unit>(
-        MainThemes.Theme_A to { ColumnA(preSubTitle, state.isPreview, sendEvent) },
-        MainThemes.Theme_B to { ColumnB(preSubTitle, state.isPreview, sendEvent) },
-        MainThemes.Theme_C to { ColumnC(preSubTitle, state.isPreview, sendEvent) },
-        MainThemes.Theme_D to { ColumnD(preSubTitle, state.isPreview, sendEvent) },
-        MainThemes.Theme_E to { ColumnE(preSubTitle, state.isPreview, sendEvent) },
+        MainThemes.Theme_A to { ColumnA(preSubTitle, state.isPreview, config.storeName, config.subTitle, sendEvent) },
+        MainThemes.Theme_B to { ColumnB(preSubTitle, state.isPreview, config.storeName, config.subTitle, sendEvent) },
+        MainThemes.Theme_C to { ColumnC(preSubTitle, state.isPreview, config.storeName, config.subTitle, sendEvent) },
+        MainThemes.Theme_D to { ColumnD(preSubTitle, state.isPreview, config.storeName, config.subTitle, sendEvent) },
+        MainThemes.Theme_E to { ColumnE(preSubTitle, state.isPreview, config.storeName, config.subTitle, sendEvent) },
         MainThemes.Theme_CUSTOM to { CustomPreview(preSubTitle, state.isPreview, sendEvent) }
     )
 
@@ -141,11 +123,10 @@ fun IdleScreen(
 private fun ColumnC(
     preSubTitle: String?,
     isPreview: Boolean,
+    storeName: String,
+    subTitle: String,
     sendEvent: (IdleContract.Event) -> Unit,
 ) {
-    val controller = LocalController.current
-    val config by controller.configState.collectAsStateWithLifecycle()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -163,7 +144,7 @@ private fun ColumnC(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = preSubTitle ?: config.subTitle,
+                text = preSubTitle ?: subTitle,
                 fontSize = 30f.spx,
                 lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
@@ -175,7 +156,7 @@ private fun ColumnC(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = config.storeName,
+                text = storeName,
                 fontSize = 80f.spx,
                 lineHeight = 80f.spx,
                 fontWeight = FontWeight.Bold,
@@ -183,12 +164,18 @@ private fun ColumnC(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { sendEvent(IdleContract.Event.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
             theme = MainThemes.Theme_A,
-            isPreview = preSubTitle == null
+            isPreview = preSubTitle == null,
+            onClickClose = {sendEvent(IdleContract.Event.OnClickClose)}
         )
     }
 }
@@ -197,11 +184,10 @@ private fun ColumnC(
 private fun ColumnD(
     preSubTitle: String?,
     isPreview: Boolean,
+    storeName: String,
+    subTitle: String,
     sendEvent: (IdleContract.Event) -> Unit,
 ) {
-    val controller = LocalController.current
-    val config by controller.configState.collectAsStateWithLifecycle()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -223,7 +209,7 @@ private fun ColumnD(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = preSubTitle ?: config.subTitle,
+                text = preSubTitle ?: subTitle,
                 fontSize = 30f.spx,
                 lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
@@ -237,7 +223,7 @@ private fun ColumnD(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = config.storeName,
+                text = storeName,
                 fontSize = 80f.spx,
                 lineHeight = 80f.spx,
                 fontWeight = FontWeight.Bold,
@@ -245,12 +231,18 @@ private fun ColumnD(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { sendEvent(IdleContract.Event.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
             theme = MainThemes.Theme_B,
             isPreview = preSubTitle == null,
+            onClickClose = {sendEvent(IdleContract.Event.OnClickClose)}
         )
     }
 }
@@ -259,11 +251,10 @@ private fun ColumnD(
 private fun ColumnE(
     preSubTitle: String?,
     isPreview: Boolean,
+    storeName: String,
+    subTitle: String,
     sendEvent: (IdleContract.Event) -> Unit,
 ) {
-    val controller = LocalController.current
-    val config by controller.configState.collectAsStateWithLifecycle()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -274,7 +265,7 @@ private fun ColumnE(
         Spacer(modifier = Modifier.size(610.dpx))
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = config.storeName,
+            text = storeName,
             fontSize = 80f.spx,
             lineHeight = 80f.spx,
             fontWeight = FontWeight.Bold,
@@ -286,7 +277,7 @@ private fun ColumnE(
 
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = preSubTitle ?: config.subTitle,
+            text = preSubTitle ?: subTitle,
             fontSize = 30.spx,
             lineHeight = 40.5.spx,
             fontWeight = FontWeight.Normal,
@@ -295,12 +286,18 @@ private fun ColumnE(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.size(30.dpx))
-        PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
+        PointBalanceButton(
+            onClick = if (isPreview) {
+                {}
+            } else {
+                { sendEvent(IdleContract.Event.OnClickPointBalance) }
+            })
 
         Spacer(modifier = Modifier.weight(1f))
         PreviewCloseButton(
             theme = MainThemes.Theme_C,
-            isPreview = preSubTitle == null
+            isPreview = preSubTitle == null,
+            onClickClose = {sendEvent(IdleContract.Event.OnClickClose)}
         )
 
     }
@@ -310,11 +307,10 @@ private fun ColumnE(
 private fun ColumnB(
     preSubTitle: String?,
     isPreview: Boolean,
+    storeName: String,
+    subTitle: String,
     sendEvent: (IdleContract.Event) -> Unit,
 ) {
-    val controller = LocalController.current
-    val config by controller.configState.collectAsStateWithLifecycle()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -329,7 +325,7 @@ private fun ColumnB(
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = preSubTitle ?: config.subTitle,
+                text = preSubTitle ?: subTitle,
                 fontSize = 30.spx,
                 lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
@@ -341,7 +337,7 @@ private fun ColumnB(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = config.storeName,
+                text = storeName,
                 fontSize = 80.spx,
                 lineHeight = 80.spx,
                 fontWeight = FontWeight.Bold,
@@ -349,12 +345,18 @@ private fun ColumnB(
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { sendEvent(IdleContract.Event.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
             theme = MainThemes.Theme_D,
-            isPreview = preSubTitle == null
+            isPreview = preSubTitle == null,
+            onClickClose = {sendEvent(IdleContract.Event.OnClickClose)}
         )
     }
 }
@@ -363,11 +365,10 @@ private fun ColumnB(
 private fun ColumnA(
     preSubTitle: String?,
     isPreview: Boolean,
+    storeName: String,
+    subTitle: String,
     sendEvent: (IdleContract.Event) -> Unit,
 ) {
-    val controller = LocalController.current
-    val config by controller.configState.collectAsStateWithLifecycle()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -382,7 +383,7 @@ private fun ColumnA(
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = preSubTitle ?: config.subTitle,
+                text = preSubTitle ?: subTitle,
                 fontSize = 30f.spx,
                 lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
@@ -394,7 +395,7 @@ private fun ColumnA(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = config.storeName,
+                text = storeName,
                 fontSize = 80f.spx,
                 lineHeight = 80f.spx,
                 fontWeight = FontWeight.Bold,
@@ -402,12 +403,18 @@ private fun ColumnA(
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { sendEvent(IdleContract.Event.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
             theme = MainThemes.Theme_E,
-            isPreview = preSubTitle == null
+            isPreview = preSubTitle == null,
+            onClickClose = {sendEvent(IdleContract.Event.OnClickClose)}
         )
     }
 }
@@ -418,9 +425,6 @@ private fun CustomPreview(
     isPreview: Boolean,
     sendEvent: (IdleContract.Event) -> Unit,
 ) {
-    val controller = LocalController.current
-    val config by controller.configState.collectAsStateWithLifecycle()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -464,11 +468,17 @@ private fun CustomPreview(
 
         }
         Spacer(Modifier.weight(1f))
-        PointBalanceButton(onClick = if (isPreview) {{}} else { { sendEvent(IdleContract.Event.OnClickPointBalance) } })
+        PointBalanceButton(
+            onClick = if (isPreview) {
+                {}
+            } else {
+                { sendEvent(IdleContract.Event.OnClickPointBalance) }
+            })
         Spacer(Modifier.size(50.dpx))
         PreviewCloseButton(
             theme = MainThemes.Theme_CUSTOM,
-            isPreview = preSubTitle == null
+            isPreview = preSubTitle == null,
+            onClickClose = {sendEvent(IdleContract.Event.OnClickClose)}
         )
     }
 }
@@ -477,8 +487,8 @@ private fun CustomPreview(
 private fun PreviewCloseButton(
     isPreview: Boolean,
     theme: MainThemes,
+    onClickClose: () -> Unit
 ) {
-    val controller = LocalController.current
     val alpha = if (theme == MainThemes.Theme_A) 0.5f else 1f
     val image = when (theme) {
         MainThemes.Theme_A,
@@ -506,9 +516,7 @@ private fun PreviewCloseButton(
             backgroundColor = white,
             shape = RoundedCornerShape(20f.dpx),
             border = BorderStroke(width = 1.dp, color = common01),
-            onClick = {
-//                controller.dispatch(PadAction.OnClickClosePreview)
-            }
+            onClick = onClickClose
         ) {
             Text(
                 text = "닫기",
@@ -519,120 +527,3 @@ private fun PreviewCloseButton(
         }
     }
 }
-
-//
-//// 미리보기
-//private fun previewController(themeIndex: Int = 0) = object : ViewController {
-//    override val mainState = MutableStateFlow(MainState())
-//    override val configState = MutableStateFlow(
-//        ConfigState(
-//            storeName = "연세온누리약국",
-//            subTitle = "건강 상담, 언제든지 도와드립니다.",
-//            themeIndex = themeIndex
-//        )
-//    )
-//    override val previewState = MutableStateFlow(PreviewState())
-//    override val settingState = MutableStateFlow(SettingState())
-//    override val pointState = MutableStateFlow(PointState())
-//    override val customerState = MutableStateFlow(CustomerState())
-//    override val customThemeImageUriState = MutableStateFlow<Uri?>(null)
-//    override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
-//    override fun dispatch(action: PadAction) = Unit
-//}
-//
-//@Preview(name = "테마A", device = "spec:width=800px,height=1319px,dpi=213")
-//@Composable
-//private fun IdleScreenPreview_ThemeA() {
-//    CatposPointTheme {
-//        CompositionLocalProvider(LocalController provides previewController(0)) {
-//            IdleScreen(
-//                state = IdleContract.State(isPreview = false),
-//                sendEvent = {}
-//            )
-//        }
-//    }
-//}
-//
-//@Preview(name = "테마B", device = "spec:width=800px,height=1319px,dpi=213")
-//@Composable
-//private fun IdleScreenPreview_ThemeB() {
-//    CatposPointTheme {
-//        CompositionLocalProvider(LocalController provides previewController(1)) {
-//            IdleScreen(
-//                state = IdleContract.State(isPreview = false),
-//                sendEvent = {}
-//            )
-//        }
-//    }
-//}
-//
-//@Preview(name = "테마C", device = "spec:width=800px,height=1319px,dpi=213")
-//@Composable
-//private fun IdleScreenPreview_ThemeC() {
-//    CatposPointTheme {
-//        CompositionLocalProvider(LocalController provides previewController(2)) {
-//            IdleScreen(
-//                state = IdleContract.State(isPreview = false),
-//                sendEvent = {}
-//            )
-//        }
-//    }
-//}
-//
-//@Preview(name = "테마D", device = "spec:width=800px,height=1319px,dpi=213")
-//@Composable
-//private fun IdleScreenPreview_ThemeD() {
-//    CatposPointTheme {
-//        CompositionLocalProvider(LocalController provides previewController(3)) {
-//            IdleScreen(
-//                state = IdleContract.State(isPreview = false),
-//                sendEvent = {}
-//            )
-//        }
-//    }
-//}
-//
-//@Preview(name = "테마E", device = "spec:width=800px,height=1319px,dpi=213")
-//@Composable
-//private fun IdleScreenPreview_ThemeE() {
-//    CatposPointTheme {
-//        CompositionLocalProvider(LocalController provides previewController(4)) {
-//            IdleScreen(
-//                state = IdleContract.State(isPreview = false),
-//                sendEvent = {}
-//            )
-//        }
-//    }
-//}
-//
-//@Preview(name = "테마CUSTOM", device = "spec:width=800px,height=1319px,dpi=213")
-//@Composable
-//private fun IdleScreenPreview_ThemeCUSTOM() {
-//    CatposPointTheme {
-//        CompositionLocalProvider(LocalController provides previewController(5)) {
-//            IdleScreen(
-//                state = IdleContract.State(isPreview = false),
-//                sendEvent = {}
-//            )
-//        }
-//    }
-//}
-//
-//
-//@Preview(
-//    name = "사용자 지정 미리보기",
-//    device = "spec:width=800px,height=1319px,dpi=213",
-//    showBackground = true
-//)
-//@Composable
-//private fun CustomPreviewPreview() {
-//    CatposPointTheme {
-//        CompositionLocalProvider(LocalController provides previewController()) {
-//            CustomPreview(
-//                preSubTitle = null,
-//                isPreview = true
-//            )
-//        }
-//    }
-//}
-

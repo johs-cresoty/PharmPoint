@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -28,15 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.cresoty.catpospoint.R
-import com.cresoty.catpospoint.model.event.AppEvent
-import com.cresoty.catpospoint.model.interfaces.PadAction
-import com.cresoty.catpospoint.model.interfaces.ViewController
-import com.cresoty.catpospoint.model.state.ConfigState
-import com.cresoty.catpospoint.model.state.CustomerState
-import com.cresoty.catpospoint.model.state.MainState
-import com.cresoty.catpospoint.model.state.PointState
-import com.cresoty.catpospoint.model.state.PreviewState
-import com.cresoty.catpospoint.model.state.SettingState
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.presentation.result.ResultStatus
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
@@ -51,11 +41,7 @@ import com.cresoty.catpospoint.presentation.theme.sub01
 import com.cresoty.catpospoint.presentation.theme.white
 import com.cresoty.catpospoint.toDecimalString
 import com.cresoty.catpospoint.ui.component.ConfirmButton
-import com.cresoty.catpospoint.view.controller.LocalController
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 
 /**
  * 상태
@@ -191,27 +177,14 @@ private fun BalancePoint(
 @Preview(device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
 private fun ResultScreenPreview() {
-    val mockController = object : ViewController {
-        override val mainState = MutableStateFlow(MainState())
-        override val configState = MutableStateFlow(ConfigState())
-        override val previewState = MutableStateFlow(PreviewState())
-        override val settingState = MutableStateFlow(SettingState())
-        override val pointState = MutableStateFlow(PointState())
-        override val customerState = MutableStateFlow(CustomerState())
-        override val customThemeImageUriState = MutableStateFlow<android.net.Uri?>(null)
-        override val appEvents: SharedFlow<AppEvent> = MutableSharedFlow()
-        override fun dispatch(action: PadAction) {}
-    }
     CatposPointTheme {
-        CompositionLocalProvider(LocalController provides mockController) {
-            ResultScreen(
-                state = ResultContract.State().copy(
-                    subTitle = "다나아약국\n" +
-                            "현재 보유하고 있는 포인트입니다.", pointTitle = "보유 포인트", balancePoint = 112865
-                ),
-                sendEvent = {}
-            )
-        }
+        ResultScreen(
+            state = ResultContract.State().copy(
+                subTitle = "다나아약국\n" +
+                        "현재 보유하고 있는 포인트입니다.", pointTitle = "보유 포인트", balancePoint = 112865
+            ),
+            sendEvent = {}
+        )
     }
 }
 

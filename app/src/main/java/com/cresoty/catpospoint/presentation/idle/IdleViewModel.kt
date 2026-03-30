@@ -1,10 +1,9 @@
 package com.cresoty.catpospoint.presentation.idle
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cresoty.catpospoint.ConfigKey
-import com.cresoty.catpospoint.ConfigRepository
+import com.cresoty.catpospoint.data.repository.ConfigKey
+import com.cresoty.catpospoint.data.repository.ConfigRepository
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.domain.usecase.GetConfigUseCase
 import com.cresoty.catpospoint.domain.usecase.GetPointAmountSettingUseCase
@@ -18,6 +17,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 
 @HiltViewModel
@@ -37,19 +38,13 @@ class IdleViewModel @Inject constructor(
     private val _effect = Channel<IdleContract.Effect>(Channel.Factory.BUFFERED)
     val effect = _effect.receiveAsFlow()
 
-    // 사용자 지정 테마 이미지 (설정 다이얼로그 닫혀도 유지)
-    private val _customThemeImageUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
-
     init {
         initRequestPointSettings()
 
-        // 저장된 사용자 지정 이미지 URI 복원
-        viewModelScope.launch {
-            val savedUri = configRepo.getValue(ConfigKey.CUSTOM_IMAGE_URI, "")
-            if (savedUri.isNotEmpty()) {
-                _customThemeImageUri.update { Uri.parse(savedUri) }
-            }
-        }
+        // configState 변경 시 IdleContract.State.config 동기화
+        configState.onEach { config ->
+            _uiState.update { it.copy(config = config) }
+        }.launchIn(viewModelScope)
     }
 
     fun dispatch(event: IdleContract.Event) {

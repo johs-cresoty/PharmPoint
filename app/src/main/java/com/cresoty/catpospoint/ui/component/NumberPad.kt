@@ -25,7 +25,6 @@ import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.PointDeltaProcess
 import com.cresoty.catpospoint.model.enums.PointQuickInputType
 import com.cresoty.catpospoint.model.enums.PointUseSource
-import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.state.ConfigState
 import com.cresoty.catpospoint.model.state.CustomerState
 import com.cresoty.catpospoint.model.state.PointState

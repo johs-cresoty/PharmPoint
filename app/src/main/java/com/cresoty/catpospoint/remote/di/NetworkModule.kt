@@ -2,7 +2,7 @@ package com.cresoty.catpospoint.remote.di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.cresoty.catpospoint.ConfigRepository
+import com.cresoty.catpospoint.data.repository.ConfigRepository
 import com.cresoty.catpospoint.remote.api.CatposCloudApi
 import com.cresoty.catpospoint.remote.api.createApiService
 import com.cresoty.catpospoint.socket.SocketManager

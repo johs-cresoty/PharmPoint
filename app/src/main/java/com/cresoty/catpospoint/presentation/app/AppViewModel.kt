@@ -3,8 +3,8 @@ package com.cresoty.catpospoint.presentation.app
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cresoty.catpospoint.ConfigKey
-import com.cresoty.catpospoint.ConfigRepository
+import com.cresoty.catpospoint.data.repository.ConfigKey
+import com.cresoty.catpospoint.data.repository.ConfigRepository
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.domain.model.UpdateInfo
 import com.cresoty.catpospoint.domain.parser.TransactionDataParser
@@ -15,7 +15,7 @@ import com.cresoty.catpospoint.domain.usecase.StartAutoUpdateUseCase
 import com.cresoty.catpospoint.domain.usecase.StartDownloadUseCase
 import com.cresoty.catpospoint.model.enums.PaymentType
 import com.cresoty.catpospoint.model.enums.PointUseSource
-import com.cresoty.catpospoint.model.interfaces.Dialogs
+import com.cresoty.catpospoint.presentation.Dialogs
 import com.cresoty.catpospoint.presentation.phoneNumberInput.PhoneNumberInputContract
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.presentation.use.UseContract

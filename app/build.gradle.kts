@@ -11,13 +11,13 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.cresoty.catpospoin"
+        applicationId = "com.cresoty.catpospoint"
         minSdk = 34
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "com.cresoty.catpospoin.HiltTestRunner"
+        testInstrumentationRunner = "com.cresoty.catpospoint.HiltTestRunner"
     }
 
     signingConfigs {
