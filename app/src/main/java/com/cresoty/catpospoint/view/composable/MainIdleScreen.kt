@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cresoty.catpospoint.R
 import com.cresoty.catpospoint.model.enums.MainThemes
+import com.cresoty.catpospoint.model.event.AppEvent
 import com.cresoty.catpospoint.model.interfaces.PadAction
 import com.cresoty.catpospoint.model.interfaces.ViewController
 import com.cresoty.catpospoint.model.state.ConfigState
@@ -45,8 +46,6 @@ import com.cresoty.catpospoint.model.state.MainState
 import com.cresoty.catpospoint.model.state.PointState
 import com.cresoty.catpospoint.model.state.PreviewState
 import com.cresoty.catpospoint.model.state.SettingState
-import com.cresoty.catpospoint.ui.component.ClickSoundButton
-import com.cresoty.catpospoint.ui.component.PointBalanceButton
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
 import com.cresoty.catpospoint.presentation.theme.NotoSansKr
 import com.cresoty.catpospoint.presentation.theme.common01
@@ -54,8 +53,9 @@ import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.white
+import com.cresoty.catpospoint.ui.component.ClickSoundButton
+import com.cresoty.catpospoint.ui.component.PointBalanceButton
 import com.cresoty.catpospoint.view.controller.LocalController
-import com.cresoty.catpospoint.model.event.AppEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -161,6 +161,7 @@ private fun ColumnC(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
                 fontSize = 30f.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02,
                 textAlign = TextAlign.Center
@@ -178,7 +179,12 @@ private fun ColumnC(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { controller.dispatch(PadAction.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
@@ -219,6 +225,7 @@ private fun ColumnD(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
                 fontSize = 30f.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02,
                 textAlign = TextAlign.Center
@@ -238,7 +245,12 @@ private fun ColumnD(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { controller.dispatch(PadAction.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
@@ -287,7 +299,12 @@ private fun ColumnE(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.size(30.dpx))
-        PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+        PointBalanceButton(
+            onClick = if (isPreview) {
+                {}
+            } else {
+                { controller.dispatch(PadAction.OnClickPointBalance) }
+            })
 
         Spacer(modifier = Modifier.weight(1f))
         PreviewCloseButton(
@@ -322,6 +339,7 @@ private fun ColumnB(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
                 fontSize = 30f.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = white,
                 textAlign = TextAlign.Start
@@ -339,7 +357,12 @@ private fun ColumnB(
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { controller.dispatch(PadAction.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
@@ -373,6 +396,7 @@ private fun ColumnA(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
                 fontSize = 30f.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = white,
                 textAlign = TextAlign.Start
@@ -390,7 +414,12 @@ private fun ColumnA(
                 textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.size(60.dpx))
-            PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+            PointBalanceButton(
+                onClick = if (isPreview) {
+                    {}
+                } else {
+                    { controller.dispatch(PadAction.OnClickPointBalance) }
+                })
         }
 
         PreviewCloseButton(
@@ -451,7 +480,12 @@ private fun CustomPreview(
 
         }
         Spacer(Modifier.weight(1f))
-        PointBalanceButton(onClick = if (isPreview) {{}} else { { controller.dispatch(PadAction.OnClickPointBalance) } })
+        PointBalanceButton(
+            onClick = if (isPreview) {
+                {}
+            } else {
+                { controller.dispatch(PadAction.OnClickPointBalance) }
+            })
         Spacer(Modifier.size(50.dpx))
         PreviewCloseButton(
             theme = MainThemes.Theme_CUSTOM,

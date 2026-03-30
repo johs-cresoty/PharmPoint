@@ -165,6 +165,7 @@ private fun ColumnC(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
                 fontSize = 30f.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02,
                 textAlign = TextAlign.Center
@@ -224,6 +225,7 @@ private fun ColumnD(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
                 fontSize = 30f.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = common02,
                 textAlign = TextAlign.Center
@@ -328,7 +330,8 @@ private fun ColumnB(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
-                fontSize = 30f.spx,
+                fontSize = 30.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = white,
                 textAlign = TextAlign.Start
@@ -339,8 +342,8 @@ private fun ColumnB(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = config.storeName,
-                fontSize = 80f.spx,
-                lineHeight = 80f.spx,
+                fontSize = 80.spx,
+                lineHeight = 80.spx,
                 fontWeight = FontWeight.Bold,
                 color = white,
                 textAlign = TextAlign.Start
@@ -381,6 +384,7 @@ private fun ColumnA(
                 modifier = Modifier.fillMaxWidth(),
                 text = preSubTitle ?: config.subTitle,
                 fontSize = 30f.spx,
+                lineHeight = 40.5.spx,
                 fontWeight = FontWeight.Normal,
                 color = white,
                 textAlign = TextAlign.Start
