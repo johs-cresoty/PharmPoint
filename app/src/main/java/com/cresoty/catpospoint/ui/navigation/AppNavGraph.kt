@@ -2,6 +2,9 @@ package com.cresoty.catpospoint.ui.navigation
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -94,6 +97,21 @@ fun AppNavGraph(
     }
 
     CompositionLocalProvider(LocalController provides controller) {
+
+        // ── 앱 설치 권한 사전 체크 (Android 8+, 최초 1회) ─────────────
+        LaunchedEffect(Unit) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                !context.packageManager.canRequestPackageInstalls()
+            ) {
+                context.startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:${context.packageName}")
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+        }
+
 
         // ── AppViewModel effect 처리 ──────────────────────────────────
         LaunchedEffect(Unit) {
