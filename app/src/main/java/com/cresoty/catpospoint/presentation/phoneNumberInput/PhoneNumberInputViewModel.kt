@@ -194,11 +194,16 @@ class PhoneNumberInputViewModel @Inject constructor(
             isMinPointEnabled = config.isMinPointEnabled,
         )
         viewModelScope.launch {
-            if (usePointState.isMinPointEnabled && usePointState.minPoint > usePointState.balancePoint) {
+            if (usePointState.isMinPointEnabled && usePointState.minPoint > usePointState.balancePoint || usePointState.balancePoint < 1) {
+                val subTitle = if (usePointState.isMinPointEnabled) {
+                    "${usePointState.storeName}\n최소 ${usePointState.minPoint.toDecimalString()}P부터 사용 가능합니다."
+                } else {
+                    usePointState.storeName
+                }
                 val resultState = ResultContract.State(
                     status = ResultStatus.USE_UNAVAILABLE,
                     title = "포인트 부족",
-                    subTitle = "${usePointState.storeName}\n최소 ${usePointState.minPoint.toDecimalString()}P부터 사용 가능합니다.",
+                    subTitle = subTitle,
                     pointTitle = "잔여 포인트",
                     balancePoint = usePointState.balancePoint,
                     timeOut = config.timeout,
