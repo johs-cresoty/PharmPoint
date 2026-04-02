@@ -33,6 +33,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import com.cresoty.catpospoint.R
+import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.HeadHalf
 import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.Middle
 import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.Tail
 import com.cresoty.catpospoint.presentation.theme.CatposPointTheme
@@ -49,7 +50,7 @@ import com.cresoty.catpospoint.presentation.theme.transparent
  *
  * @param value                현재 입력값 (raw, 예: "01012345678")
  * @param modifier             외부 Modifier
- * @param maskStrategy         마스킹 범위 ([PhoneMaskStrategy.Middle]: 가운데 4자리만, [PhoneMaskStrategy.Tail]: 뒤 8자리)
+ * @param maskStrategy         마스킹 범위 ([PhoneMaskStrategy.Middle]: 가운데 4자리만, [PhoneMaskStrategy.Tail]: 뒤 8자리, [PhoneMaskStrategy.HeadHalf]: 010-**34-**78)
  * @param isMasked             마스킹 여부 (외부에서 제어 가능)
  * @param onMaskToggle         마스킹 토글 클릭 콜백 (null 이면 토글 버튼 미표시)
  * @param isRegisteredCustomer 등록된 회원 여부 (true = 등록, false = 미등록)
@@ -145,10 +146,11 @@ fun PhoneNumberInputField(
 
 /**
  * 전화번호 마스킹 범위
- * - [Middle]: 010-****-1234 (가운데 4자리만)
- * - [Tail]:   010-****-**** (뒤 8자리)
+ * - [Middle]:   010-****-1234 (가운데 4자리만)
+ * - [Tail]:     010-****-**** (뒤 8자리)
+ * - [HeadHalf]: 010-**34-**78 (중간/뒤 각 그룹 앞 2자리)
  */
-enum class PhoneMaskStrategy { Middle, Tail }
+enum class PhoneMaskStrategy { Middle, Tail, HeadHalf }
 
 
 /**
@@ -165,11 +167,16 @@ private fun buildSegments(
     return listOf(3, 4, 4).mapIndexed { segmentIndex, len ->
         val slice = digits.drop(cursor).take(len)
         cursor += len
-        val shouldMask = isMasked && slice.isNotEmpty() && when (maskStrategy) {
-            Middle -> segmentIndex == 1
-            Tail -> segmentIndex >= 1
+        if (!isMasked || slice.isEmpty()) return@mapIndexed slice
+        when (maskStrategy) {
+            Middle -> if (segmentIndex == 1) slice.map { maskChar }.joinToString("") else slice
+            Tail -> if (segmentIndex >= 1) slice.map { maskChar }.joinToString("") else slice
+            HeadHalf -> if (segmentIndex >= 1) {
+                // 앞 절반 마스킹: **34, **78
+                val half = slice.length / 2
+                slice.take(half).map { maskChar }.joinToString("") + slice.drop(half)
+            } else slice
         }
-        if (shouldMask) slice.map { maskChar }.joinToString("") else slice
     }
 }
 
@@ -223,6 +230,14 @@ private fun PhoneNumberInputField_AllStates_Preview() {
             PhoneNumberInputField(
                 value = "01012345678",
                 maskStrategy = Tail,
+                isMasked = true,
+                onMaskToggle = {},
+            )
+
+            Text("전화번호 - 각 그룹 앞 2자리 마스킹 (HeadHalf: 010-**34-**78)", fontSize = 12f.spx, color = Color.Gray)
+            PhoneNumberInputField(
+                value = "01012345678",
+                maskStrategy = HeadHalf,
                 isMasked = true,
                 onMaskToggle = {},
             )

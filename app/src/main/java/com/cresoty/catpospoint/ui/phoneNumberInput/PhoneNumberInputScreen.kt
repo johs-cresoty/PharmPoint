@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,7 +50,7 @@ import com.cresoty.catpospoint.ui.component.ConfirmButton
 import com.cresoty.catpospoint.ui.component.NUMBER_PAD_KEYS
 import com.cresoty.catpospoint.ui.component.NumberPadGrid
 import com.cresoty.catpospoint.ui.component.PadKey
-import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.Middle
+import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.HeadHalf
 import com.cresoty.catpospoint.ui.component.PhoneNumberInputField
 
 /**
@@ -130,7 +129,7 @@ fun PhoneNumberInputScreen(
 
         PhoneNumberInputField(
             value = state.phoneNumber,
-            maskStrategy = Middle,
+            maskStrategy = HeadHalf,
             isMasked = state.isMasked,
             onMaskToggle = { sendEvent(PhoneNumberInputContract.Event.OnMaskToggle) },
             isRegisteredCustomer = !isInvalidCustomer
