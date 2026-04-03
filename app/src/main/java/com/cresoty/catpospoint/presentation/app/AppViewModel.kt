@@ -10,6 +10,9 @@ import com.cresoty.catpospoint.domain.model.UpdateInfo
 import com.cresoty.catpospoint.domain.parser.TransactionDataParser
 import com.cresoty.catpospoint.domain.socket.SocketEvent
 import com.cresoty.catpospoint.domain.socket.SocketEventRepository
+import com.cresoty.catpospoint.domain.fcm.FcmEvent
+import com.cresoty.catpospoint.domain.fcm.FcmEventRepository
+import com.google.firebase.messaging.FirebaseMessaging
 import com.cresoty.catpospoint.domain.usecase.GetConfigUseCase
 import com.cresoty.catpospoint.domain.usecase.StartAutoUpdateUseCase
 import com.cresoty.catpospoint.domain.usecase.StartDownloadUseCase
@@ -49,6 +52,7 @@ class AppViewModel @Inject constructor(
     private val startAutoUpdateUseCase: StartAutoUpdateUseCase,
     private val startDownloadUseCase: StartDownloadUseCase,
     private val configRepo: ConfigRepository,
+    private val fcmEventRepository: FcmEventRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppContract.State())
@@ -66,12 +70,34 @@ class AppViewModel @Inject constructor(
                 handleSocketEvent(event)
             }
         }
+        viewModelScope.launch {
+            fcmEventRepository.events.collect { event ->
+                when (event) {
+                    is FcmEvent.MessageReceived -> {
+                        val installUrl = event.data["installUrl"]
+                        if (!installUrl.isNullOrEmpty()) {
+                            // 업데이트 배너 표시
+                            _uiState.update { it.copy(showUpdateBanner = true, fcmInstallUrl = installUrl) }
+                        } else {
+                            emitEffect(AppContract.Effect.ShowFcmMessage(event.title, event.body))
+                        }
+                    }
+                    is FcmEvent.TokenRefreshed -> Unit
+                }
+            }
+        }
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            Log.d("FCM_TOKEN", "현재 토큰: $token")
+        }
         startAutoUpdate()
     }
 
     fun dispatch(event: AppContract.Event) {
         when (event) {
             AppContract.Event.OnAcceptUpdate -> startDownload()
+            AppContract.Event.OnAcceptFcmUpdate -> startFcmDownload()
+            AppContract.Event.OnDismissFcmUpdate ->
+                _uiState.update { it.copy(showUpdateBanner = false) }
         }
     }
 
@@ -112,6 +138,25 @@ class AppViewModel @Inject constructor(
                         emitEffect(AppContract.Effect.InstallApk(resource.data))
                     }
                     is DataResource.Error -> _uiState.update { it.copy(dialog = Dialogs.UpdateBlocked(updateInfo.messageTitle, "다운로드 실패\nURL: ${updateInfo.installUrl}")) }
+                }
+            }
+        }
+    }
+
+    private fun startFcmDownload() {
+        val installUrl = _uiState.value.fcmInstallUrl.takeIf { it.isNotEmpty() } ?: return
+        _uiState.update { it.copy(showUpdateBanner = false) }
+        viewModelScope.launch {
+            startDownloadUseCase(installUrl).collect { resource ->
+                when (resource) {
+                    is DataResource.Loading -> _uiState.update { it.copy(dialog = Dialogs.UpdateRequired) }
+                    is DataResource.Success -> {
+                        _uiState.update { it.copy(dialog = Dialogs.None) }
+                        emitEffect(AppContract.Effect.InstallApk(resource.data))
+                    }
+                    is DataResource.Error -> _uiState.update {
+                        it.copy(dialog = Dialogs.UpdateBlocked("업데이트 실패", "다운로드 실패\nURL: $installUrl"))
+                    }
                 }
             }
         }

@@ -1,10 +1,15 @@
 package com.cresoty.catpospoint.ui.navigation
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +45,9 @@ import com.cresoty.catpospoint.ui.idle.IdleRoute
 import com.cresoty.catpospoint.ui.phoneNumberInput.PhoneNumberInputRoute
 import com.cresoty.catpospoint.ui.result.ResultRoute
 import com.cresoty.catpospoint.ui.use.UseRoute
+import com.cresoty.catpospoint.ui.component.FcmUpdateBanner
+import com.cresoty.catpospoint.ui.component.MessageDialog
+import com.cresoty.catpospoint.ui.component.NotificationHelper
 import com.cresoty.catpospoint.ui.dialog.DialogController
 
 /**
@@ -60,6 +72,50 @@ fun AppNavGraph(
     // IdleViewModel dispatch 홀더 —
     // composable(Idle.route)의 DisposableEffect가 IdleViewModel 인스턴스를 등록/해제한다.
     val idleDispatchRef = remember { object { var value: (IdleContract.Event) -> Unit = {} } }
+
+    // ── 알림 권한 요청 ────────────────────────────────────────────────
+    var showNotifDeniedDialog by remember { mutableStateOf(false) }
+
+    val notifPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            val canAskAgain = ActivityCompat.shouldShowRequestPermissionRationale(
+                context as Activity,
+                Manifest.permission.POST_NOTIFICATIONS,
+            )
+            // canAskAgain == false : "다시 묻지 않음" 선택 → 설정 유도 다이얼로그 표시
+            if (!canAskAgain) showNotifDeniedDialog = true
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        NotificationHelper.createChannel(context)
+        val isGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!isGranted) {
+            notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    if (showNotifDeniedDialog) {
+        MessageDialog(
+            message = "알림 수신을 위해\n알림 권한이 필요합니다.",
+            confirmText = "설정으로 이동",
+            dismissText = "닫기",
+            onConfirm = {
+                showNotifDeniedDialog = false
+                context.startActivity(
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                    }
+                )
+            },
+            onDismiss = { showNotifDeniedDialog = false },
+        )
+    }
 
     // ── 앱 설치 권한 사전 체크 (Android 8+, 최초 1회) ─────────────
     LaunchedEffect(Unit) {
@@ -118,15 +174,29 @@ fun AppNavGraph(
                 // 업데이트 불필요 & 사업자번호 미설정 → 설정 다이얼로그
                 AppContract.Effect.ShowSettingDialog ->
                     settingVm.dispatch(SettingContract.Event.OpenSettingDialog)
+
+                // FCM 메시지 수신 (포그라운드) → 시스템 알림 표시
+                is AppContract.Effect.ShowFcmMessage ->
+                    NotificationHelper.show(context, effect.title, effect.body)
             }
         }
     }
 
     DialogController(settingVm = settingVm, appVm = appVm)
 
+    val appState by appVm.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
         containerColor = Color.White,
         contentWindowInsets = WindowInsets(0),
+        topBar = {
+            if (appState.showUpdateBanner) {
+                FcmUpdateBanner(
+                    onAccept = { appVm.dispatch(AppContract.Event.OnAcceptFcmUpdate) },
+                    onDismiss = { appVm.dispatch(AppContract.Event.OnDismissFcmUpdate) },
+                )
+            }
+        },
     ) { padding ->
         NavHost(
             navController = navController,

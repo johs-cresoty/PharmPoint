@@ -1,8 +1,10 @@
 package com.cresoty.catpospoint.data.repository.di
 
+import com.cresoty.catpospoint.data.repository.impl.FcmRepositoryImpl
 import com.cresoty.catpospoint.data.repository.impl.PointRepositoryImpl
 import com.cresoty.catpospoint.data.repository.impl.SocketResponseRepositoryImpl
 import com.cresoty.catpospoint.data.repository.impl.UpdateRepositoryImpl
+import com.cresoty.catpospoint.domain.repository.FcmRepository
 import com.cresoty.catpospoint.domain.repository.PointRepository
 import com.cresoty.catpospoint.domain.repository.SocketResponseRepository
 import com.cresoty.catpospoint.domain.repository.UpdateRepository
@@ -28,4 +30,8 @@ internal abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSocketResponseRepository(repo: SocketResponseRepositoryImpl): SocketResponseRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFcmRepository(repo: FcmRepositoryImpl): FcmRepository
 }

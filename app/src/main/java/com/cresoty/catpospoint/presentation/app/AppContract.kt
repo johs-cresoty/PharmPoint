@@ -28,6 +28,10 @@ object AppContract {
         val resultArgs: ResultContract.State? = null,
         /** 업데이트 관련 다이얼로그 (None / UpdateRequired / UpdateBlocked) */
         val dialog: Dialogs = Dialogs.None,
+        /** FCM 업데이트 배너 표시 여부 */
+        val showUpdateBanner: Boolean = false,
+        /** FCM 업데이트 배너 — 설치 URL */
+        val fcmInstallUrl: String = "",
     )
 
     // ── Event ────────────────────────────────────────────────────────
@@ -35,6 +39,10 @@ object AppContract {
     sealed interface Event {
         /** 업데이트 차단 다이얼로그에서 "업데이트하기" 버튼 클릭 */
         data object OnAcceptUpdate : Event
+        /** FCM 배너 — "업데이트 하기" 버튼 클릭 */
+        data object OnAcceptFcmUpdate : Event
+        /** FCM 배너 — "나중에 하기" 버튼 클릭 */
+        data object OnDismissFcmUpdate : Event
     }
 
     /** 포인트 적립 화면 진입 파라미터 */
@@ -79,5 +87,8 @@ object AppContract {
 
         /** 업데이트 불필요 & 사업자번호 미설정 → 설정 다이얼로그 표출 */
         data object ShowSettingDialog : Effect
+
+        /** FCM 메시지 수신 (포그라운드) */
+        data class ShowFcmMessage(val title: String, val body: String) : Effect
     }
 }
