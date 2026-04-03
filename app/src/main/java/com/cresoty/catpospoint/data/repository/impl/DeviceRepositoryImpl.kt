@@ -38,7 +38,7 @@ internal class DeviceRepositoryImpl @Inject constructor(
                 context.contentResolver,
                 Settings.Secure.ANDROID_ID,
             ),
-            businessRegistrationNumber = bizNo.replace("-", "").toLongOrNull() ?: 0L,
+            businessRegistrationNumber = bizNo.replace("-", ""),
             currentVersionCode = BuildConfig.VERSION_CODE,
             fcmToken = fcmToken,
             ip = getLocalIpAddress(),
