@@ -24,7 +24,7 @@ fun DialogController(
         Dialogs.None -> Unit
         Dialogs.Setting -> SettingDialog(vm = settingVm)
         Dialogs.InputPassword -> AdminLoginDialog(vm = settingVm)
-        Dialogs.UpdateRequired -> UpdateRequiredDialog()
+        Dialogs.UpdateRequired -> UpdateRequiredDialog(progress = appState.downloadProgress)
         is Dialogs.UpdateBlocked -> UpdateBlockedDialog(
             messageTitle = dialog.messageTitle,
             message = dialog.message,

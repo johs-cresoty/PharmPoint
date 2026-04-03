@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -7,6 +9,14 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
+}
+
+fun localProp(key: String): String =
+    System.getenv(key) ?: localProps[key]?.toString() ?: ""
+
 android {
     namespace = "com.cresoty.catpospoint"
     compileSdk = 34
@@ -15,10 +25,13 @@ android {
         applicationId = "com.cresoty.catpospoint"
         minSdk = 34
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "com.cresoty.catpospoint.HiltTestRunner"
+
+        buildConfigField("String", "API_ID", "\"${localProp("API_ID")}\"")
+        buildConfigField("String", "API_PASSWORD", "\"${localProp("API_PASSWORD")}\"")
     }
 
     signingConfigs {

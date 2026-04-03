@@ -1,9 +1,7 @@
 package com.cresoty.catpospoint.remote.api
 
-import com.cresoty.catpospoint.remote.model.request.AppVersionCheckRequest
 import com.cresoty.catpospoint.remote.model.request.EstimatePointRequest
 import com.cresoty.catpospoint.remote.model.request.UpsertCustomerPointRequest
-import com.cresoty.catpospoint.remote.model.response.AppVersionResponse
 import com.cresoty.catpospoint.remote.model.response.CustomerResponse
 import com.cresoty.catpospoint.remote.model.response.EstimatePointResponse
 import com.cresoty.catpospoint.remote.model.response.PointAmountSettingResponse
@@ -16,13 +14,6 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface CatposCloudApi {
-
-    @POST("api/v1/app-support/version/check")
-    suspend fun checkAppVersion(
-        @Body request: AppVersionCheckRequest
-    ): AppVersionResponse
-
-
 
     @GET("api/point/settings")
     suspend fun getPointSaveSetting(

@@ -3,8 +3,14 @@ package com.cresoty.catpospoint.remote.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.cresoty.catpospoint.data.repository.ConfigRepository
+import com.cresoty.catpospoint.remote.api.AppSupportApi
+import com.cresoty.catpospoint.remote.api.AppSupportAuthApi
 import com.cresoty.catpospoint.remote.api.CatposCloudApi
 import com.cresoty.catpospoint.remote.api.createApiService
+import com.cresoty.catpospoint.remote.api.createAppSupportApiService
+import com.cresoty.catpospoint.remote.api.createAppSupportAuthApiService
+import com.cresoty.catpospoint.remote.api.interceptor.AuthInterceptor
+import com.cresoty.catpospoint.remote.api.interceptor.TokenAuthenticator
 import com.cresoty.catpospoint.socket.SocketManager
 import dagger.Module
 import dagger.Provides
@@ -22,6 +28,17 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideGoodsApiService(): CatposCloudApi = createApiService()
+
+    @Provides
+    @Singleton
+    fun provideAppSupportAuthApiService(): AppSupportAuthApi = createAppSupportAuthApiService()
+
+    @Provides
+    @Singleton
+    fun provideAppSupportApiService(
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator,
+    ): AppSupportApi = createAppSupportApiService(authInterceptor, tokenAuthenticator)
 
     @Provides
     @Singleton

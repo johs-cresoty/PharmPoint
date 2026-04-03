@@ -32,6 +32,8 @@ object AppContract {
         val showUpdateBanner: Boolean = false,
         /** FCM 업데이트 배너 — 설치 URL */
         val fcmInstallUrl: String = "",
+        /** 다운로드 진행률 0–100. null 이면 다운로드 미진행 또는 크기 미확인. */
+        val downloadProgress: Int? = null,
     )
 
     // ── Event ────────────────────────────────────────────────────────

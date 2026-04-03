@@ -2,6 +2,7 @@ package com.cresoty.catpospoint.presentation.app
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.cresoty.catpospoint.BuildConfig
 import androidx.lifecycle.viewModelScope
 import com.cresoty.catpospoint.data.repository.ConfigKey
 import com.cresoty.catpospoint.data.repository.ConfigRepository
@@ -13,7 +14,12 @@ import com.cresoty.catpospoint.domain.socket.SocketEventRepository
 import com.cresoty.catpospoint.domain.fcm.FcmEvent
 import com.cresoty.catpospoint.domain.fcm.FcmEventRepository
 import com.google.firebase.messaging.FirebaseMessaging
+import com.cresoty.catpospoint.domain.model.FcmUpdateInfo
+import com.cresoty.catpospoint.domain.usecase.CheckFcmUpdateUseCase
 import com.cresoty.catpospoint.domain.usecase.GetConfigUseCase
+import com.cresoty.catpospoint.domain.usecase.ObserveIpChangesUseCase
+import com.cresoty.catpospoint.domain.usecase.RegisterDeviceUseCase
+import com.cresoty.catpospoint.domain.usecase.SaveFcmTokenUseCase
 import com.cresoty.catpospoint.domain.usecase.StartAutoUpdateUseCase
 import com.cresoty.catpospoint.domain.usecase.StartDownloadUseCase
 import com.cresoty.catpospoint.model.enums.PaymentType
@@ -53,6 +59,10 @@ class AppViewModel @Inject constructor(
     private val startDownloadUseCase: StartDownloadUseCase,
     private val configRepo: ConfigRepository,
     private val fcmEventRepository: FcmEventRepository,
+    private val saveFcmTokenUseCase: SaveFcmTokenUseCase,
+    private val registerDeviceUseCase: RegisterDeviceUseCase,
+    private val observeIpChangesUseCase: ObserveIpChangesUseCase,
+    private val checkFcmUpdateUseCase: CheckFcmUpdateUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppContract.State())
@@ -73,21 +83,29 @@ class AppViewModel @Inject constructor(
         viewModelScope.launch {
             fcmEventRepository.events.collect { event ->
                 when (event) {
-                    is FcmEvent.MessageReceived -> {
-                        val installUrl = event.data["installUrl"]
-                        if (!installUrl.isNullOrEmpty()) {
-                            // 업데이트 배너 표시
-                            _uiState.update { it.copy(showUpdateBanner = true, fcmInstallUrl = installUrl) }
-                        } else {
-                            emitEffect(AppContract.Effect.ShowFcmMessage(event.title, event.body))
-                        }
-                    }
+                    is FcmEvent.MessageReceived -> handleFcmMessage(event)
                     is FcmEvent.TokenRefreshed -> Unit
                 }
             }
         }
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
             Log.d("FCM_TOKEN", "현재 토큰: $token")
+            viewModelScope.launch {
+                saveFcmTokenUseCase(token)
+                registerDeviceUseCase()
+            }
+        }
+        // IP 변경 감지 → 기기 재등록
+        viewModelScope.launch {
+            observeIpChangesUseCase().collect {
+                registerDeviceUseCase()
+            }
+        }
+        // 다운로드 진행률 → State 반영
+        viewModelScope.launch {
+            startDownloadUseCase.progress.collect { percent ->
+                _uiState.update { it.copy(downloadProgress = percent) }
+            }
         }
         startAutoUpdate()
     }
@@ -132,12 +150,16 @@ class AppViewModel @Inject constructor(
         viewModelScope.launch {
             startDownloadUseCase(updateInfo.installUrl).collect { resource ->
                 when (resource) {
-                    is DataResource.Loading -> _uiState.update { it.copy(dialog = Dialogs.UpdateRequired) }
+                    is DataResource.Loading ->
+                        _uiState.update { it.copy(dialog = Dialogs.UpdateRequired) }
                     is DataResource.Success -> {
                         _uiState.update { it.copy(dialog = Dialogs.None) }
                         emitEffect(AppContract.Effect.InstallApk(resource.data))
                     }
-                    is DataResource.Error -> _uiState.update { it.copy(dialog = Dialogs.UpdateBlocked(updateInfo.messageTitle, "다운로드 실패\nURL: ${updateInfo.installUrl}")) }
+                    is DataResource.Error ->
+                        _uiState.update { it.copy(
+                            dialog = Dialogs.UpdateBlocked(updateInfo.messageTitle, "다운로드 실패\nURL: ${updateInfo.installUrl}"),
+                        ) }
                 }
             }
         }
@@ -149,14 +171,16 @@ class AppViewModel @Inject constructor(
         viewModelScope.launch {
             startDownloadUseCase(installUrl).collect { resource ->
                 when (resource) {
-                    is DataResource.Loading -> _uiState.update { it.copy(dialog = Dialogs.UpdateRequired) }
+                    is DataResource.Loading ->
+                        _uiState.update { it.copy(dialog = Dialogs.UpdateRequired) }
                     is DataResource.Success -> {
                         _uiState.update { it.copy(dialog = Dialogs.None) }
                         emitEffect(AppContract.Effect.InstallApk(resource.data))
                     }
-                    is DataResource.Error -> _uiState.update {
-                        it.copy(dialog = Dialogs.UpdateBlocked("업데이트 실패", "다운로드 실패\nURL: $installUrl"))
-                    }
+                    is DataResource.Error ->
+                        _uiState.update { it.copy(
+                            dialog = Dialogs.UpdateBlocked("업데이트 실패", "다운로드 실패\nURL: $installUrl"),
+                        ) }
                 }
             }
         }
@@ -318,6 +342,21 @@ class AppViewModel @Inject constructor(
 
     fun setResultArgs(state: ResultContract.State) {
         _uiState.update { it.copy(resultArgs = state) }
+    }
+
+    private fun handleFcmMessage(event: FcmEvent.MessageReceived) {
+        val installUrl = event.data["installUrl"]
+        val installVersion = event.data["installVersion"]?.toIntOrNull()
+
+        if (!installUrl.isNullOrEmpty() && installVersion != null) {
+            val targetVersion = event.data["targetVersion"]?.toIntOrNull()
+            val update = FcmUpdateInfo(installUrl, installVersion, targetVersion)
+            if (checkFcmUpdateUseCase(update, BuildConfig.VERSION_CODE)) {
+                _uiState.update { it.copy(showUpdateBanner = true, fcmInstallUrl = installUrl) }
+            }
+        } else {
+            emitEffect(AppContract.Effect.ShowFcmMessage(event.title, event.body))
+        }
     }
 
     private fun emitEffect(effect: AppContract.Effect) {
