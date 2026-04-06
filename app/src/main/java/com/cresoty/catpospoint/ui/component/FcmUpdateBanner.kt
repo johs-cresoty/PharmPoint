@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.cresoty.catpospoint.presentation.theme.NotoSansKr
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.main01
 import com.cresoty.catpospoint.presentation.theme.spx
@@ -30,12 +31,14 @@ fun FcmUpdateBanner(
             .background(main01)
             .padding(horizontal = 24.dpx),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dpx),
+        horizontalArrangement = Arrangement.spacedBy(10.dpx),
     ) {
         Text(
             text = "앱 업데이트를 진행해주세요.",
             color = white,
-            fontSize = 24.spx,
+            fontSize = 25.spx,
+            lineHeight = 30.5.spx,
+            fontFamily = NotoSansKr,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.weight(1f),
         )
@@ -52,8 +55,10 @@ fun FcmUpdateBanner(
             Text(
                 text = "업데이트 하기",
                 color = main01,
-                fontSize = 22.spx,
-                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.spx,
+                lineHeight = 24.4.spx,
+                fontFamily = NotoSansKr,
+                fontWeight = FontWeight(400),
             )
         }
         ClickSoundButton(
@@ -69,7 +74,10 @@ fun FcmUpdateBanner(
             Text(
                 text = "나중에 하기",
                 color = main01,
-                fontSize = 22.spx,
+                fontSize = 20.spx,
+                lineHeight = 24.4.spx,
+                fontFamily = NotoSansKr,
+                fontWeight = FontWeight(400),
             )
         }
     }
