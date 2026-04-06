@@ -1,12 +1,10 @@
 package com.cresoty.catpospoint.ui.setting
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -104,30 +102,32 @@ fun SettingUpdateInfo(
                     color = common02,
                     fontSize = 20.spx,
                 )
-                Spacer(Modifier.size(20.dpx))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    ConfirmButton(
-                        text = "업데이트",
-                        fontSize = 25.spx,
-                        onClick = { onAcceptUpdate(state.updateInfo.installUrl) },
-                        modifier = Modifier
-                            .width(200.dpx)
-                            .height(65.dpx),
-                    )
-                }
-
             }
         }
         Spacer(Modifier.weight(1f))
-        CloseButton(
-            fontSize = 35.spx,
-            onClick = onDismiss,
-            modifier = Modifier
-                .height(112.dpx)
-        )
+        Row() {
+            CloseButton(
+                fontSize = 35.spx,
+                onClick = onDismiss,
+                modifier = Modifier
+                    .height(112.dpx)
+                    .weight(1f)
+            )
+            if (updateCheckState is SettingContract.UpdateCheckState.NeedUpdate) {
+                ConfirmButton(
+                    text = "업데이트 하기",
+                    fontSize = 35.spx,
+                    onClick = { onAcceptUpdate(updateCheckState.updateInfo.installUrl) },
+                    modifier = Modifier
+                        .width(350.dpx)
+                        .height(112.dpx)
+                        .padding(start = 10.dpx),
+                )
+            }
+
+        }
+
+
     }
 }
 
