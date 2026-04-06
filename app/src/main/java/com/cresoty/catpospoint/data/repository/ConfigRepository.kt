@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -35,6 +36,7 @@ object ConfigKey {
     val IS_ID_VERIFY = booleanPreferencesKey("is_identification")  // true : 사용 / false : 미사용
     val IS_MIN_POINT_ENABLED = booleanPreferencesKey("is_min_point_enabled")        // 최소 포인트 사용 여부
     val IS_SAVE = booleanPreferencesKey("is_save")                  // 적립 여부
+    val BRIGHTNESS = floatPreferencesKey("brightness")              // 화면 밝기 (0.1 ~ 1.0)
 }
 
 class ConfigRepository @Inject constructor(
@@ -55,7 +57,8 @@ class ConfigRepository @Inject constructor(
                 minAmount = p[ConfigKey.MIN_AMOUNT] ?: 20000,
                 isIdVerify = p[ConfigKey.IS_ID_VERIFY] ?: false,
                 isMinPointEnabled = p[ConfigKey.IS_MIN_POINT_ENABLED] ?: true,
-                isSave = p[ConfigKey.IS_SAVE] ?: true
+                isSave = p[ConfigKey.IS_SAVE] ?: true,
+                brightness = p[ConfigKey.BRIGHTNESS] ?: 1.0f
             )
         }
         .distinctUntilChanged()

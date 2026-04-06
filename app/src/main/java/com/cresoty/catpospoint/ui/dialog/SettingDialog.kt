@@ -28,6 +28,7 @@ import com.cresoty.catpospoint.presentation.setting.SettingContract
 import com.cresoty.catpospoint.presentation.setting.SettingViewModel
 import com.cresoty.catpospoint.ui.component.BaseDialog
 import com.cresoty.catpospoint.ui.component.MessageDialog
+import com.cresoty.catpospoint.ui.setting.SettingBrightness
 import com.cresoty.catpospoint.ui.setting.SettingType
 import com.cresoty.catpospoint.ui.setting.SettingTypeList
 import com.cresoty.catpospoint.ui.setting.SettingPointUse
@@ -197,6 +198,14 @@ fun SettingPanel(
             isSavedToastVisible = state.isSavedToastVisible,
             onPanelState = onPanelState,
             onSave = { map -> onSave(SettingType.SCREEN_TIMEOUT, map) },
+            onClose = onClose,
+        )
+        SettingType.BRIGHTNESS -> SettingBrightness(
+            modifier = modifier,
+            config = config,
+            isSavedToastVisible = state.isSavedToastVisible,
+            onPanelState = onPanelState,
+            onSave = { map -> onSave(SettingType.BRIGHTNESS, map) },
             onClose = onClose,
         )
         SettingType.THEME -> SettingTheme(

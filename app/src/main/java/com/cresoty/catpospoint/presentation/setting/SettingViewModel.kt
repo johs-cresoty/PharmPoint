@@ -102,6 +102,9 @@ class SettingViewModel @Inject constructor(
                 SettingType.SCREEN_TIMEOUT -> {
                     configRepo.putValue(ConfigKey.SCREEN_TIMEOUT, data[ConfigKey.SCREEN_TIMEOUT] as Int)
                 }
+                SettingType.BRIGHTNESS -> {
+                    configRepo.putValue(ConfigKey.BRIGHTNESS, data[ConfigKey.BRIGHTNESS] as Float)
+                }
                 SettingType.THEME -> {
                     val customUri = _uiState.value.customThemeImageUri
                         ?.takeIf { it != Uri.EMPTY }

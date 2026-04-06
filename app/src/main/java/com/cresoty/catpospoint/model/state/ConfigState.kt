@@ -11,5 +11,6 @@ data class ConfigState (
     var minAmount : Int = 20000,
     var isIdVerify : Boolean = false,
     var isMinPointEnabled : Boolean = true,
-    var isSave : Boolean = true
+    var isSave : Boolean = true,
+    var brightness : Float = 1.0f
 )

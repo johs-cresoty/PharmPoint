@@ -184,6 +184,16 @@ fun AppNavGraph(
         }
     }
 
+    // ── 화면 밝기 실시간 적용 ─────────────────────────────────────
+    val settingConfig by settingVm.configState.collectAsStateWithLifecycle()
+    LaunchedEffect(settingConfig.brightness) {
+        (context as? android.app.Activity)?.window?.let { window ->
+            window.attributes = window.attributes.apply {
+                screenBrightness = settingConfig.brightness
+            }
+        }
+    }
+
     DialogController(settingVm = settingVm, appVm = appVm)
 
     val appState by appVm.uiState.collectAsStateWithLifecycle()
