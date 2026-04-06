@@ -53,13 +53,7 @@ class PhoneNumberInputViewModel @Inject constructor(
 
     fun dispatch(event: PhoneNumberInputContract.Event) {
         if (event is PhoneNumberInputContract.Event.Init) transactionData = event.transactionData
-        val finalEvent = if (
-            event is PhoneNumberInputContract.Event.OnClickConfirm &&
-            (_uiState.value.mode as? PhoneNumberInputContract.Mode.Lookup)?.source == PointUseSource.MANUAL
-        ) {
-            event.copy(resultState = buildCheckPointResultState())
-        } else event
-        val (newState, effects) = reducer.reduce(_uiState.value, finalEvent)
+        val (newState, effects) = reducer.reduce(_uiState.value, event)
         _uiState.value = newState
         effects.forEach { effect ->
             when (effect) {
@@ -67,11 +61,9 @@ class PhoneNumberInputViewModel @Inject constructor(
                 PhoneNumberInputContract.Effect.RequestSavePoint -> requestSavePoint()
                 is PhoneNumberInputContract.Effect.CheckCustomerExist -> checkCustomerExist(effect.phoneNumber)
                 PhoneNumberInputContract.Effect.RequestNavigateToUsePoint -> navigateToUsePoint()
+                PhoneNumberInputContract.Effect.ProceedAfterCustomerCheck -> proceedAfterCustomerCheck()
                 is PhoneNumberInputContract.Effect.SendToCATPhoneNumber -> sendCATPhoneNumber(effect.phoneNumber)
-                is PhoneNumberInputContract.Effect.SendToCATCustomerInfo -> sendCATCustomerInfo(
-                    effect.phoneNumber
-                )
-
+                is PhoneNumberInputContract.Effect.SendToCATCustomerInfo -> sendCATCustomerInfo(effect.phoneNumber)
                 PhoneNumberInputContract.Effect.SendCATFail -> sendCATFail()
                 else -> viewModelScope.launch { _effect.send(effect) }  // UI 네비게이션만 Route로
             }
@@ -142,8 +134,19 @@ class PhoneNumberInputViewModel @Inject constructor(
         }
     }
 
+    /** 고객 존재 확인 후 결과에 따라 다음 화면으로 이동 */
+    private fun proceedAfterCustomerCheck() {
+        val mode = _uiState.value.mode as? PhoneNumberInputContract.Mode.Lookup ?: return
+        if (mode.source == PointUseSource.MANUAL) {
+            viewModelScope.launch {
+                _effect.send(PhoneNumberInputContract.Effect.GoToTheResultScreen(buildCheckPointResultState()))
+            }
+        } else {
+            navigateToUsePoint()
+        }
+    }
+
     private fun checkCustomerExist(phoneNumber: String) {
-        dispatch(PhoneNumberInputContract.Event.Loading)
         val config = configState.value
         viewModelScope.launch {
             getCustomerUseCase(

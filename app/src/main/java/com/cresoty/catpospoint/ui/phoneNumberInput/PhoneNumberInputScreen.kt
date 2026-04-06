@@ -66,11 +66,8 @@ fun PhoneNumberInputScreen(
 ) {
     val mode = state.mode
     val isInvalidCustomer = mode is PhoneNumberInputContract.Mode.Lookup &&
-            !state.isCustomerExist &&
-            !state.isExistChecking &&
-            state.phoneNumber.length > 10
-    val isConfirmEnabled = state.isCheckBox && state.phoneNumber.length == 11 &&
-            (mode !is PhoneNumberInputContract.Mode.Lookup || state.isCustomerExist)
+            state.isCustomerExist == false
+    val isConfirmEnabled = state.isCheckBox && state.phoneNumber.length == 11
     val interactionSource = remember { MutableInteractionSource() }
 
     Column(

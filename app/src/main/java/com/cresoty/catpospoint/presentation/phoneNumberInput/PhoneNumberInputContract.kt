@@ -28,8 +28,7 @@ object PhoneNumberInputContract {
         val estimatedPoint: Int = 0,
         val balancePoint: Int = 0,
         val customerCode: String = "",
-        var isCustomerExist: Boolean = false,
-        val isExistChecking: Boolean = false,
+        val isCustomerExist: Boolean? = null,  // null=미체크, true=존재, false=없음
         val isMasked: Boolean = true,
         val isCheckBox: Boolean = true,
         val isLoading: Boolean = false,
@@ -74,5 +73,6 @@ object PhoneNumberInputContract {
         data class GoToTheResultScreen(val resultState: ResultContract.State) : Effect
         data class CheckCustomerExist(val phoneNumber: String) : Effect
         data object RequestNavigateToUsePoint : Effect
+        data object ProceedAfterCustomerCheck : Effect
     }
 }

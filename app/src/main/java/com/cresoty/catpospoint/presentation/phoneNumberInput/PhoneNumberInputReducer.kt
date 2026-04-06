@@ -1,6 +1,5 @@
 package com.cresoty.catpospoint.presentation.phoneNumberInput
 
-import com.cresoty.catpospoint.model.enums.PointUseSource
 import javax.inject.Inject
 
 class PhoneNumberInputReducer @Inject constructor() {
@@ -47,52 +46,26 @@ class PhoneNumberInputReducer @Inject constructor() {
                 val newPhone = if (state.phoneNumber.length < 11)
                     state.phoneNumber + event.digit
                 else state.phoneNumber
-                val isLookup = state.mode is PhoneNumberInputContract.Mode.Lookup
-                if (isLookup) {
-                    val shouldCheck = newPhone.length == 11
-                    val effects = if (shouldCheck)
-                        listOf(PhoneNumberInputContract.Effect.CheckCustomerExist(newPhone))
-                    else emptyList()
-                    state.copy(
-                        phoneNumber = newPhone,
-                        isExistChecking = shouldCheck,
-                        isCustomerExist = false,
-                    ) to effects
-                } else {
-                    state.copy(phoneNumber = newPhone) to emptyList()
-                }
+                state.copy(phoneNumber = newPhone, isCustomerExist = null) to emptyList()
             }
 
-            PhoneNumberInputContract.Event.OnDeleteOne -> {
-                val isLookup = state.mode is PhoneNumberInputContract.Mode.Lookup
-                val newState = if (isLookup)
-                    state.copy(
-                        phoneNumber = state.phoneNumber.dropLast(1),
-                        isCustomerExist = false,
-                        isExistChecking = false
-                    )
-                else
-                    state.copy(phoneNumber = state.phoneNumber.dropLast(1))
-                newState to emptyList()
-            }
+            PhoneNumberInputContract.Event.OnDeleteOne ->
+                state.copy(phoneNumber = state.phoneNumber.dropLast(1), isCustomerExist = null) to emptyList()
 
-            PhoneNumberInputContract.Event.OnDeleteAll -> {
-                val isLookup = state.mode is PhoneNumberInputContract.Mode.Lookup
-                val newState = if (isLookup)
-                    state.copy(phoneNumber = "", isCustomerExist = false, isExistChecking = false)
-                else
-                    state.copy(phoneNumber = "")
-                newState to emptyList()
-            }
+            PhoneNumberInputContract.Event.OnDeleteAll ->
+                state.copy(phoneNumber = "", isCustomerExist = null) to emptyList()
 
             is PhoneNumberInputContract.Event.OnCustomerCheckResult -> {
-                state.copy(
-                    isExistChecking = false,
+                val newState = state.copy(
+                    isLoading = false,
                     isCustomerExist = event.exists,
-                    balancePoint    = event.balancePoint,
-                    customerCode    = event.customerCode,
-                    isLoading       = false,
-                ) to emptyList()
+                    balancePoint = event.balancePoint,
+                    customerCode = event.customerCode,
+                )
+                val effects = if (event.exists)
+                    listOf(PhoneNumberInputContract.Effect.ProceedAfterCustomerCheck)
+                else emptyList()
+                newState to effects
             }
 
             is PhoneNumberInputContract.Event.OnClickConfirm -> {
@@ -101,10 +74,9 @@ class PhoneNumberInputReducer @Inject constructor() {
                         state.copy(isLoading = true) to listOf(PhoneNumberInputContract.Effect.RequestSavePoint)
 
                     is PhoneNumberInputContract.Mode.Lookup ->
-                        if ((state.mode as PhoneNumberInputContract.Mode.Lookup).source == PointUseSource.MANUAL)
-                            state to listOf(PhoneNumberInputContract.Effect.GoToTheResultScreen(event.resultState!!))
-                        else
-                            state to listOf(PhoneNumberInputContract.Effect.RequestNavigateToUsePoint)
+                        state.copy(isLoading = true, isCustomerExist = null) to listOf(
+                            PhoneNumberInputContract.Effect.CheckCustomerExist(event.phoneNumber)
+                        )
 
                     PhoneNumberInputContract.Mode.CatRequestNum ->
                         state to listOf(PhoneNumberInputContract.Effect.SendToCATPhoneNumber(event.phoneNumber))
