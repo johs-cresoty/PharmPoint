@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cresoty.catpospoint.data.repository.ConfigKey
 import com.cresoty.catpospoint.data.repository.ConfigRepository
+import com.cresoty.catpospoint.dataresource.DataResource
+import com.cresoty.catpospoint.domain.usecase.CheckAppVersionUseCase
 import com.cresoty.catpospoint.safeSubString
 import com.cresoty.catpospoint.ui.setting.SettingType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +26,7 @@ import javax.inject.Inject
 class SettingViewModel @Inject constructor(
     private val configRepo: ConfigRepository,
     private val reducer: SettingReducer,
+    private val checkAppVersionUseCase: CheckAppVersionUseCase,
 ) : ViewModel() {
 
     /** 설정 관련 config 값 (서브 컴포넌트에서 읽기용) */
@@ -56,6 +59,8 @@ class SettingViewModel @Inject constructor(
             is SettingContract.Event.SaveSetting -> { saveSetting(event.type, event.data); return }
             is SettingContract.Event.StartPreview -> { startPreview(event.theme, event.subTitle, event.customImageUri); return }
             is SettingContract.Event.CropCustomThemeImage -> { cropCustomThemeImage(event.uri); return }
+            SettingContract.Event.CheckUpdate -> { checkUpdate(); return }
+            is SettingContract.Event.OnClickSettingUpdate -> { startSettingUpdate(event.installUrl); return }
             else -> {}
         }
 
@@ -105,6 +110,7 @@ class SettingViewModel @Inject constructor(
                     configRepo.putValue(ConfigKey.SUB_TITLE, data[ConfigKey.SUB_TITLE] as String)
                     configRepo.putValue(ConfigKey.CUSTOM_IMAGE_URI, customUri)
                 }
+                SettingType.UPDATE -> Unit
             }
 
             _uiState.update { it.copy(isSavedToastVisible = true) }
@@ -123,5 +129,42 @@ class SettingViewModel @Inject constructor(
         // 기존 파일 삭제
         _uiState.value.customThemeImageUri?.path?.let { File(it).delete() }
         _uiState.update { it.copy(customThemeImageUri = uri) }
+    }
+
+    /** 업데이트 메뉴 진입 시 버전 체크
+     *
+     * Delayed Loading Indicator 패턴:
+     * - API가 200ms 이내 응답하면 로딩 상태를 건너뛰고 결과 바로 표시
+     * - 200ms 초과 시에만 로딩 인디케이터 노출 → 빠른 네트워크에서 깜빡임 방지
+     */
+    private fun checkUpdate() {
+        viewModelScope.launch {
+            // 200ms 후에도 응답 없으면 로딩 표시
+            val showLoadingJob = launch {
+                delay(200)
+                _uiState.update { it.copy(updateCheckState = SettingContract.UpdateCheckState.Loading) }
+            }
+
+            var result: SettingContract.UpdateCheckState? = null
+            checkAppVersionUseCase().collect { resource ->
+                when (resource) {
+                    is DataResource.Loading -> Unit
+                    is DataResource.Success -> result = SettingContract.UpdateCheckState.NeedUpdate(resource.data)
+                    is DataResource.Error -> result = SettingContract.UpdateCheckState.Error
+                }
+            }
+            // 플로우 완료 후 result 없으면 업데이트 불필요 (forceUpdate == false)
+            if (result == null) result = SettingContract.UpdateCheckState.UpToDate
+
+            showLoadingJob.cancel()
+            _uiState.update { it.copy(updateCheckState = result!!) }
+        }
+    }
+
+    /** 업데이트 버튼 클릭 → AppViewModel로 다운로드 위임 */
+    private fun startSettingUpdate(installUrl: String) {
+        viewModelScope.launch {
+            _effect.send(SettingContract.Effect.StartUpdate(installUrl))
+        }
     }
 }

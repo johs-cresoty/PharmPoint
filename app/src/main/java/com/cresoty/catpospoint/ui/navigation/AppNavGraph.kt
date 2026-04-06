@@ -131,7 +131,7 @@ fun AppNavGraph(
         }
     }
 
-    // ── SettingViewModel effect 처리 — 프리뷰 요청 → IdleViewModel으로 라우팅
+    // ── SettingViewModel effect 처리
     LaunchedEffect(Unit) {
         settingVm.effect.collect { effect ->
             when (effect) {
@@ -143,6 +143,8 @@ fun AppNavGraph(
                             customImageUri = effect.customImageUri,
                         )
                     )
+                is SettingContract.Effect.StartUpdate ->
+                    appVm.dispatch(AppContract.Event.OnAcceptSettingUpdate(effect.installUrl))
             }
         }
     }

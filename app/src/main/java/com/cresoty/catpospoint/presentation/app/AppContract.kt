@@ -45,6 +45,8 @@ object AppContract {
         data object OnAcceptFcmUpdate : Event
         /** FCM 배너 — "나중에 하기" 버튼 클릭 */
         data object OnDismissFcmUpdate : Event
+        /** 설정 화면 업데이트 버튼 클릭 */
+        data class OnAcceptSettingUpdate(val installUrl: String) : Event
     }
 
     /** 포인트 적립 화면 진입 파라미터 */

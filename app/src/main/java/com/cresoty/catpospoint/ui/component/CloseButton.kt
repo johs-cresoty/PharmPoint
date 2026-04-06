@@ -19,7 +19,7 @@ import com.cresoty.catpospoint.presentation.theme.white
 
 @Composable
 fun CloseButton(
-    text: String,
+    text: String = "닫기",
     fontSize: TextUnit = 35.spx,
     onClick: () -> Unit,
     modifier: Modifier = Modifier

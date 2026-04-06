@@ -34,6 +34,7 @@ import com.cresoty.catpospoint.ui.setting.SettingPointUse
 import com.cresoty.catpospoint.ui.setting.SettingScreenTimeout
 import com.cresoty.catpospoint.ui.setting.SettingStoreInfo
 import com.cresoty.catpospoint.ui.setting.SettingTheme
+import com.cresoty.catpospoint.ui.setting.SettingUpdateInfo
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.spx
 import com.cresoty.catpospoint.presentation.theme.sub01
@@ -150,6 +151,8 @@ fun SettingDialog(vm: SettingViewModel = hiltViewModel()) {
                     },
                     onImageCropped = { uri -> vm.dispatch(SettingContract.Event.CropCustomThemeImage(uri)) },
                     onClose = { vm.dispatch(SettingContract.Event.CloseDialog) },
+                    onCheckUpdate = { vm.dispatch(SettingContract.Event.CheckUpdate) },
+                    onAcceptSettingUpdate = { installUrl -> vm.dispatch(SettingContract.Event.OnClickSettingUpdate(installUrl)) },
                 )
             }
 
@@ -168,6 +171,8 @@ fun SettingPanel(
     onShowPreview: (theme: Int?, subTitle: String?, customImageUri: Uri?) -> Unit,
     onImageCropped: (Uri) -> Unit,
     onClose: () -> Unit,
+    onCheckUpdate: () -> Unit = {},
+    onAcceptSettingUpdate: (installUrl: String) -> Unit = {},
 ) {
     when (type) {
         SettingType.STORE_INFO -> SettingStoreInfo(
@@ -206,6 +211,13 @@ fun SettingPanel(
             onShowPreview = onShowPreview,
             onImageCropped = onImageCropped,
             onClose = onClose,
+        )
+        SettingType.UPDATE -> SettingUpdateInfo(
+            modifier = modifier,
+            updateCheckState = state.updateCheckState,
+            onCheckUpdate = { onCheckUpdate() },
+            onAcceptUpdate = { installUrl -> onAcceptSettingUpdate(installUrl) },
+            onDismiss = onClose
         )
     }
 }

@@ -13,7 +13,8 @@ enum class SettingType(val title: String) {
 //    ID_VERIFY("본인인증"),
     POINT_USE("포인트설정"),
     SCREEN_TIMEOUT("화면대기"),
-    THEME("테마설정")
+    THEME("테마설정"),
+    UPDATE("업데이트")
 }
 
 @Composable
@@ -29,7 +30,8 @@ fun SettingTypeList(
 //        SettingType.ID_VERIFY,
         SettingType.POINT_USE,
         SettingType.SCREEN_TIMEOUT,
-        SettingType.THEME
+        SettingType.THEME,
+        SettingType.UPDATE,
     )
 
     LazyColumn(

@@ -116,6 +116,7 @@ class AppViewModel @Inject constructor(
             AppContract.Event.OnAcceptFcmUpdate -> startFcmDownload()
             AppContract.Event.OnDismissFcmUpdate ->
                 _uiState.update { it.copy(showUpdateBanner = false) }
+            is AppContract.Event.OnAcceptSettingUpdate -> startDownloadFromUrl(event.installUrl)
         }
     }
 
@@ -168,6 +169,10 @@ class AppViewModel @Inject constructor(
     private fun startFcmDownload() {
         val installUrl = _uiState.value.fcmInstallUrl.takeIf { it.isNotEmpty() } ?: return
         _uiState.update { it.copy(showUpdateBanner = false) }
+        startDownloadFromUrl(installUrl)
+    }
+
+    private fun startDownloadFromUrl(installUrl: String) {
         viewModelScope.launch {
             startDownloadUseCase(installUrl).collect { resource ->
                 when (resource) {

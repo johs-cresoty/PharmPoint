@@ -31,6 +31,7 @@ import com.cresoty.catpospoint.ui.component.FilterTextField
 import com.cresoty.catpospoint.data.repository.ConfigKey
 import com.cresoty.catpospoint.model.enums.MainThemes
 import com.cresoty.catpospoint.model.state.ConfigState
+import androidx.compose.ui.tooling.preview.Preview
 import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.main03
 import com.cresoty.catpospoint.presentation.theme.dpx
@@ -174,4 +175,21 @@ fun SettingTheme(
             }
         )
     }
+}
+
+@Preview(showBackground = true, widthDp = 600, heightDp = 800)
+@Composable
+private fun SettingThemePreview() {
+    SettingTheme(
+        modifier = Modifier,
+        config = ConfigState(subTitle = "전문 약사가 정성껏 상담해 드립니다."),
+        customThemeImageUri = null,
+        editingSubTitle = null,
+        editingThemeIndex = null,
+        isSavedToastVisible = false,
+        onSave = {},
+        onShowPreview = { _, _, _ -> },
+        onImageCropped = {},
+        onClose = {},
+    )
 }

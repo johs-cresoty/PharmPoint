@@ -1,5 +1,6 @@
 package com.cresoty.catpospoint.data.repository.impl
 
+import android.util.Base64
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -29,24 +30,32 @@ class AppSupportAuthRepositoryImpl @Inject constructor(
 
     override suspend fun getValidToken(): String = mutex.withLock {
         val stored = dataStore.data.first()[tokenKey]
-        if (!stored.isNullOrEmpty()) return@withLock stored
-        login()
+        // 토큰이 있고 만료 60초 전까지는 그대로 사용
+        if (!stored.isNullOrEmpty() && !isTokenExpiredSoon(stored)) return@withLock stored
+        refreshOrLoginInternal()
     }
 
     override suspend fun forceRefresh(): String = mutex.withLock {
-        val storedRefresh = dataStore.data.first()[refreshTokenKey]
-        if (!storedRefresh.isNullOrEmpty()) {
-            runCatching { api.refreshToken(RefreshTokenRequest(storedRefresh)) }
-                .onSuccess { return@withLock saveAndReturn(it) }
-        }
-        // 리프레시 토큰 없거나 만료 → 재로그인
-        login()
+        refreshOrLoginInternal()
     }
 
     override suspend fun logout() {
         val refreshToken = dataStore.data.first()[refreshTokenKey] ?: return
         runCatching { api.logout(LogoutRequest(refreshToken)) }
         clearTokens()
+    }
+
+    /** mutex를 이미 보유한 상태에서 호출. 리프레시 실패 시 재로그인. */
+    private suspend fun refreshOrLoginInternal(): String {
+        val storedRefresh = dataStore.data.first()[refreshTokenKey]
+        if (!storedRefresh.isNullOrEmpty()) {
+            val response = runCatching { api.refreshToken(RefreshTokenRequest(storedRefresh)) }.getOrNull()
+            // 서버가 HTTP 200 + 에러바디를 반환하면 Gson이 token을 null로 파싱함 → 유효하지 않으면 login()으로 fallback
+            if (!response?.token.isNullOrEmpty()) {
+                return saveAndReturn(response!!)
+            }
+        }
+        return login()
     }
 
     private suspend fun login(): String {
@@ -66,6 +75,25 @@ class AppSupportAuthRepositoryImpl @Inject constructor(
         dataStore.edit { prefs ->
             prefs.remove(tokenKey)
             prefs.remove(refreshTokenKey)
+        }
+    }
+
+    /**
+     * JWT payload의 exp 클레임을 파싱해서 만료 60초 이내이면 true 반환.
+     * 파싱 실패 시 만료된 것으로 간주.
+     */
+    private fun isTokenExpiredSoon(token: String): Boolean {
+        return try {
+            val parts = token.split(".")
+            if (parts.size != 3) return true
+            val payload = Base64.decode(parts[1], Base64.URL_SAFE or Base64.NO_PADDING)
+            val json = String(payload, Charsets.UTF_8)
+            val exp = Regex("\"exp\":(\\d+)").find(json)?.groupValues?.get(1)?.toLongOrNull()
+                ?: return true
+            val nowSeconds = System.currentTimeMillis() / 1000
+            exp <= nowSeconds + 60
+        } catch (e: Exception) {
+            true
         }
     }
 }
