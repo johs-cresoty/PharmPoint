@@ -42,6 +42,7 @@ fun FcmUpdateBanner(
         ClickSoundButton(
             onClick = onAccept,
             backgroundColor = white,
+            showPressOverlay = false,
             modifier = Modifier
                 .height(48.dpx)
                 .padding(horizontal = 4.dpx)
@@ -56,8 +57,9 @@ fun FcmUpdateBanner(
             )
         }
         ClickSoundButton(
-            onClick = onAccept,
+            onClick = onDismiss,
             backgroundColor = white,
+            showPressOverlay = false,
             modifier = Modifier
                 .height(48.dpx)
                 .padding(horizontal = 4.dpx)
