@@ -55,8 +55,6 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          API_ID: ${{ secrets.API_ID }}
-          API_PASSWORD: ${{ secrets.API_PASSWORD }}
         run: ./gradlew assembleRelease
 
       - name: Configure AWS credentials
@@ -77,7 +75,7 @@ jobs:
       - name: Get auth token
         id: auth
         run: |
-          RESPONSE=$(curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/auth/token \
+          RESPONSE=$(curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/pharmpoint/auth/token \
             -H "Content-Type: application/json;charset=UTF-8" \
             -d "{\"id\": \"${{ secrets.API_ID }}\", \"password\": \"${{ secrets.API_PASSWORD }}\"}")
           TOKEN=$(echo "$RESPONSE" | jq -r '.token')
@@ -101,7 +99,7 @@ jobs:
           else
             TARGET_VERSION_JSON="$TARGET_VERSION"
           fi
-          HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/version \
+          HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST ${{ secrets.API_BASE_URL }}/api/v1/pharmpoint/version \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ steps.auth.outputs.token }}" \
             -d "{
@@ -123,6 +121,6 @@ jobs:
       - name: Logout
         if: always() && steps.auth.outputs.refresh_token != ''
         run: |
-          curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/auth/logout \
+          curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/pharmpoint/auth/logout \
             -H "Content-Type: application/json;charset=UTF-8" \
             -d "{\"refreshToken\": \"${{ steps.auth.outputs.refresh_token }}\"}"

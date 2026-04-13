@@ -5,7 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.cresoty.catpospoint.BuildConfig
+import com.cresoty.catpospoint.data.repository.ConfigKey
+import com.cresoty.catpospoint.data.repository.ConfigRepository
 import com.cresoty.catpospoint.domain.repository.AppSupportAuthRepository
 import com.cresoty.catpospoint.remote.api.AppSupportAuthApi
 import com.cresoty.catpospoint.remote.model.request.LoginRequest
@@ -20,6 +21,7 @@ import javax.inject.Inject
 class AppSupportAuthRepositoryImpl @Inject constructor(
     private val api: AppSupportAuthApi,
     private val dataStore: DataStore<Preferences>,
+    private val configRepository: ConfigRepository,
 ) : AppSupportAuthRepository {
 
     private val tokenKey = stringPreferencesKey("app_support_token")
@@ -58,8 +60,23 @@ class AppSupportAuthRepositoryImpl @Inject constructor(
         return login()
     }
 
+    override suspend fun reLogin() {
+        mutex.withLock {
+            clearTokens()
+            login()
+        }
+    }
+
+    override suspend fun validatePharmacy(bizNo: String): Pair<Boolean, String> =
+        runCatching {
+            val response = api.validatePharmacy(bizNo)
+            response.valid to response.message
+        }.getOrDefault(false to "")
+
     private suspend fun login(): String {
-        val response = api.login(LoginRequest(BuildConfig.API_ID, BuildConfig.API_PASSWORD))
+        val id = configRepository.getValue(ConfigKey.BIZ_NO, "")
+        val password = configRepository.getValue(ConfigKey.PASSWORD, "")
+        val response = api.login(LoginRequest(id, password))
         return saveAndReturn(response)
     }
 

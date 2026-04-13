@@ -147,6 +147,7 @@ fun SettingDialog(vm: SettingViewModel = hiltViewModel()) {
                     config = config,
                     state = state,
                     onSave = { type, map -> vm.dispatch(SettingContract.Event.SaveSetting(type, map)) },
+                    onResetPharmacyInvalid = { vm.dispatch(SettingContract.Event.ResetPharmacyInvalid) },
                     onShowPreview = { theme, subTitle, customImageUri ->
                         vm.dispatch(SettingContract.Event.StartPreview(theme, subTitle, customImageUri))
                     },
@@ -169,6 +170,7 @@ fun SettingPanel(
     config: ConfigState,
     state: SettingContract.State,
     onSave: (SettingType, Map<Preferences.Key<*>, Any>) -> Unit,
+    onResetPharmacyInvalid: () -> Unit = {},
     onShowPreview: (theme: Int?, subTitle: String?, customImageUri: Uri?) -> Unit,
     onImageCropped: (Uri) -> Unit,
     onClose: () -> Unit,
@@ -180,7 +182,11 @@ fun SettingPanel(
             modifier = modifier,
             config = config,
             isSavedToastVisible = state.isSavedToastVisible,
+            isPharmacyInvalid = state.isPharmacyInvalid,
+            isValidatingPharmacy = state.isValidatingPharmacy,
+            pharmacyInvalidMessage = state.validatingPharmacyMessage,
             onPanelState = onPanelState,
+            onBizNoChange = { onResetPharmacyInvalid() },
             onSave = { map -> onSave(SettingType.STORE_INFO, map) },
             onClose = onClose,
         )

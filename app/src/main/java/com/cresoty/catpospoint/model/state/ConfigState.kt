@@ -12,5 +12,6 @@ data class ConfigState (
     var isIdVerify : Boolean = false,
     var isMinPointEnabled : Boolean = true,
     var isSave : Boolean = true,
-    var brightness : Float = 1.0f
+    var brightness : Float = 1.0f,
+    var password : String = ""
 )

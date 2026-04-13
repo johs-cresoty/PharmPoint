@@ -51,7 +51,8 @@ enum class FilterTextType {
     IP,
     PRICE,
     NUMBER,
-    NONE
+    NONE,
+    PASSWORD
 }
 
 @Composable
@@ -67,6 +68,7 @@ fun FilterTextField(
 ) {
     val keyboardType = when (filterType) {
         FilterTextType.IP, FilterTextType.PRICE, FilterTextType.NUMBER -> KeyboardType.Number
+        FilterTextType.PASSWORD -> KeyboardType.NumberPassword
         FilterTextType.NONE -> KeyboardType.Text
     }
 
@@ -147,6 +149,10 @@ fun FilterTextField(
                     }
                 }
 
+                FilterTextType.PASSWORD -> {
+                    inputText = inputText.replace(Regex("[^0-9]"), "")
+                }
+
                 else -> {}
             }
 
@@ -168,7 +174,7 @@ fun FilterTextField(
                 dismissKeyboard()
             }
         ),
-        visualTransformation = if (keyboardType == KeyboardType.Password) {
+        visualTransformation = if (keyboardType == KeyboardType.Password || keyboardType == KeyboardType.NumberPassword) {
             PasswordVisualTransformation()
         } else {
             VisualTransformation.None

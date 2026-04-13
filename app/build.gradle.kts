@@ -30,8 +30,6 @@ android {
 
         testInstrumentationRunner = "com.cresoty.catpospoint.HiltTestRunner"
 
-        buildConfigField("String", "API_ID", "\"${localProp("API_ID")}\"")
-        buildConfigField("String", "API_PASSWORD", "\"${localProp("API_PASSWORD")}\"")
     }
 
     signingConfigs {

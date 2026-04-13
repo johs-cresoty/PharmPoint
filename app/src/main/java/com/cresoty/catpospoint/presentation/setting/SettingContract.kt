@@ -27,6 +27,9 @@ object SettingContract {
         val editingThemeIndex: Int? = null,
         val customThemeImageUri: Uri? = null,
         val updateCheckState: UpdateCheckState = UpdateCheckState.Idle,
+        val isPharmacyInvalid: Boolean = false,
+        val isValidatingPharmacy: Boolean = false,
+        val validatingPharmacyMessage: String = "",
     )
 
     sealed interface Event {
@@ -39,6 +42,7 @@ object SettingContract {
         data object DeleteAllPassword : Event
         data class ConfirmPassword(val input: String) : Event
         data class SaveSetting(val type: SettingType, val data: Map<Preferences.Key<*>, Any>) : Event
+        data object ResetPharmacyInvalid : Event
         data class StartPreview(val theme: Int?, val subTitle: String?, val customImageUri: Uri?) : Event
         data class CropCustomThemeImage(val uri: Uri) : Event
         /** 업데이트 메뉴 진입 시 버전 체크 요청 */

@@ -37,6 +37,7 @@ object ConfigKey {
     val IS_MIN_POINT_ENABLED = booleanPreferencesKey("is_min_point_enabled")        // 최소 포인트 사용 여부
     val IS_SAVE = booleanPreferencesKey("is_save")                  // 적립 여부
     val BRIGHTNESS = floatPreferencesKey("brightness")              // 화면 밝기 (0.1 ~ 1.0)
+    val PASSWORD = stringPreferencesKey("password")                 // 관리자 비밀번호 (AES 암호화)
 }
 
 class ConfigRepository @Inject constructor(
@@ -58,7 +59,8 @@ class ConfigRepository @Inject constructor(
                 isIdVerify = p[ConfigKey.IS_ID_VERIFY] ?: false,
                 isMinPointEnabled = p[ConfigKey.IS_MIN_POINT_ENABLED] ?: true,
                 isSave = p[ConfigKey.IS_SAVE] ?: true,
-                brightness = p[ConfigKey.BRIGHTNESS] ?: 1.0f
+                brightness = p[ConfigKey.BRIGHTNESS] ?: 1.0f,
+                password = p[ConfigKey.PASSWORD] ?: ""
             )
         }
         .distinctUntilChanged()

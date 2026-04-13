@@ -30,6 +30,10 @@ object CresotyCrypt {
         return getEncode(plainInt.toString())
     }
 
+    /**
+     * 날짜 기반 XOR 암호화
+     * 키가 날마다 바뀝니다. 오늘 암호화한 값을 내일 복호화하면 틀린 값이 나옵니다.
+     */
     fun getEncode(plainText: String?): String {
         if (plainText.isNullOrEmpty()) return ""
 
@@ -60,6 +64,11 @@ object CresotyCrypt {
         return "$cypherText^$cypherTextLength"
     }
 
+
+    /**
+     * 고정 키 AES-256 암호화
+     *  키가 항상 동일하므로 언제 복호화해도 같은 원본이 나옵니다.
+     */
     fun getAESEncode(plainText: String): String {
         val keyData = SECRET_KEY.toByteArray()
         val secureKey = SecretKeySpec(keyData, "AES")
@@ -70,6 +79,18 @@ object CresotyCrypt {
 
         val encryptText = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
         return Base64.encodeToString(encryptText, Base64.NO_WRAP)
+    }
+
+    fun getAESDecode(encryptedText: String): String {
+        val keyData = SECRET_KEY.toByteArray()
+        val secureKey = SecretKeySpec(keyData, "AES")
+        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+
+        val iv = SECRET_KEY.substring(0, 16)
+        cipher.init(Cipher.DECRYPT_MODE, secureKey, IvParameterSpec(iv.toByteArray()))
+
+        val decryptedBytes = cipher.doFinal(Base64.decode(encryptedText, Base64.NO_WRAP))
+        return String(decryptedBytes, Charsets.UTF_8)
     }
 
     fun getDecode(cypherText: String): String {

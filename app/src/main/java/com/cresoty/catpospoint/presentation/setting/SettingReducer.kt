@@ -30,7 +30,13 @@ class SettingReducer @Inject constructor() {
                     isPasswordCorrect = true,
                     editingSubTitle = null,
                     editingThemeIndex = null,
+                    isPharmacyInvalid = false,
+                    isValidatingPharmacy = false,
+                    validatingPharmacyMessage = "",
                 ) to emptyList()
+
+            SettingContract.Event.ResetPharmacyInvalid ->
+                state.copy(isPharmacyInvalid = false, validatingPharmacyMessage = "") to emptyList()
 
             is SettingContract.Event.SelectMenu ->
                 state.copy(selectedMenuIndex = event.index) to emptyList()

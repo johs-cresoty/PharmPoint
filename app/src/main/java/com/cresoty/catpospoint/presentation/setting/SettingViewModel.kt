@@ -1,13 +1,18 @@
 package com.cresoty.catpospoint.presentation.setting
 
 import android.net.Uri
+import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cresoty.catpospoint.data.repository.ConfigKey
 import com.cresoty.catpospoint.data.repository.ConfigRepository
 import com.cresoty.catpospoint.dataresource.DataResource
+import com.cresoty.catpospoint.domain.repository.AppSupportAuthRepository
 import com.cresoty.catpospoint.domain.usecase.CheckAppVersionUseCase
+import com.cresoty.catpospoint.domain.usecase.RegisterDeviceUseCase
+import com.cresoty.catpospoint.domain.usecase.ValidatePharmacyUseCase
+import com.cresoty.catpospoint.remote.crypt.CresotyCrypt
 import com.cresoty.catpospoint.safeSubString
 import com.cresoty.catpospoint.ui.setting.SettingType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +32,9 @@ class SettingViewModel @Inject constructor(
     private val configRepo: ConfigRepository,
     private val reducer: SettingReducer,
     private val checkAppVersionUseCase: CheckAppVersionUseCase,
+    private val registerDeviceUseCase: RegisterDeviceUseCase,
+    private val authRepository: AppSupportAuthRepository,
+    private val validatePharmacyUseCase: ValidatePharmacyUseCase,
 ) : ViewModel() {
 
     /** 설정 관련 config 값 (서브 컴포넌트에서 읽기용) */
@@ -72,9 +80,10 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    /** 비밀번호 확인: bizNo 뒤 5자리와 비교 */
+    /** 비밀번호 확인: 저장된 AES 암호화 값을 복호화하여 입력값과 비교 */
     private fun confirmPassword(input: String) {
-        val correctPw = configState.value.bizNo.safeSubString(5)
+        val stored = configState.value.password
+        val correctPw = if (stored.isNotEmpty()) runCatching { CresotyCrypt.getAESDecode(stored) }.getOrDefault("") else ""
         if (input == correctPw) {
             _uiState.update {
                 it.copy(
@@ -92,8 +101,21 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             when (type) {
                 SettingType.STORE_INFO -> {
-                    configRepo.putValue(ConfigKey.BIZ_NO, data[ConfigKey.BIZ_NO] as String)
+                    val bizNo = data[ConfigKey.BIZ_NO] as String
+                    _uiState.update { it.copy(isValidatingPharmacy = true, isPharmacyInvalid = false) }
+                    val (isValid, message) = validatePharmacyUseCase(bizNo)
+                    if (!isValid) {
+                        _uiState.update { it.copy(isValidatingPharmacy = false, isPharmacyInvalid = true, validatingPharmacyMessage = message) }
+                        return@launch
+                    }
+                    _uiState.update { it.copy(isValidatingPharmacy = false, validatingPharmacyMessage = "") }
+                    configRepo.putValue(ConfigKey.BIZ_NO, bizNo)
                     configRepo.putValue(ConfigKey.STORE_NAME, data[ConfigKey.STORE_NAME] as String)
+                    (data[ConfigKey.PASSWORD] as? String)?.let {
+                        configRepo.putValue(ConfigKey.PASSWORD, it)
+                    }
+                    authRepository.reLogin()
+                    registerDeviceUseCase()
                 }
                 SettingType.POINT_USE -> {
                     configRepo.putValue(ConfigKey.IS_MIN_POINT_ENABLED, data[ConfigKey.IS_MIN_POINT_ENABLED] as Boolean)
