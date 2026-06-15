@@ -60,10 +60,10 @@ class AppSupportAuthRepositoryImpl @Inject constructor(
         return login()
     }
 
-    override suspend fun reLogin() {
+    override suspend fun reLogin(change: Boolean) {
         mutex.withLock {
             clearTokens()
-            login()
+            login(change = change)
         }
     }
 
@@ -73,10 +73,15 @@ class AppSupportAuthRepositoryImpl @Inject constructor(
             response.valid to response.message
         }.getOrDefault(false to "")
 
-    private suspend fun login(): String {
+    private suspend fun login(change: Boolean = false): String {
         val id = configRepository.getValue(ConfigKey.BIZ_NO, "")
         val password = configRepository.getValue(ConfigKey.PASSWORD, "")
-        val response = api.login(LoginRequest(id, password))
+        val request = if (change) {
+            LoginRequest(id = id, password = password, change = true)
+        } else {
+            LoginRequest(id = id, password = password)
+        }
+        val response = api.login(request)
         return saveAndReturn(response)
     }
 

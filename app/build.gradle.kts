@@ -26,8 +26,8 @@ android {
         applicationId = "com.cresoty.catpospoint"
         minSdk = 34
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "com.cresoty.catpospoint.HiltTestRunner"
 
@@ -43,6 +43,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("boolean", "LOG_HTTP", "true")
+        }
         release {
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("release")
@@ -50,6 +53,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("boolean", "LOG_HTTP", "false")
+        }
+        create("releaseDebug") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("release")
+            buildConfigField("boolean", "LOG_HTTP", "true")
+            matchingFallbacks += listOf("release")
         }
     }
     compileOptions {

@@ -111,10 +111,10 @@ class SettingViewModel @Inject constructor(
                     _uiState.update { it.copy(isValidatingPharmacy = false, validatingPharmacyMessage = "") }
                     configRepo.putValue(ConfigKey.BIZ_NO, bizNo)
                     configRepo.putValue(ConfigKey.STORE_NAME, data[ConfigKey.STORE_NAME] as String)
-                    (data[ConfigKey.PASSWORD] as? String)?.let {
+                    val isFirstPasswordRegister = (data[ConfigKey.PASSWORD] as? String)?.also {
                         configRepo.putValue(ConfigKey.PASSWORD, it)
-                    }
-                    authRepository.reLogin()
+                    } != null
+                    authRepository.reLogin(change = isFirstPasswordRegister)
                     registerDeviceUseCase()
                 }
                 SettingType.POINT_USE -> {
