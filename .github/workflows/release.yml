@@ -75,7 +75,7 @@ jobs:
       - name: Get auth token
         id: auth
         run: |
-          RESPONSE=$(curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/a/auth/token \
+          RESPONSE=$(curl -s -X POST ${{ secrets.API_BASE_URL }}/api/v1/app-support/auth/token \
             -H "Content-Type: application/json;charset=UTF-8" \
             -d "{\"id\": \"${{ secrets.API_ID }}\", \"password\": \"${{ secrets.API_PASSWORD }}\"}")
           TOKEN=$(echo "$RESPONSE" | jq -r '.token')
