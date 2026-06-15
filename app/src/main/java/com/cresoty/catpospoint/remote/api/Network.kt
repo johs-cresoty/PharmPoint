@@ -3,6 +3,7 @@ package com.cresoty.catpospoint.remote.api
 import android.util.Log
 import com.cresoty.catpospoint.BuildConfig
 import com.cresoty.catpospoint.remote.api.interceptor.AuthInterceptor
+import com.cresoty.catpospoint.remote.api.interceptor.CrashReportingInterceptor
 import com.cresoty.catpospoint.remote.api.interceptor.CryptoInterceptor
 import com.cresoty.catpospoint.remote.api.interceptor.TokenAuthenticator
 import com.cresoty.catpospoint.remote.constant.ServiceConstant.BASE_URL_DEV
@@ -28,6 +29,7 @@ fun createAppSupportAuthApiService(): AppSupportAuthApi {
         readTimeout(TIME_OUT, TimeUnit.SECONDS)
         writeTimeout(TIME_OUT, TimeUnit.SECONDS)
         connectTimeout(TIME_OUT, TimeUnit.SECONDS)
+        addInterceptor(CrashReportingInterceptor())
         if (BuildConfig.DEBUG) {
             val logger = HttpLoggingInterceptor { Log.d("HTTP_APP_SUPPORT_AUTH", it) }
                 .apply { level = HttpLoggingInterceptor.Level.BODY }
@@ -58,6 +60,7 @@ fun createAppSupportApiService(
         connectTimeout(TIME_OUT, TimeUnit.SECONDS)
         addInterceptor(authInterceptor)
         authenticator(tokenAuthenticator)
+        addInterceptor(CrashReportingInterceptor())
         if (BuildConfig.DEBUG) {
             val logger = HttpLoggingInterceptor { Log.d("HTTP_APP_SUPPORT", it) }
                 .apply { level = HttpLoggingInterceptor.Level.BODY }
@@ -86,14 +89,13 @@ fun createApiService(): CatposCloudApi {
         connectTimeout(TIME_OUT, TimeUnit.SECONDS)
         connectionPool(ConnectionPool(5, KEEP_ALIVE_DURATION, TimeUnit.SECONDS))
 
+        addInterceptor(CrashReportingInterceptor())
         if (BuildConfig.DEBUG) {
             val logger = HttpLoggingInterceptor { Log.d("HTTP", it) }
                 .apply { level = HttpLoggingInterceptor.Level.BODY }
             addInterceptor(logger)         // 암호화 전 실제 값 로그
-            addInterceptor(CryptoInterceptor())
-        } else {
-            addInterceptor(CryptoInterceptor())
         }
+        addInterceptor(CryptoInterceptor())
     }.build()
 
     val baseUrl = if (BuildConfig.DEBUG) BASE_URL_DEV else BASE_URL_PROD

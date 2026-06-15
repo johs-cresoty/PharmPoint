@@ -10,10 +10,13 @@ import com.cresoty.catpospoint.data.model.PointBalanceEntity
 import com.cresoty.catpospoint.data.model.PointSaveSettingEntity
 import com.cresoty.catpospoint.data.remote.PointRemoteDataSource
 import com.cresoty.catpospoint.remote.api.CatposCloudApi
+import com.cresoty.catpospoint.remote.exception.ApiResponseException
 import com.cresoty.catpospoint.remote.exception.EstimatePointRetryableException
 import com.cresoty.catpospoint.remote.model.request.EstimatePointRequest
 import com.cresoty.catpospoint.remote.model.request.UpsertCustomerPointRequest
 import com.cresoty.catpospoint.remote.model.response.toData
+import com.cresoty.catpospoint.util.CrashlyticsLogger
+import com.cresoty.catpospoint.util.PiiMask
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -49,7 +52,13 @@ class PointRemoteDataSourceImpl @Inject constructor(
                 )
             )
         } else {
-            throw Exception(response.message ?: "Unknown error")
+            throwApiError(
+                api = "getCustomer",
+                responseCode = response.code,
+                responseMessage = response.message,
+                phoneSuffix = PiiMask.phone(customerHp),
+                reason = if (response.code == "0000") "data_null" else "code_not_ok",
+            )
         }
     }
 
@@ -60,7 +69,13 @@ class PointRemoteDataSourceImpl @Inject constructor(
         if (response.code == "0000" && response.data != null) {
             emit(response.toData())
         } else {
-            throw Exception(response.message ?: "Unknown error")
+            throwApiError(
+                api = "upsertCustomerPoint",
+                responseCode = response.code,
+                responseMessage = response.message,
+                phoneSuffix = PiiMask.phone(request.customerPhone),
+                reason = if (response.code == "0000") "data_null" else "code_not_ok",
+            )
         }
     }
 
@@ -70,7 +85,12 @@ class PointRemoteDataSourceImpl @Inject constructor(
         when {
             code == "8888" || code == "9303" -> throw EstimatePointRetryableException(code)
             code == "0000"                   -> emit(response.toData())
-            else -> throw Exception("estimatePoint failed: code=$code msg=${response.message}")
+            else -> throwApiError(
+                api = "estimatePoint",
+                responseCode = code,
+                responseMessage = response.message,
+                reason = "code_not_ok",
+            )
         }
     }
 
@@ -85,7 +105,12 @@ class PointRemoteDataSourceImpl @Inject constructor(
         if (code == "0000") {
             emit(response.toData())
         } else {
-            throw Exception("getPointSaveSetting failed: code=$code msg=${response.message}")
+            throwApiError(
+                api = "getPointSaveSetting",
+                responseCode = code,
+                responseMessage = response.message,
+                reason = "code_not_ok",
+            )
         }
     }
 
@@ -100,7 +125,12 @@ class PointRemoteDataSourceImpl @Inject constructor(
         if (code == "0000") {
             emit(response.toData())
         } else {
-            throw Exception("getPointAmountSetting failed: code=$code msg=${response.message}")
+            throwApiError(
+                api = "getPointAmountSetting",
+                responseCode = code,
+                responseMessage = response.message,
+                reason = "code_not_ok",
+            )
         }
     }
 
@@ -116,7 +146,31 @@ class PointRemoteDataSourceImpl @Inject constructor(
         if (code == "0000") {
             emit(response.toData())
         } else {
-            throw Exception("getPointBalance failed: code=$code msg=${response.message}")
+            throwApiError(
+                api = "getPointBalance",
+                responseCode = code,
+                responseMessage = response.message,
+                phoneSuffix = PiiMask.phone(customerPhone),
+                reason = "code_not_ok",
+            )
         }
+    }
+
+    private fun throwApiError(
+        api: String,
+        responseCode: String?,
+        responseMessage: String?,
+        phoneSuffix: String? = null,
+        reason: String,
+    ): Nothing {
+        val ex = ApiResponseException(
+            api = api,
+            responseCode = responseCode,
+            responseMessage = responseMessage,
+            phoneSuffix = phoneSuffix,
+            reason = reason,
+        )
+        CrashlyticsLogger.recordApiError(ex)
+        throw ex
     }
 }

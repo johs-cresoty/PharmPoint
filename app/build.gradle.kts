@@ -7,6 +7,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 val localProps = Properties().apply {
@@ -34,9 +35,9 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "../my-release-key.jks")
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: rootProject.file("my-release-key.jks").absolutePath)
             storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "cadev82695"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "farm point"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "my-key-alias"
             keyPassword = System.getenv("KEY_PASSWORD") ?: "cadev82695"
         }
     }
@@ -138,6 +139,8 @@ dependencies {
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
 
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("com.github.yalantis:ucrop:2.2.9")
