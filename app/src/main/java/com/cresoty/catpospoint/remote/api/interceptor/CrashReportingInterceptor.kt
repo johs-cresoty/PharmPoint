@@ -24,6 +24,7 @@ class CrashReportingInterceptor : Interceptor {
                 ApiResponseException(
                     api = apiPath,
                     httpMethod = method,
+                    path = apiPath,
                     requestBody = requestBodyText,
                     reason = "network_error: ${e.javaClass.simpleName} ${e.message ?: ""}",
                 )
@@ -37,6 +38,7 @@ class CrashReportingInterceptor : Interceptor {
                 ApiResponseException(
                     api = apiPath,
                     httpMethod = method,
+                    path = apiPath,
                     httpStatus = response.code,
                     requestBody = requestBodyText,
                     responseBody = responseBodyText,

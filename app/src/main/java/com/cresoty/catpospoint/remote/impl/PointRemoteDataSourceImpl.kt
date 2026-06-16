@@ -54,6 +54,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
         } else {
             throwApiError(
                 api = "getCustomer",
+                httpMethod = "GET",
+                path = "/api/terminals/customers",
                 responseCode = response.code,
                 responseMessage = response.message,
                 phoneSuffix = PiiMask.phone(customerHp),
@@ -71,6 +73,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
         } else {
             throwApiError(
                 api = "upsertCustomerPoint",
+                httpMethod = "POST",
+                path = "/api/terminals/customers/code",
                 responseCode = response.code,
                 responseMessage = response.message,
                 phoneSuffix = PiiMask.phone(request.customerPhone),
@@ -87,6 +91,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
             code == "0000"                   -> emit(response.toData())
             else -> throwApiError(
                 api = "estimatePoint",
+                httpMethod = "POST",
+                path = "api/point/estimate",
                 responseCode = code,
                 responseMessage = response.message,
                 reason = "code_not_ok",
@@ -107,6 +113,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
         } else {
             throwApiError(
                 api = "getPointSaveSetting",
+                httpMethod = "GET",
+                path = "api/point/settings",
                 responseCode = code,
                 responseMessage = response.message,
                 reason = "code_not_ok",
@@ -127,6 +135,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
         } else {
             throwApiError(
                 api = "getPointAmountSetting",
+                httpMethod = "GET",
+                path = "api/point/payment-settings",
                 responseCode = code,
                 responseMessage = response.message,
                 reason = "code_not_ok",
@@ -148,6 +158,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
         } else {
             throwApiError(
                 api = "getPointBalance",
+                httpMethod = "GET",
+                path = "api/terminals/customers/code",
                 responseCode = code,
                 responseMessage = response.message,
                 phoneSuffix = PiiMask.phone(customerPhone),
@@ -158,6 +170,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
 
     private fun throwApiError(
         api: String,
+        httpMethod: String? = null,
+        path: String? = null,
         responseCode: String?,
         responseMessage: String?,
         phoneSuffix: String? = null,
@@ -165,6 +179,8 @@ class PointRemoteDataSourceImpl @Inject constructor(
     ): Nothing {
         val ex = ApiResponseException(
             api = api,
+            httpMethod = httpMethod,
+            path = path,
             responseCode = responseCode,
             responseMessage = responseMessage,
             phoneSuffix = phoneSuffix,

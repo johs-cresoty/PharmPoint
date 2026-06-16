@@ -18,6 +18,7 @@ object CrashlyticsLogger {
         val c = Firebase.crashlytics
         c.setCustomKey("last_api", ex.api)
         ex.httpMethod?.let       { c.setCustomKey("last_http_method",   it) }
+        ex.path?.let             { c.setCustomKey("last_http_path",     it) }
         ex.httpStatus?.let       { c.setCustomKey("last_http_status",   it) }
         ex.responseCode?.let     { c.setCustomKey("last_response_code", it) }
         ex.phoneSuffix?.let      { c.setCustomKey("last_phone_suffix",  it) }
@@ -28,7 +29,7 @@ object CrashlyticsLogger {
             c.setCustomKey("last_response_body", it.take(MAX_KEY_LEN))
         }
         c.log(
-            "API_ERROR ${ex.httpMethod ?: ""} ${ex.api} " +
+            "API_ERROR ${ex.httpMethod ?: "-"} ${ex.path ?: "-"} (${ex.api}) " +
                 "reason=${ex.reason} " +
                 "http=${ex.httpStatus ?: "-"} " +
                 "code=${ex.responseCode ?: "-"} " +
