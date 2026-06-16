@@ -53,14 +53,14 @@ fun ResultScreen(
     state: ResultContract.State,
     sendEvent: (ResultContract.Event) -> Unit
 ) {
-    var leftTime by remember { mutableIntStateOf(state.timeOut) }
+    var leftTime by remember(state.timeOut) { mutableIntStateOf(state.timeOut) }
     val imageId = when (state.status) {
         ResultStatus.FETCH_SUCCESS -> R.drawable.icon_store
         ResultStatus.EARN_SUCCESS -> R.drawable.icon_point_earn_done
         ResultStatus.USE_SUCCESS -> R.drawable.icon_point_use_done
         ResultStatus.USE_UNAVAILABLE -> R.drawable.icon_point_use_shortage
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state.timeOut) {
         while (leftTime != 0) {
             delay(1000)
 
