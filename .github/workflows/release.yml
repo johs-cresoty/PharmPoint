@@ -120,8 +120,8 @@ jobs:
           RESPONSE=$(cat /tmp/response.txt)
           echo "HTTP Status: $HTTP_CODE"
           echo "Response: $RESPONSE"
-          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            echo "서버 오류: HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" != "201" ]; then
+            echo "버전 등록 실패: HTTP $HTTP_CODE (기대값 201)"
             exit 1
           fi
 
