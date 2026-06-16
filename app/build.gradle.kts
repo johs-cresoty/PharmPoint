@@ -26,8 +26,8 @@ android {
         applicationId = "com.cresoty.catpospoint"
         minSdk = 34
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.4.0"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "com.cresoty.catpospoint.HiltTestRunner"
 
