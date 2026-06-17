@@ -9,6 +9,7 @@ import com.cresoty.catpospoint.domain.model.command.EstimatePointCommand
 import com.cresoty.catpospoint.domain.usecase.EstimatePointUseCase
 import com.cresoty.catpospoint.domain.usecase.GetConfigUseCase
 import com.cresoty.catpospoint.domain.usecase.GetCustomerUseCase
+import com.cresoty.catpospoint.domain.usecase.GetPointBalanceUseCase
 import com.cresoty.catpospoint.domain.usecase.SendCATCustomerInfoUseCase
 import com.cresoty.catpospoint.domain.usecase.SendCATFailUseCase
 import com.cresoty.catpospoint.domain.usecase.SendCATPhoneNumberUseCase
@@ -34,6 +35,7 @@ class PhoneNumberInputViewModel @Inject constructor(
     private val estimatePointUseCase: EstimatePointUseCase,
     private val upsertCustomerPointUseCase: UpsertCustomerPointUseCase,
     private val getCustomerUseCase: GetCustomerUseCase,
+    private val getPointBalanceUseCase: GetPointBalanceUseCase,
     private val sendCATPhoneNumberUseCase: SendCATPhoneNumberUseCase,
     private val sendCATCustomerInfoUseCase: SendCATCustomerInfoUseCase,
     private val sendCATFailUseCase: SendCATFailUseCase,
@@ -149,20 +151,18 @@ class PhoneNumberInputViewModel @Inject constructor(
     private fun checkCustomerExist(phoneNumber: String) {
         val config = configState.value
         viewModelScope.launch {
-            getCustomerUseCase(
-                computerName = deviceInfoProvider.computerName,
-                posVersion = deviceInfoProvider.posVersion,
+            getPointBalanceUseCase(
                 taxNo = config.bizNo,
-                customerHp = phoneNumber,
+                customerPhone = phoneNumber,
             ).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> {
-                        val customer = resource.data
+                        val balance = resource.data
                         dispatch(
                             PhoneNumberInputContract.Event.OnCustomerCheckResult(
-                                exists = customer != null,
-                                balancePoint = customer?.pointAmount?.toIntOrNull() ?: 0,
-                                customerCode = customer?.customerCode ?: "",
+                                exists = balance.customerCode.isNotEmpty(),
+                                balancePoint = balance.pointBalance.toIntOrNull() ?: 0,
+                                customerCode = balance.customerCode,
                             )
                         )
                     }
