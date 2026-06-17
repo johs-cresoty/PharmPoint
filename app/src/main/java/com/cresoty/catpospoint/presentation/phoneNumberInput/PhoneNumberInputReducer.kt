@@ -61,6 +61,7 @@ class PhoneNumberInputReducer @Inject constructor() {
                     isCustomerExist = event.exists,
                     balancePoint = event.balancePoint,
                     customerCode = event.customerCode,
+                    customerName = event.customerName
                 )
                 val effects = if (event.exists)
                     listOf(PhoneNumberInputContract.Effect.ProceedAfterCustomerCheck)

@@ -26,6 +26,7 @@ object PhoneNumberInputContract {
         val storeName: String = "",
         val payAmount: Int = 0,
         val estimatedPoint: Int = 0,
+        val customerName: String = "",
         val balancePoint: Int = 0,
         val customerCode: String = "",
         val isCustomerExist: Boolean? = null,  // null=미체크, true=존재, false=없음
@@ -58,7 +59,7 @@ object PhoneNumberInputContract {
         data object OnDeleteOne : Event
         data object OnDeleteAll : Event
         data object OnMaskToggle : Event
-        data class OnCustomerCheckResult(val exists: Boolean, val balancePoint: Int, val customerCode: String) : Event
+        data class OnCustomerCheckResult(val exists: Boolean, val balancePoint: Int, val customerCode: String, val customerName: String) : Event
         data object Loading : Event
     }
 

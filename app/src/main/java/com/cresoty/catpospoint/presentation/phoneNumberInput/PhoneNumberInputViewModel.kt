@@ -163,6 +163,7 @@ class PhoneNumberInputViewModel @Inject constructor(
                                 exists = balance.customerCode.isNotEmpty(),
                                 balancePoint = balance.pointBalance.toIntOrNull() ?: 0,
                                 customerCode = balance.customerCode,
+                                customerName = balance.customerName,
                             )
                         )
                     }
@@ -171,7 +172,8 @@ class PhoneNumberInputViewModel @Inject constructor(
                         PhoneNumberInputContract.Event.OnCustomerCheckResult(
                             exists = false,
                             balancePoint = 0,
-                            customerCode = ""
+                            customerCode = "",
+                            customerName = ""
                         )
                     )
 
@@ -240,7 +242,7 @@ class PhoneNumberInputViewModel @Inject constructor(
         val config = configState.value
         return ResultContract.State(
             status = ResultStatus.FETCH_SUCCESS,
-            subTitle = "${state.storeName}\n현재 보유하고 있는 포인트입니다.",
+            subTitle = "${state.storeName}\n\n${state.customerName} 님께서\n현재 보유하고 있는 포인트입니다.",
             pointTitle = "보유 포인트",
             balancePoint = state.balancePoint,
             timeOut = config.timeout,
