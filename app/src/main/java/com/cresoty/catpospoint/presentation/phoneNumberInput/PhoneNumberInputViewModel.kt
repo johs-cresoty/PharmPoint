@@ -151,21 +151,29 @@ class PhoneNumberInputViewModel @Inject constructor(
     private fun checkCustomerExist(phoneNumber: String) {
         val config = configState.value
         viewModelScope.launch {
-            getPointBalanceUseCase(
+            // 1단계: 등록 여부 확인 (GET /api/terminals/customers)
+            getCustomerUseCase(
+                computerName = deviceInfoProvider.computerName,
+                posVersion = deviceInfoProvider.posVersion,
                 taxNo = config.bizNo,
-                customerPhone = phoneNumber,
+                customerHp = phoneNumber,
             ).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> {
-                        val balance = resource.data
-                        dispatch(
-                            PhoneNumberInputContract.Event.OnCustomerCheckResult(
-                                exists = balance.customerCode.isNotEmpty(),
-                                balancePoint = balance.pointBalance.toIntOrNull() ?: 0,
-                                customerCode = balance.customerCode,
-                                customerName = balance.customerName,
+                        if (resource.data == null) {
+                            // LIST 비어있음 → 미등록 회원
+                            dispatch(
+                                PhoneNumberInputContract.Event.OnCustomerCheckResult(
+                                    exists = false,
+                                    balancePoint = 0,
+                                    customerCode = "",
+                                    customerName = ""
+                                )
                             )
-                        )
+                        } else {
+                            // 등록 회원 → 2단계: 상세 조회 (GET /api/terminals/customers/code)
+                            fetchPointBalance(phoneNumber)
+                        }
                     }
 
                     is DataResource.Error -> dispatch(
@@ -179,6 +187,39 @@ class PhoneNumberInputViewModel @Inject constructor(
 
                     is DataResource.Loading -> {}
                 }
+            }
+        }
+    }
+
+    private suspend fun fetchPointBalance(phoneNumber: String) {
+        val config = configState.value
+        getPointBalanceUseCase(
+            taxNo = config.bizNo,
+            customerPhone = phoneNumber,
+        ).collect { resource ->
+            when (resource) {
+                is DataResource.Success -> {
+                    val balance = resource.data
+                    dispatch(
+                        PhoneNumberInputContract.Event.OnCustomerCheckResult(
+                            exists = true,
+                            balancePoint = balance.pointBalance.toIntOrNull() ?: 0,
+                            customerCode = balance.customerCode,
+                            customerName = balance.customerName,
+                        )
+                    )
+                }
+
+                is DataResource.Error -> dispatch(
+                    PhoneNumberInputContract.Event.OnCustomerCheckResult(
+                        exists = false,
+                        balancePoint = 0,
+                        customerCode = "",
+                        customerName = ""
+                    )
+                )
+
+                is DataResource.Loading -> {}
             }
         }
     }
