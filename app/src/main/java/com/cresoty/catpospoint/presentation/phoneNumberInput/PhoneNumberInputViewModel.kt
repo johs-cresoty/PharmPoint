@@ -254,6 +254,10 @@ class PhoneNumberInputViewModel @Inject constructor(
                     balancePoint = usePointState.balancePoint,
                     timeOut = config.timeout,
                 )
+                // 캣포스(PC) CAT|006 흐름에서 포인트 부족인 경우, sendCATFail 응답 전송
+                if (source == PointUseSource.CAT) {
+                    sendCATFailUseCase()
+                }
                 _effect.send(PhoneNumberInputContract.Effect.GoToTheResultScreen(resultState))
             } else {
                 _effect.send(PhoneNumberInputContract.Effect.GoToUsePointScreen(usePointState))
