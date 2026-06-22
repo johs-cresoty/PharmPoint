@@ -2,6 +2,7 @@ package com.cresoty.catpospoint.domain.usecase
 
 import com.cresoty.catpospoint.dataresource.DataResource
 import com.cresoty.catpospoint.device.DeviceInfoProvider
+import com.cresoty.catpospoint.domain.model.PointEarnResult
 import com.cresoty.catpospoint.domain.model.command.PaymentDetailCommand
 import com.cresoty.catpospoint.domain.model.command.UpsertCustomerPointCommand
 import com.cresoty.catpospoint.domain.repository.PointRepository
@@ -24,7 +25,7 @@ class UpsertCustomerPointUseCase @Inject constructor(
         transactionAmount: String,
         approvalNumber: String,
         complexTranInfo: Pair<PaymentDetailCommand, PaymentDetailCommand>?
-    ): Flow<DataResource<String>> {
+    ): Flow<DataResource<PointEarnResult>> {
         val command = complexTranInfo?.let { pair ->
             if (transactionUniqueNumber.isNotEmpty()) {
                 UpsertCustomerPointCommand.BySleSeq(
@@ -72,13 +73,13 @@ class UpsertCustomerPointUseCase @Inject constructor(
         return repository.upsertCustomerPoint(command).map { resource ->
             when (resource) {
                 is DataResource.Success -> {
-                    val balance = resource.data
-                        ?.data
-                        ?.info
-                        ?.firstOrNull()
-                        ?.pointBalance
-                        ?: "0"
-                    DataResource.Success(balance)
+                    val info = resource.data?.data?.info?.firstOrNull()
+                    DataResource.Success(
+                        PointEarnResult(
+                            pointBalance = info?.pointBalance?.toIntOrNull() ?: 0,
+                            customerName = info?.customerName?.takeIf { it.isNotBlank() },
+                        )
+                    )
                 }
                 is DataResource.Error -> DataResource.Error(resource.throwable)
                 is DataResource.Loading -> DataResource.Loading

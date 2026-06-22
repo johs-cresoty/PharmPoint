@@ -10,6 +10,7 @@ object UseContract {
         val source: PointUseSource = PointUseSource.TERMINAL,
         val phoneNumber: String = "",    // TERMINAL 응답 전문용
         val customerCode: String = "",   // CAT 응답 전문용
+        val customerName: String = "",   // 고객 이름 (없을 수 있음)
         val storeName: String = "",
         val payAmount: Int = 0,
         val usePoint: Int = 0,

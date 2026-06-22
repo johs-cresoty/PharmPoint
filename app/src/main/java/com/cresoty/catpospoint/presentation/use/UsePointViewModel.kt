@@ -77,10 +77,11 @@ class UsePointViewModel @Inject constructor(
     private fun navigateToResult(usePoint: Int) {
         val state = _uiState.value
         val config = configState.value
+        val subTitle = if (state.customerName.isNotEmpty()) "${state.customerName} 님" else ""
         val resultState = ResultContract.State(
             status         = ResultStatus.USE_SUCCESS,
             title          = "${usePoint.toDecimalString()}P 사용완료",
-            subTitle       = "${state.storeName}\n포인트가 사용되었습니다.",
+            subTitle       = subTitle,
             pointTitle     = "잔여 포인트",
             remainingPoint = (state.balancePoint - usePoint).coerceAtLeast(0),
             timeOut        = config.timeout,

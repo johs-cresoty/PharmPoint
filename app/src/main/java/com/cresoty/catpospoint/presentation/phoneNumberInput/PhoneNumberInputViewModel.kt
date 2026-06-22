@@ -65,7 +65,10 @@ class PhoneNumberInputViewModel @Inject constructor(
                 PhoneNumberInputContract.Effect.RequestNavigateToUsePoint -> navigateToUsePoint()
                 PhoneNumberInputContract.Effect.ProceedAfterCustomerCheck -> proceedAfterCustomerCheck()
                 is PhoneNumberInputContract.Effect.SendToCATPhoneNumber -> sendCATPhoneNumber(effect.phoneNumber)
-                is PhoneNumberInputContract.Effect.SendToCATCustomerInfo -> sendCATCustomerInfo(effect.phoneNumber)
+                is PhoneNumberInputContract.Effect.SendToCATCustomerInfo -> sendCATCustomerInfo(
+                    effect.phoneNumber
+                )
+
                 PhoneNumberInputContract.Effect.SendCATFail -> sendCATFail()
                 else -> viewModelScope.launch { _effect.send(effect) }  // UI 네비게이션만 Route로
             }
@@ -115,15 +118,16 @@ class PhoneNumberInputViewModel @Inject constructor(
             ).collect { resource ->
                 when (resource) {
                     is DataResource.Success -> {
-                        val balancePoint = resource.data.toIntOrNull() ?: 0
+                        val result = resource.data
                         val earnPoint = state.estimatedPoint
                         val config = configState.value
+                        val subTitle = if (result.customerName?.isNotEmpty() == true) "${result.customerName} 님" else ""
                         val resultState = ResultContract.State(
                             status = ResultStatus.EARN_SUCCESS,
                             title = if (earnPoint > 0) "${earnPoint.toDecimalString()}P 적립완료" else "적립완료",
-                            subTitle = "${config.storeName}\n포인트가 적립되었습니다.",
+                            subTitle = subTitle,
                             pointTitle = "보유 포인트",
-                            balancePoint = balancePoint,
+                            balancePoint = result.pointBalance,
                             timeOut = config.timeout,
                         )
                         dispatch(PhoneNumberInputContract.Event.OnSavePointSuccess(resultState))
@@ -141,7 +145,11 @@ class PhoneNumberInputViewModel @Inject constructor(
         val mode = _uiState.value.mode as? PhoneNumberInputContract.Mode.Lookup ?: return
         if (mode.source == PointUseSource.MANUAL) {
             viewModelScope.launch {
-                _effect.send(PhoneNumberInputContract.Effect.GoToTheResultScreen(buildCheckPointResultState()))
+                _effect.send(
+                    PhoneNumberInputContract.Effect.GoToTheResultScreen(
+                        buildCheckPointResultState()
+                    )
+                )
             }
         } else {
             navigateToUsePoint()
@@ -233,6 +241,7 @@ class PhoneNumberInputViewModel @Inject constructor(
             source = source,
             phoneNumber = state.phoneNumber,
             customerCode = state.customerCode,
+            customerName = state.customerName,
             storeName = state.storeName,
             payAmount = state.payAmount,
             balancePoint = state.balancePoint,
@@ -287,7 +296,7 @@ class PhoneNumberInputViewModel @Inject constructor(
         val config = configState.value
         return ResultContract.State(
             status = ResultStatus.FETCH_SUCCESS,
-            subTitle = "${state.storeName}\n\n${state.customerName} 님께서\n현재 보유하고 있는 포인트입니다.",
+            subTitle = if (state.customerName.isNotEmpty()) "${state.customerName} 님" else "",
             pointTitle = "보유 포인트",
             balancePoint = state.balancePoint,
             timeOut = config.timeout,

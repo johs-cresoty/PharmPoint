@@ -174,14 +174,101 @@ private fun BalancePoint(
     }
 }
 
-@Preview(device = "spec:width=800px,height=1319px,dpi=213")
+@Preview(name = "조회 완료", device = "spec:width=800px,height=1319px,dpi=213")
 @Composable
-private fun ResultScreenPreview() {
+private fun ResultScreenFetchPreview() {
     CatposPointTheme {
         ResultScreen(
-            state = ResultContract.State().copy(
-                subTitle = "다나아약국\n" +
-                        "현재 보유하고 있는 포인트입니다.", pointTitle = "보유 포인트", balancePoint = 112865
+            state = ResultContract.State(
+                status = ResultStatus.FETCH_SUCCESS,
+                subTitle = "홍길동 님",
+                pointTitle = "보유 포인트",
+                balancePoint = 112865,
+            ),
+            sendEvent = {}
+        )
+    }
+}
+
+@Preview(name = "적립 완료 (고객명 있음)", device = "spec:width=800px,height=1319px,dpi=213")
+@Composable
+private fun ResultScreenEarnWithNamePreview() {
+    CatposPointTheme {
+        ResultScreen(
+            state = ResultContract.State(
+                status = ResultStatus.EARN_SUCCESS,
+                title = "1,500P 적립완료",
+                subTitle = "홍길동 님",
+                pointTitle = "보유 포인트",
+                balancePoint = 114365,
+            ),
+            sendEvent = {}
+        )
+    }
+}
+
+@Preview(name = "적립 완료 (고객명 없음)", device = "spec:width=800px,height=1319px,dpi=213")
+@Composable
+private fun ResultScreenEarnNoNamePreview() {
+    CatposPointTheme {
+        ResultScreen(
+            state = ResultContract.State(
+                status = ResultStatus.EARN_SUCCESS,
+                title = "1,500P 적립완료",
+                subTitle = "",
+                pointTitle = "보유 포인트",
+                balancePoint = 1500,
+            ),
+            sendEvent = {}
+        )
+    }
+}
+
+@Preview(name = "사용 완료 (고객명 있음)", device = "spec:width=800px,height=1319px,dpi=213")
+@Composable
+private fun ResultScreenUseWithNamePreview() {
+    CatposPointTheme {
+        ResultScreen(
+            state = ResultContract.State(
+                status = ResultStatus.USE_SUCCESS,
+                title = "5,000P 사용완료",
+                subTitle = "홍길동 님",
+                pointTitle = "잔여 포인트",
+                remainingPoint = 107865,
+            ),
+            sendEvent = {}
+        )
+    }
+}
+
+@Preview(name = "사용 완료 (고객명 없음)", device = "spec:width=800px,height=1319px,dpi=213")
+@Composable
+private fun ResultScreenUseNoNamePreview() {
+    CatposPointTheme {
+        ResultScreen(
+            state = ResultContract.State(
+                status = ResultStatus.USE_SUCCESS,
+                title = "5,000P 사용완료",
+                subTitle = "",
+                pointTitle = "잔여 포인트",
+                remainingPoint = 95000,
+            ),
+            sendEvent = {}
+        )
+    }
+}
+
+@Preview(name = "사용 불가 (최소 포인트 미달)", device = "spec:width=800px,height=1319px,dpi=213")
+@Composable
+private fun ResultScreenUseUnavailablePreview() {
+    CatposPointTheme {
+        ResultScreen(
+            state = ResultContract.State(
+                status = ResultStatus.USE_UNAVAILABLE,
+                title = "사용 불가",
+                subTitle = "다나아약국\n최소 1,000P부터 사용 가능합니다.",
+                pointTitle = "잔여 포인트",
+                remainingPoint = 500,
             ),
             sendEvent = {}
         )
