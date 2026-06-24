@@ -30,7 +30,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import com.cresoty.catpospoint.presentation.theme.common01
+import androidx.compose.ui.tooling.preview.Preview
 import com.cresoty.catpospoint.presentation.theme.common02
 import com.cresoty.catpospoint.presentation.theme.dpx
 import com.cresoty.catpospoint.presentation.theme.main01
@@ -139,7 +139,7 @@ private fun InactivityWarningDialog(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "입력하지 않으면 대기화면으로 이동됩니다.",
+                text = "대기화면으로 이동됩니다.",
                 fontSize = 26f.spx,
                 color = common02,
                 textAlign = TextAlign.Center,
@@ -152,16 +152,9 @@ private fun InactivityWarningDialog(
                 color = main01,
                 fontWeight = FontWeight.Bold,
             )
-            Spacer(modifier = Modifier.height(20.dpx))
-            Text(
-                text = "화면을 터치하거나 아래 버튼을 누르세요.",
-                fontSize = 20f.spx,
-                color = common01,
-                textAlign = TextAlign.Center,
-            )
             Spacer(modifier = Modifier.height(30.dpx))
             ConfirmButton(
-                text = "계속 사용",
+                text = "계속 사용할게요",
                 fontSize = 26f.spx,
                 modifier = Modifier
                     .width(280.dpx)
@@ -174,3 +167,13 @@ private fun InactivityWarningDialog(
 }
 
 private const val DEFAULT_WARNING_COUNTDOWN_SECONDS = 5
+
+
+@Preview(showBackground = true)
+@Composable
+fun InactivityWarningDialogPreview() {
+    InactivityWarningDialog(
+        remainingSeconds = 5,
+        onResume = {}
+    )
+}
