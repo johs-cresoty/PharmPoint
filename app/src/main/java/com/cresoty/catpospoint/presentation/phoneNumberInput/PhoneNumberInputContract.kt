@@ -29,10 +29,12 @@ object PhoneNumberInputContract {
         val customerName: String = "",
         val balancePoint: Int = 0,
         val customerCode: String = "",
-        val isCustomerExist: Boolean? = null,  // null=미체크, true=존재, false=없음
+        val isCustomerExist: Boolean? = null,  // null=미체크 또는 에러, true=존재, false=없음
         val isMasked: Boolean = true,
         val isCheckBox: Boolean = true,
         val isLoading: Boolean = false,
+        // 서버/네트워크 에러 시 사용자에게 보여줄 메시지. null 이면 다이얼로그 숨김
+        val errorMessage: String? = null,
         // 포인트 적립 API 호출용 거래 데이터 (Mode.Save 에서만 사용)
         val trnDate: String = "",
         val trnTime: String = "",
@@ -60,6 +62,10 @@ object PhoneNumberInputContract {
         data object OnDeleteAll : Event
         data object OnMaskToggle : Event
         data class OnCustomerCheckResult(val exists: Boolean, val balancePoint: Int, val customerCode: String, val customerName: String) : Event
+        /** API 에러 발생 시 사용자 안내용 메시지 표시 */
+        data class OnApiError(val message: String) : Event
+        /** 에러 다이얼로그 확인 버튼 — 다이얼로그 닫기 */
+        data object OnDismissErrorDialog : Event
         data object Loading : Event
     }
 

@@ -20,13 +20,17 @@ import com.cresoty.catpospoint.model.state.ConfigState
 import com.cresoty.catpospoint.presentation.result.ResultContract
 import com.cresoty.catpospoint.presentation.result.ResultStatus
 import com.cresoty.catpospoint.presentation.use.UseContract
+import com.cresoty.catpospoint.remote.exception.ApiResponseException
 import com.cresoty.catpospoint.toDecimalString
+import com.cresoty.catpospoint.util.CrashlyticsLogger
+import com.cresoty.catpospoint.util.PiiMask
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -184,14 +188,14 @@ class PhoneNumberInputViewModel @Inject constructor(
                         }
                     }
 
-                    is DataResource.Error -> dispatch(
-                        PhoneNumberInputContract.Event.OnCustomerCheckResult(
-                            exists = false,
-                            balancePoint = 0,
-                            customerCode = "",
-                            customerName = ""
+                    is DataResource.Error -> {
+                        logApiFailure(
+                            api = "checkCustomerExist",
+                            phoneNumber = phoneNumber,
+                            throwable = resource.throwable,
                         )
-                    )
+                        dispatch(PhoneNumberInputContract.Event.OnApiError(resolveErrorMessage(resource.throwable)))
+                    }
 
                     is DataResource.Loading -> {}
                 }
@@ -218,18 +222,38 @@ class PhoneNumberInputViewModel @Inject constructor(
                     )
                 }
 
-                is DataResource.Error -> dispatch(
-                    PhoneNumberInputContract.Event.OnCustomerCheckResult(
-                        exists = false,
-                        balancePoint = 0,
-                        customerCode = "",
-                        customerName = ""
+                is DataResource.Error -> {
+                    logApiFailure(
+                        api = "fetchPointBalance",
+                        phoneNumber = phoneNumber,
+                        throwable = resource.throwable,
                     )
-                )
+                    dispatch(PhoneNumberInputContract.Event.OnApiError(resolveErrorMessage(resource.throwable)))
+                }
 
                 is DataResource.Loading -> {}
             }
         }
+    }
+
+    private fun logApiFailure(api: String, phoneNumber: String, throwable: Throwable) {
+        CrashlyticsLogger.recordApiError(
+            ApiResponseException(
+                api = api,
+                phoneSuffix = PiiMask.phone(phoneNumber),
+                reason = "data_resource_error: ${throwable.javaClass.simpleName} ${throwable.message ?: ""}",
+            )
+        )
+    }
+
+    /**
+     * 사용자에게 보여줄 에러 메시지를 throwable 종류로 분기.
+     * - IOException 계열 (네트워크 끊김/타임아웃/DNS 실패) → 네트워크 안내
+     * - 그 외 (HTTP 4xx/5xx, 파싱 에러 등) → 서버 안내
+     */
+    private fun resolveErrorMessage(throwable: Throwable): String = when (throwable) {
+        is IOException -> NETWORK_ERROR_MESSAGE
+        else -> SERVER_ERROR_MESSAGE
     }
 
     private fun navigateToUsePoint() {
@@ -334,5 +358,12 @@ class PhoneNumberInputViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    companion object {
+        private const val SERVER_ERROR_MESSAGE =
+            "일시적인 서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요."
+        private const val NETWORK_ERROR_MESSAGE =
+            "네트워크 연결을 확인한 후\n다시 시도해 주세요."
     }
 }

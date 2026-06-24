@@ -52,6 +52,7 @@ import com.cresoty.catpospoint.ui.component.NumberPadGrid
 import com.cresoty.catpospoint.ui.component.PadKey
 import com.cresoty.catpospoint.ui.component.PhoneMaskStrategy.HeadHalf
 import com.cresoty.catpospoint.ui.component.PhoneNumberInputField
+import com.cresoty.catpospoint.ui.dialog.MessageDialog
 
 /**
  * 휴대폰 번호 입력 화면
@@ -175,6 +176,16 @@ fun PhoneNumberInputScreen(
             )
         }
 
+    }
+
+    // 서버/네트워크 에러 안내 다이얼로그
+    state.errorMessage?.let { message ->
+        MessageDialog(
+            title = "안내",
+            message = message,
+            confirmText = "확인",
+            onConfirm = { sendEvent(PhoneNumberInputContract.Event.OnDismissErrorDialog) },
+        )
     }
 }
 

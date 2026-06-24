@@ -117,6 +117,12 @@ class PhoneNumberInputReducer @Inject constructor() {
             }
 
             PhoneNumberInputContract.Event.Loading -> state.copy(isLoading = true) to emptyList()
+
+            is PhoneNumberInputContract.Event.OnApiError ->
+                state.copy(isLoading = false, isCustomerExist = null, errorMessage = event.message) to emptyList()
+
+            PhoneNumberInputContract.Event.OnDismissErrorDialog ->
+                state.copy(errorMessage = null) to emptyList()
         }
     }
 }
