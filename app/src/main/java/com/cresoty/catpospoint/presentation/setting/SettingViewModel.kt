@@ -167,10 +167,8 @@ class SettingViewModel @Inject constructor(
                 }
 
                 SettingType.SCREEN_TIMEOUT -> {
-                    configRepo.putValue(
-                        ConfigKey.SCREEN_TIMEOUT,
-                        data[ConfigKey.SCREEN_TIMEOUT] as Int
-                    )
+                    configRepo.putValue(ConfigKey.AUTO_CLOSE_TIMEOUT, data[ConfigKey.AUTO_CLOSE_TIMEOUT] as Int)
+                    configRepo.putValue(ConfigKey.INACTIVE_CLOSE_TIMEOUT, data[ConfigKey.INACTIVE_CLOSE_TIMEOUT] as Int)
                 }
 
                 SettingType.BRIGHTNESS -> {

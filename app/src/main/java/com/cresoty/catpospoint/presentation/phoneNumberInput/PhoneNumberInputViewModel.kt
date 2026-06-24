@@ -128,7 +128,7 @@ class PhoneNumberInputViewModel @Inject constructor(
                             subTitle = subTitle,
                             pointTitle = "보유 포인트",
                             balancePoint = result.pointBalance,
-                            timeOut = config.timeout,
+                            timeOut = config.autoCloseTimeout,
                         )
                         dispatch(PhoneNumberInputContract.Event.OnSavePointSuccess(resultState))
                     }
@@ -261,7 +261,7 @@ class PhoneNumberInputViewModel @Inject constructor(
                     subTitle = subTitle,
                     pointTitle = "잔여 포인트",
                     balancePoint = usePointState.balancePoint,
-                    timeOut = config.timeout,
+                    timeOut = config.autoCloseTimeout,
                 )
                 // 캣포스(PC) CAT|006 흐름에서 포인트 부족인 경우, sendCATFail 응답 전송
                 if (source == PointUseSource.CAT) {
@@ -299,7 +299,7 @@ class PhoneNumberInputViewModel @Inject constructor(
             subTitle = if (state.customerName.isNotEmpty()) "${state.customerName} 님" else "",
             pointTitle = "보유 포인트",
             balancePoint = state.balancePoint,
-            timeOut = config.timeout,
+            timeOut = config.autoCloseTimeout,
         )
     }
 

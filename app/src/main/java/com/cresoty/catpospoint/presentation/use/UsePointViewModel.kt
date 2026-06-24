@@ -84,7 +84,7 @@ class UsePointViewModel @Inject constructor(
             subTitle       = subTitle,
             pointTitle     = "잔여 포인트",
             remainingPoint = (state.balancePoint - usePoint).coerceAtLeast(0),
-            timeOut        = config.timeout,
+            timeOut        = config.autoCloseTimeout,
         )
         viewModelScope.launch {
             _effect.send(UseContract.Effect.GoToResultScreen(resultState))

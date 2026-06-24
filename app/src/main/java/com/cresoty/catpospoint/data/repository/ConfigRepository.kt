@@ -30,7 +30,8 @@ object ConfigKey {
 
     val MAIN_THEME = intPreferencesKey("main_theme")    // 0: A / 1: B / 2: C / 3: D
     val MINIMUM_POINT = intPreferencesKey("minimum_point")
-    val SCREEN_TIMEOUT = intPreferencesKey("screen_timeout")
+    val AUTO_CLOSE_TIMEOUT = intPreferencesKey("screen_timeout")              // 결과 화면 자동 닫힘 (초). DataStore key는 호환 위해 유지
+    val INACTIVE_CLOSE_TIMEOUT = intPreferencesKey("inactive_close_timeout")  // 입력 화면 미동작 자동 닫힘 (초)
     val MIN_AMOUNT = intPreferencesKey("min_amount")                // 최소금액
 
     val IS_ID_VERIFY = booleanPreferencesKey("is_identification")  // true : 사용 / false : 미사용
@@ -53,7 +54,8 @@ class ConfigRepository @Inject constructor(
                 themeIndex = p[ConfigKey.MAIN_THEME] ?: 0,
                 subTitle = p[ConfigKey.SUB_TITLE] ?: "",
                 customImageUri = p[ConfigKey.CUSTOM_IMAGE_URI] ?: "",
-                timeout = p[ConfigKey.SCREEN_TIMEOUT] ?: 5,
+                autoCloseTimeout = p[ConfigKey.AUTO_CLOSE_TIMEOUT] ?: 5,
+                inactiveCloseTimeout = p[ConfigKey.INACTIVE_CLOSE_TIMEOUT] ?: 10,
                 minPoint = p[ConfigKey.MINIMUM_POINT] ?: 1000,
                 minAmount = p[ConfigKey.MIN_AMOUNT] ?: 20000,
                 isIdVerify = p[ConfigKey.IS_ID_VERIFY] ?: false,
