@@ -214,6 +214,11 @@ fun AppNavGraph(
             navController = navController,
             startDestination = AppDestination.Idle.route,
             modifier = Modifier.padding(padding),
+            // 빠른 fade — 이전 화면이 잠시 비춰지면서 새 화면의 isInitialized 완료까지 자연스럽게 연결
+            enterTransition = { androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(80)) },
+            exitTransition = { androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(80)) },
+            popEnterTransition = { androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(80)) },
+            popExitTransition = { androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(80)) },
         ) {
 
             // ── Idle (대기 화면) ──────────────────────────────

@@ -12,6 +12,7 @@ class PhoneNumberInputReducer @Inject constructor() {
                 val td = event.transactionData
                 val newState = when (event.mode) {
                     is PhoneNumberInputContract.Mode.Save -> state.copy(
+                        isInitialized = true,
                         mode = event.mode,
                         payAmount = td?.payAmount ?: 0,
                         trnDate = td?.trnDate ?: "",
@@ -21,12 +22,20 @@ class PhoneNumberInputReducer @Inject constructor() {
                     )
 
                     is PhoneNumberInputContract.Mode.Lookup -> state.copy(
+                        isInitialized = true,
                         mode = event.mode,
                         payAmount = td?.payAmount ?: 0,
                     )
 
-                    is PhoneNumberInputContract.Mode.CatRequestNum -> state.copy(mode = event.mode)
-                    is PhoneNumberInputContract.Mode.CatRequestCustomer -> state.copy(mode = event.mode)
+                    is PhoneNumberInputContract.Mode.CatRequestNum -> state.copy(
+                        isInitialized = true,
+                        mode = event.mode,
+                    )
+
+                    is PhoneNumberInputContract.Mode.CatRequestCustomer -> state.copy(
+                        isInitialized = true,
+                        mode = event.mode,
+                    )
                 }
                 newState to listOf(PhoneNumberInputContract.Effect.LoadData)
             }

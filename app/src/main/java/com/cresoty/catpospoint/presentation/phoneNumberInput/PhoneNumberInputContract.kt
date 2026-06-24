@@ -20,6 +20,8 @@ object PhoneNumberInputContract {
     }
 
     data class State(
+        // Init 이벤트로 args 적용 완료 여부. false 동안은 화면 표시 안 함 (초기값 깜빡임 방지)
+        val isInitialized: Boolean = false,
         val mode: Mode = Mode.Save(PointUseSource.TERMINAL),
         val phoneNumber: String = "010",
         val bizNo: String = "",

@@ -49,10 +49,14 @@ fun PhoneNumberInputRoute(
         modifier = Modifier.fillMaxSize(),
     ) {
         Box(Modifier.fillMaxSize()) {
-            PhoneNumberInputScreen(
-                state = state.value,
-                sendEvent = vm::dispatch,
-            )
+            // Init 이벤트로 args 적용이 끝난 뒤에만 화면 표시 → 초기값 깜빡임 방지
+            // 배경은 투명 — Init 완료 전까지는 NavHost fade transition 으로 이전 화면이 잠시 비춰짐
+            if (state.value.isInitialized) {
+                PhoneNumberInputScreen(
+                    state = state.value,
+                    sendEvent = vm::dispatch,
+                )
+            }
         }
     }
 }
