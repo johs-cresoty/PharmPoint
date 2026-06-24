@@ -30,7 +30,7 @@ class UsePointViewModel @Inject constructor(
     private val reducer: UseReducer,
 ) : ViewModel() {
 
-    private val configState = getConfigUseCase()
+    val configState = getConfigUseCase()
 
     private val _uiState = MutableStateFlow(UseContract.State())
     val uiState = _uiState.asStateFlow()
