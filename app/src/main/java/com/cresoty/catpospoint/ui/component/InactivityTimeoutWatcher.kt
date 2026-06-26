@@ -47,15 +47,18 @@ import kotlinx.coroutines.delay
  * 3. 다이얼로그에서 카운트다운(5→4→3→2→1)을 보여주다 0이 되면 [onTimeout] 호출.
  * 4. 다이얼로그가 떠있는 동안 화면 어디든 터치하거나 "계속 사용" 버튼을 누르면
  *    다이얼로그가 닫히고 타이머가 처음부터 재시작.
+ * 5. [paused] true 인 동안에는 타이머가 정지되며, false 로 돌아오면 처음부터 다시 시작.
  *
  * @param inactivityTimeoutSeconds 전체 대기 시간 (초). 0 이하이면 watcher 가 동작하지 않음.
  * @param warningCountdownSeconds 경고 다이얼로그 카운트다운 시간 (초). 기본 5초.
+ * @param paused true 이면 타이머 동작을 일시정지. 로딩 등 사용자 응답 대기 시 사용.
  * @param onTimeout 카운트다운이 0에 도달했을 때 호출되는 콜백.
  */
 @Composable
 fun InactivityTimeoutWatcher(
     inactivityTimeoutSeconds: Int,
     warningCountdownSeconds: Int = DEFAULT_WARNING_COUNTDOWN_SECONDS,
+    paused: Boolean = false,
     onTimeout: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
@@ -69,8 +72,9 @@ fun InactivityTimeoutWatcher(
     var showWarning by remember { mutableStateOf(false) }
     var remainingSeconds by remember { mutableIntStateOf(warningCountdownSeconds) }
 
-    LaunchedEffect(interactionTick, inactivityTimeoutSeconds, warningCountdownSeconds) {
+    LaunchedEffect(interactionTick, inactivityTimeoutSeconds, warningCountdownSeconds, paused) {
         showWarning = false
+        if (paused) return@LaunchedEffect
         val safeWarning = warningCountdownSeconds.coerceAtMost(inactivityTimeoutSeconds)
         val preWarningSeconds = inactivityTimeoutSeconds - safeWarning
         if (preWarningSeconds > 0) {

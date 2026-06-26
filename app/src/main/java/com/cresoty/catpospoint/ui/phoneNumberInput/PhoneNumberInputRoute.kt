@@ -45,6 +45,7 @@ fun PhoneNumberInputRoute(
 
     InactivityTimeoutWatcher(
         inactivityTimeoutSeconds = config.inactiveCloseTimeout,
+        paused = state.value.isLoading,
         onTimeout = onNavigateBack,
         modifier = Modifier.fillMaxSize(),
     ) {
