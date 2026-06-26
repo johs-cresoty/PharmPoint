@@ -72,6 +72,9 @@ class IdleViewModel @Inject constructor(
 
     fun initRequestPointSettings() {
         val taxNo = configState.value.bizNo
+        // 앱 최초 설치 후 약국 사업자번호 미설정 상태에서는 API 호출 skip.
+        // 빈 taxNo 로 호출하면 서버가 "필수값 없음(1001)" 으로 응답해 Crashlytics 노이즈 발생.
+        if (taxNo.isBlank()) return
         viewModelScope.launch {
             getPointSaveSettingUseCase(taxNo).collect { resource ->
                 if (resource is DataResource.Success) {
